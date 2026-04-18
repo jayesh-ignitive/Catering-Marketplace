@@ -165,14 +165,20 @@ export class CatalogService {
     city?: City;
     category?: ServiceCategory;
   } {
-    if (!cityId || !categoryId) {
-      return { caterers: [] };
+    const c = cityId?.trim() || undefined;
+    const cat = categoryId?.trim() || undefined;
+
+    let caterers = [...this.listings];
+    if (c) {
+      caterers = caterers.filter((l) => l.cityId === c);
     }
-    const city = this.cities.find((c) => c.id === cityId);
-    const category = this.categories.find((c) => c.id === categoryId);
-    const caterers = this.listings.filter(
-      (l) => l.cityId === cityId && l.categoryId === categoryId,
-    );
+    if (cat) {
+      caterers = caterers.filter((l) => l.categoryId === cat);
+    }
+
+    const city = c ? this.cities.find((x) => x.id === c) : undefined;
+    const category = cat ? this.categories.find((x) => x.id === cat) : undefined;
+
     return { caterers, city, category };
   }
 }

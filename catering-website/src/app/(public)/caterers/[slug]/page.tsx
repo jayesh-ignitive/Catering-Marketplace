@@ -4,7 +4,7 @@ import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import dynamic from "next/dynamic";
 import Link from "next/link";
 import { useParams } from "next/navigation";
-import { Suspense, useState } from "react";
+import { Suspense, useEffect, useState } from "react";
 import { toast } from "react-toastify";
 import {
   fetchMarketplaceCaterer,
@@ -14,10 +14,12 @@ import {
 } from "@/lib/catering-api";
 import {
   FaCheck,
+  FaChevronLeft,
   FaChevronRight,
   FaEnvelope,
   FaMapMarkerAlt,
   FaStar,
+  FaTimes,
   FaUtensils,
 } from "react-icons/fa";
 
@@ -35,11 +37,149 @@ const nf = new Intl.NumberFormat("en-IN");
 
 function StarDisplay({ rating }: { rating: number }) {
   return (
-    <span className="inline-flex gap-0.5 text-amber-400" aria-hidden>
+    <span className="inline-flex gap-0.5 text-brand-yellow" aria-hidden>
       {[1, 2, 3, 4, 5].map((s) => (
-        <FaStar key={s} size={14} className={s <= Math.round(rating) ? "opacity-100" : "opacity-20"} />
+        <FaStar key={s} size={14} className={s <= Math.round(rating) ? "opacity-100" : "opacity-25"} />
       ))}
     </span>
+  );
+}
+
+function GallerySection({
+  images,
+  businessName,
+}: {
+  images: string[];
+  businessName: string;
+}) {
+  const [openIndex, setOpenIndex] = useState<number | null>(null);
+
+  useEffect(() => {
+    if (openIndex === null) return;
+    const onKey = (e: KeyboardEvent) => {
+      if (e.key === "Escape") setOpenIndex(null);
+      if (e.key === "ArrowLeft") {
+        e.preventDefault();
+        setOpenIndex((i) =>
+          i === null ? null : i > 0 ? i - 1 : images.length - 1
+        );
+      }
+      if (e.key === "ArrowRight") {
+        e.preventDefault();
+        setOpenIndex((i) =>
+          i === null ? null : i < images.length - 1 ? i + 1 : 0
+        );
+      }
+    };
+    window.addEventListener("keydown", onKey);
+    const prevOverflow = document.body.style.overflow;
+    document.body.style.overflow = "hidden";
+    return () => {
+      window.removeEventListener("keydown", onKey);
+      document.body.style.overflow = prevOverflow;
+    };
+  }, [openIndex, images.length]);
+
+  return (
+    <>
+      <section className="rounded-2xl border border-gray-100 bg-white p-6 shadow-sm sm:p-8">
+        <h2 className="font-heading text-xl font-extrabold text-brand-dark">Gallery</h2>
+        <div className="mt-6 grid grid-cols-2 gap-3 sm:grid-cols-3">
+          {images.map((url, i) => (
+            <button
+              key={`${url}-${i}`}
+              type="button"
+              onClick={() => setOpenIndex(i)}
+              className="group relative aspect-[4/3] cursor-pointer overflow-hidden rounded-xl bg-stone-100 text-left outline-none ring-brand-red transition hover:opacity-95 focus-visible:ring-4 focus-visible:ring-offset-2"
+              aria-label={`Open gallery image ${i + 1} of ${images.length}`}
+            >
+              {/* eslint-disable-next-line @next/next/no-img-element */}
+              <img
+                src={url}
+                alt=""
+                className="h-full w-full object-cover transition duration-300 group-hover:scale-[1.03]"
+              />
+              <span
+                className="pointer-events-none absolute inset-0 bg-black/0 transition group-hover:bg-black/10"
+                aria-hidden
+              />
+            </button>
+          ))}
+        </div>
+      </section>
+
+      {openIndex !== null ? (
+        <div
+          className="fixed inset-0 z-[100] flex items-center justify-center p-3 sm:p-6"
+          role="dialog"
+          aria-modal="true"
+          aria-label={`${businessName} gallery`}
+        >
+          <button
+            type="button"
+            className="absolute inset-0 z-[60] cursor-pointer bg-black/92 backdrop-blur-[2px]"
+            aria-label="Close gallery"
+            onClick={() => setOpenIndex(null)}
+          />
+          <button
+            type="button"
+            className="absolute right-3 top-3 z-[110] flex h-12 min-h-[44px] w-12 min-w-[44px] cursor-pointer items-center justify-center rounded-full bg-white/10 text-white transition hover:bg-white/20 sm:right-5 sm:top-5"
+            aria-label="Close"
+            onClick={() => setOpenIndex(null)}
+          >
+            <FaTimes className="pointer-events-none" size={22} aria-hidden />
+          </button>
+
+          {images.length > 1 ? (
+            <>
+              <button
+                type="button"
+                className="absolute left-1 top-1/2 z-[110] flex h-12 min-h-[44px] w-12 min-w-[44px] -translate-y-1/2 cursor-pointer items-center justify-center rounded-full bg-white/15 text-white shadow-lg transition hover:bg-white/25 sm:left-3 md:left-5"
+                aria-label="Previous image"
+                onClick={(e) => {
+                  e.stopPropagation();
+                  setOpenIndex((i) =>
+                    i === null ? null : i > 0 ? i - 1 : images.length - 1
+                  );
+                }}
+              >
+                <FaChevronLeft className="pointer-events-none" size={24} aria-hidden />
+              </button>
+              <button
+                type="button"
+                className="absolute right-1 top-1/2 z-[110] flex h-12 min-h-[44px] w-12 min-w-[44px] -translate-y-1/2 cursor-pointer items-center justify-center rounded-full bg-white/15 text-white shadow-lg transition hover:bg-white/25 sm:right-3 md:right-12 lg:right-14"
+                aria-label="Next image"
+                onClick={(e) => {
+                  e.stopPropagation();
+                  setOpenIndex((i) =>
+                    i === null ? null : i < images.length - 1 ? i + 1 : 0
+                  );
+                }}
+              >
+                <FaChevronRight className="pointer-events-none" size={24} aria-hidden />
+              </button>
+            </>
+          ) : null}
+
+          <div
+            className="relative z-[70] flex max-h-[min(92vh,900px)] max-w-[min(96vw,1200px)] flex-col items-center"
+            onClick={(e) => e.stopPropagation()}
+          >
+            {/* eslint-disable-next-line @next/next/no-img-element */}
+            <img
+              src={images[openIndex]}
+              alt={`${businessName} — gallery photo ${openIndex + 1} of ${images.length}`}
+              className="max-h-[min(88vh,880px)] max-w-full rounded-lg object-contain shadow-2xl"
+            />
+            {images.length > 1 ? (
+              <p className="mt-4 text-sm font-semibold tabular-nums text-white/90">
+                {openIndex + 1} / {images.length}
+              </p>
+            ) : null}
+          </div>
+        </div>
+      ) : null}
+    </>
   );
 }
 
@@ -71,34 +211,34 @@ function WriteReviewForm({ slug }: { slug: string }) {
 
   return (
     <form
-      className="mt-8 rounded-xl border border-stone-200 bg-stone-50/80 p-5"
+      className="mt-8 rounded-2xl border border-gray-100 bg-gradient-to-b from-gray-50/80 to-white p-6 shadow-sm"
       onSubmit={(e) => {
         e.preventDefault();
         m.mutate();
       }}
     >
-      <h3 className="text-sm font-extrabold text-stone-900">Write a review</h3>
-      <p className="mt-1 text-xs text-[var(--foreground-muted)]">
+      <h3 className="font-heading text-base font-extrabold text-brand-dark">Write a review</h3>
+      <p className="mt-1 text-xs text-gray-500">
         Share your experience (demo — public, not verified purchases).
       </p>
       <div className="mt-4 grid gap-4 sm:grid-cols-2">
-        <label className="block text-sm font-semibold text-stone-700">
+        <label className="block text-xs font-bold uppercase tracking-wider text-gray-500">
           Your name
           <input
             required
             maxLength={120}
             value={authorName}
             onChange={(e) => setAuthorName(e.target.value)}
-            className="mt-1.5 w-full rounded-lg border border-stone-200 bg-white px-3 py-2.5 text-sm outline-none focus:border-[var(--primary)]/40 focus:ring-2 focus:ring-[var(--primary)]/15"
+            className="mt-2 w-full rounded-lg border border-gray-200 bg-white px-3 py-2.5 text-sm text-brand-dark outline-none transition focus:border-brand-red focus:ring-4 focus:ring-brand-red/10"
             placeholder="e.g. Priya S."
           />
         </label>
-        <label className="block text-sm font-semibold text-stone-700">
+        <label className="block text-xs font-bold uppercase tracking-wider text-gray-500">
           Rating
           <select
             value={rating}
             onChange={(e) => setRating(Number(e.target.value))}
-            className="mt-1.5 w-full rounded-lg border border-stone-200 bg-white px-3 py-2.5 text-sm outline-none focus:border-[var(--primary)]/40"
+            className="mt-2 w-full rounded-lg border border-gray-200 bg-white px-3 py-2.5 text-sm text-brand-dark outline-none focus:border-brand-red focus:ring-4 focus:ring-brand-red/10"
           >
             {[5, 4, 3, 2, 1].map((n) => (
               <option key={n} value={n}>
@@ -108,17 +248,17 @@ function WriteReviewForm({ slug }: { slug: string }) {
           </select>
         </label>
       </div>
-      <label className="mt-4 block text-sm font-semibold text-stone-700">
-        Short title <span className="font-normal text-stone-500">(optional)</span>
+      <label className="mt-4 block text-xs font-bold uppercase tracking-wider text-gray-500">
+        Short title <span className="font-normal text-gray-400">(optional)</span>
         <input
           maxLength={200}
           value={title}
           onChange={(e) => setTitle(e.target.value)}
-          className="mt-1.5 w-full rounded-lg border border-stone-200 bg-white px-3 py-2.5 text-sm outline-none focus:border-[var(--primary)]/40"
+          className="mt-2 w-full rounded-lg border border-gray-200 bg-white px-3 py-2.5 text-sm text-brand-dark outline-none focus:border-brand-red focus:ring-4 focus:ring-brand-red/10"
           placeholder="e.g. Great wedding buffet"
         />
       </label>
-      <label className="mt-4 block text-sm font-semibold text-stone-700">
+      <label className="mt-4 block text-xs font-bold uppercase tracking-wider text-gray-500">
         Your review
         <textarea
           required
@@ -127,14 +267,14 @@ function WriteReviewForm({ slug }: { slug: string }) {
           rows={4}
           value={comment}
           onChange={(e) => setComment(e.target.value)}
-          className="mt-1.5 w-full resize-y rounded-lg border border-stone-200 bg-white px-3 py-2.5 text-sm outline-none focus:border-[var(--primary)]/40"
+          className="mt-2 w-full resize-y rounded-lg border border-gray-200 bg-white px-3 py-2.5 text-sm text-brand-dark outline-none focus:border-brand-red focus:ring-4 focus:ring-brand-red/10"
           placeholder="At least 10 characters…"
         />
       </label>
       <button
         type="submit"
         disabled={m.isPending}
-        className="mt-5 rounded-xl bg-gradient-to-r from-[var(--primary)] to-[var(--orange-deep)] px-6 py-3 text-sm font-bold text-white shadow-md shadow-[var(--primary)]/20 disabled:opacity-60"
+        className="mt-5 rounded-lg bg-brand-red px-6 py-3 text-sm font-bold text-white shadow-md shadow-brand-red/25 transition hover:bg-red-700 disabled:opacity-60"
       >
         {m.isPending ? "Posting…" : "Post review"}
       </button>
@@ -154,17 +294,17 @@ function DetailContent() {
 
   if (!slug) {
     return (
-      <div className="container-max py-20 text-center text-stone-600">Invalid profile link.</div>
+      <div className="mx-auto max-w-7xl px-6 py-20 text-center text-gray-600">Invalid profile link.</div>
     );
   }
 
   if (q.isPending) {
     return (
-      <div className="min-h-screen bg-[var(--background)]">
-        <div className="h-[42vh] animate-pulse bg-stone-200" />
-        <div className="container-max -mt-16 grid gap-8 pb-20 lg:grid-cols-[minmax(0,1fr)_320px] lg:gap-12">
-          <div className="h-96 animate-pulse rounded-2xl bg-stone-100" />
-          <div className="h-72 animate-pulse rounded-2xl bg-stone-100" />
+      <div className="min-h-screen bg-gray-50">
+        <div className="h-[42vh] animate-pulse bg-gradient-to-br from-brand-dark to-brand-red/40" />
+        <div className="mx-auto -mt-16 grid max-w-7xl gap-8 px-6 pb-20 lg:grid-cols-[minmax(0,1fr)_320px] lg:gap-12">
+          <div className="h-96 animate-pulse rounded-2xl bg-white shadow-sm" />
+          <div className="h-72 animate-pulse rounded-2xl bg-white shadow-sm" />
         </div>
       </div>
     );
@@ -172,14 +312,14 @@ function DetailContent() {
 
   if (q.isError || !q.data) {
     return (
-      <div className="container-max py-24 text-center">
-        <h1 className="text-2xl font-extrabold text-stone-900">Profile not found</h1>
-        <p className="mt-3 text-[var(--foreground-muted)]">
+      <div className="mx-auto max-w-7xl px-6 py-24 text-center">
+        <h1 className="font-heading text-2xl font-extrabold text-brand-dark">Profile not found</h1>
+        <p className="mt-3 text-gray-500">
           This caterer may be unpublished or the link is incorrect.
         </p>
         <Link
           href="/caterers"
-          className="mt-8 inline-flex items-center gap-2 rounded-xl bg-gradient-to-r from-[var(--primary)] to-[var(--orange-deep)] px-6 py-3 text-sm font-bold text-white shadow-md"
+          className="mt-8 inline-flex items-center gap-2 rounded-lg bg-brand-red px-6 py-3 text-sm font-bold text-white shadow-md shadow-brand-red/25 transition hover:bg-red-700"
         >
           Browse all caterers
         </Link>
@@ -208,9 +348,9 @@ function DetailContent() {
       : null;
 
   return (
-    <div className="min-h-screen bg-[var(--background)]">
+    <div className="min-h-screen bg-gray-50">
       <header className="relative">
-        <div className="relative h-[min(42vh,420px)] w-full overflow-hidden bg-stone-900">
+        <div className="relative h-[min(42vh,420px)] w-full overflow-hidden bg-brand-dark">
           {d.heroImageUrl ? (
             // eslint-disable-next-line @next/next/no-img-element
             <img
@@ -220,40 +360,41 @@ function DetailContent() {
             />
           ) : (
             <div
-              className="h-full w-full bg-gradient-to-br from-[var(--orange-deep)] via-[var(--primary)] to-[var(--orange-mid)]"
+              className="h-full w-full bg-gradient-to-br from-brand-dark via-brand-red/60 to-brand-yellow/30"
               aria-hidden
             />
           )}
-          <div className="absolute inset-0 bg-gradient-to-t from-black/75 via-black/35 to-transparent" />
-          <div className="container-max relative flex h-full flex-col justify-end pb-10 pt-24 sm:pb-12">
-            <nav className="mb-6 flex flex-wrap items-center gap-1 text-sm font-medium text-white/80">
-              <Link href="/" className="hover:text-white">
+          <div className="absolute inset-0 bg-gradient-to-t from-black/85 via-black/40 to-brand-dark/30" />
+          <div className="absolute inset-0 bg-gradient-to-r from-brand-dark/50 to-transparent" aria-hidden />
+          <div className="relative mx-auto flex h-full max-w-7xl flex-col justify-end px-6 pb-10 pt-24 sm:pb-12">
+            <nav className="mb-6 flex flex-wrap items-center gap-1 text-sm font-medium text-white/75">
+              <Link href="/" className="transition hover:text-brand-yellow">
                 Home
               </Link>
-              <FaChevronRight className="text-white/50" size={10} aria-hidden />
-              <Link href="/caterers" className="hover:text-white">
+              <FaChevronRight className="text-white/40" size={10} aria-hidden />
+              <Link href="/caterers" className="transition hover:text-brand-yellow">
                 Caterers
               </Link>
-              <FaChevronRight className="text-white/50" size={10} aria-hidden />
+              <FaChevronRight className="text-white/40" size={10} aria-hidden />
               <span className="text-white">{d.businessName}</span>
             </nav>
             <div className="flex flex-col gap-4 sm:flex-row sm:items-end sm:justify-between">
               <div>
-                <h1 className="text-3xl font-extrabold tracking-tight text-white sm:text-4xl lg:text-[2.35rem]">
+                <h1 className="font-heading text-3xl font-extrabold tracking-tight text-white sm:text-4xl lg:text-[2.35rem]">
                   {d.businessName}
                 </h1>
                 {d.tagline ? (
                   <p className="mt-2 max-w-2xl text-base text-white/90 sm:text-lg">{d.tagline}</p>
                 ) : null}
                 <div className="mt-4 flex flex-wrap items-center gap-4 text-sm text-white/95">
-                  <span className="inline-flex items-center gap-2 rounded-full bg-white/15 px-3 py-1.5 backdrop-blur-sm">
-                    <FaStar className="text-amber-300" size={14} aria-hidden />
+                  <span className="inline-flex items-center gap-2 rounded-full border border-white/15 bg-black/25 px-3 py-1.5 backdrop-blur-sm">
+                    <FaStar className="text-brand-yellow" size={14} aria-hidden />
                     <span className="font-bold tabular-nums">{d.avgRating.toFixed(1)}</span>
                     <span className="text-white/85">· {nf.format(d.reviewCount)} reviews</span>
                   </span>
                   {locationLine ? (
                     <span className="inline-flex items-center gap-2 text-white/90">
-                      <FaMapMarkerAlt className="text-[var(--secondary-light)]" size={14} aria-hidden />
+                      <FaMapMarkerAlt className="text-brand-yellow" size={14} aria-hidden />
                       {locationLine}
                     </span>
                   ) : null}
@@ -264,28 +405,28 @@ function DetailContent() {
         </div>
       </header>
 
-      <div className="container-max grid gap-10 pb-20 pt-10 lg:grid-cols-[minmax(0,1fr)_minmax(280px,340px)] lg:gap-14 lg:pt-12">
+      <div className="mx-auto grid max-w-7xl gap-10 px-6 pb-20 pt-10 lg:grid-cols-[minmax(0,1fr)_minmax(280px,340px)] lg:gap-14 lg:pt-12">
         <div className="space-y-12">
-          <section className="rounded-2xl border border-stone-200/90 bg-white p-6 sm:p-8 card-shadow">
-            <h2 className="flex items-center gap-2 text-xl font-extrabold text-stone-900">
-              <span className="flex h-9 w-9 items-center justify-center rounded-lg bg-[var(--primary-soft)] text-[var(--primary)]">
+          <section className="rounded-2xl border border-gray-100 bg-white p-6 shadow-sm sm:p-8">
+            <h2 className="font-heading flex items-center gap-3 text-xl font-extrabold text-brand-dark">
+              <span className="flex h-10 w-10 items-center justify-center rounded-xl bg-brand-red/10 text-brand-red">
                 <FaUtensils size={16} aria-hidden />
               </span>
               About
             </h2>
-            <p className="mt-5 whitespace-pre-line text-base leading-relaxed text-[var(--foreground-muted)]">
+            <p className="mt-5 whitespace-pre-line text-base leading-relaxed text-gray-600">
               {d.about ||
                 `${d.businessName} is a catering partner on this marketplace. More details will appear here when the team completes their profile.`}
             </p>
           </section>
 
           {d.servicesOffered.length > 0 ? (
-            <section className="rounded-2xl border border-stone-200/90 bg-white p-6 sm:p-8 card-shadow">
-              <h2 className="text-xl font-extrabold text-stone-900">What we offer</h2>
+            <section className="rounded-2xl border border-gray-100 bg-white p-6 shadow-sm sm:p-8">
+              <h2 className="font-heading text-xl font-extrabold text-brand-dark">What we offer</h2>
               <ul className="mt-6 grid gap-3 sm:grid-cols-2">
                 {d.servicesOffered.map((s) => (
-                  <li key={s} className="flex items-start gap-3 text-sm font-medium text-stone-800">
-                    <span className="mt-0.5 flex h-5 w-5 shrink-0 items-center justify-center rounded-full bg-[var(--primary-soft)] text-[var(--primary)]">
+                  <li key={s} className="flex items-start gap-3 text-sm font-medium text-brand-dark">
+                    <span className="mt-0.5 flex h-5 w-5 shrink-0 items-center justify-center rounded-full bg-brand-green/15 text-brand-green">
                       <FaCheck size={10} aria-hidden />
                     </span>
                     {s}
@@ -296,13 +437,13 @@ function DetailContent() {
           ) : null}
 
           {(d.cuisines ?? []).length > 0 ? (
-            <section className="rounded-2xl border border-stone-200/90 bg-white p-6 sm:p-8 card-shadow">
-              <h2 className="text-xl font-extrabold text-stone-900">Cuisines & specialties</h2>
+            <section className="rounded-2xl border border-gray-100 bg-white p-6 shadow-sm sm:p-8">
+              <h2 className="font-heading text-xl font-extrabold text-brand-dark">Cuisines & specialties</h2>
               <div className="mt-5 flex flex-wrap gap-2">
                 {(d.cuisines ?? []).map((c) => (
                   <span
                     key={c}
-                    className="rounded-xl border border-stone-200 bg-[var(--light-gray)] px-4 py-2 text-sm font-semibold text-stone-800"
+                    className="rounded-xl border border-gray-100 bg-gray-50 px-4 py-2 text-sm font-semibold text-brand-dark"
                   >
                     {c}
                   </span>
@@ -312,16 +453,16 @@ function DetailContent() {
           ) : null}
 
           {(d.keywords ?? []).length > 0 ? (
-            <section className="rounded-2xl border border-stone-200/90 bg-white p-6 sm:p-8 card-shadow">
-              <h2 className="text-xl font-extrabold text-stone-900">Search keywords</h2>
-              <p className="mt-2 text-sm text-[var(--foreground-muted)]">
+            <section className="rounded-2xl border border-gray-100 bg-white p-6 shadow-sm sm:p-8">
+              <h2 className="font-heading text-xl font-extrabold text-brand-dark">Search keywords</h2>
+              <p className="mt-2 text-sm text-gray-500">
                 Tags used for discovery on the marketplace.
               </p>
               <div className="mt-5 flex flex-wrap gap-2">
                 {(d.keywords ?? []).map((k) => (
                   <span
                     key={k.slug}
-                    className="rounded-xl border border-[var(--primary)]/30 bg-[var(--primary-soft)]/40 px-4 py-2 text-sm font-bold text-[var(--primary)]"
+                    className="rounded-xl border border-brand-red/25 bg-brand-red/5 px-4 py-2 text-sm font-bold text-brand-red"
                   >
                     {k.label}
                   </span>
@@ -331,41 +472,28 @@ function DetailContent() {
           ) : null}
 
           {d.galleryImages.length > 0 ? (
-            <section className="rounded-2xl border border-stone-200/90 bg-white p-6 sm:p-8 card-shadow">
-              <h2 className="text-xl font-extrabold text-stone-900">Gallery</h2>
-              <div className="mt-6 grid grid-cols-2 gap-3 sm:grid-cols-3">
-                {d.galleryImages.map((url, i) => (
-                  <div
-                    key={`${url}-${i}`}
-                    className="relative aspect-[4/3] overflow-hidden rounded-xl bg-stone-100"
-                  >
-                    {/* eslint-disable-next-line @next/next/no-img-element */}
-                    <img src={url} alt="" className="h-full w-full object-cover" />
-                  </div>
-                ))}
-              </div>
-            </section>
+            <GallerySection images={d.galleryImages} businessName={d.businessName} />
           ) : null}
 
-          <section className="rounded-2xl border border-stone-200/90 bg-white p-6 sm:p-8 card-shadow">
+          <section className="rounded-2xl border border-gray-100 bg-white p-6 shadow-sm sm:p-8">
             <div className="flex flex-col gap-2 sm:flex-row sm:items-end sm:justify-between">
-              <h2 className="text-xl font-extrabold text-stone-900">Ratings & reviews</h2>
-              <div className="flex items-center gap-2 text-sm font-semibold text-stone-700">
+              <h2 className="font-heading text-xl font-extrabold text-brand-dark">Ratings & reviews</h2>
+              <div className="flex items-center gap-2 text-sm font-semibold text-brand-dark">
                 <StarDisplay rating={Math.round(d.avgRating)} />
                 <span className="tabular-nums">{d.avgRating.toFixed(1)}</span>
-                <span className="font-normal text-[var(--foreground-muted)]">
+                <span className="font-normal text-gray-500">
                   · {nf.format(d.reviewCount)} review{d.reviewCount === 1 ? "" : "s"}
                 </span>
               </div>
             </div>
             {d.reviewCount > d.reviews.length ? (
-              <p className="mt-3 text-sm text-[var(--foreground-muted)]">
+              <p className="mt-3 text-sm text-gray-500">
                 Showing the {d.reviews.length} most recent reviews.
               </p>
             ) : null}
 
             {d.reviews.length === 0 ? (
-              <p className="mt-6 text-sm text-[var(--foreground-muted)]">
+              <p className="mt-6 text-sm text-gray-500">
                 No reviews yet — be the first to share your experience.
               </p>
             ) : (
@@ -373,14 +501,14 @@ function DetailContent() {
                 {d.reviews.map((r) => (
                   <li
                     key={r.id}
-                    className="border-b border-stone-100 pb-6 last:border-0 last:pb-0"
+                    className="border-b border-gray-100 pb-6 last:border-0 last:pb-0"
                   >
                     <div className="flex flex-wrap items-center gap-2">
-                      <span className="font-bold text-stone-900">{r.authorName}</span>
+                      <span className="font-bold text-brand-dark">{r.authorName}</span>
                       <StarDisplay rating={r.rating} />
                       <time
                         dateTime={r.createdAt}
-                        className="text-xs font-medium text-stone-500"
+                        className="text-xs font-medium text-gray-500"
                       >
                         {new Date(r.createdAt).toLocaleDateString("en-IN", {
                           day: "numeric",
@@ -390,9 +518,9 @@ function DetailContent() {
                       </time>
                     </div>
                     {r.title ? (
-                      <p className="mt-2 font-semibold text-stone-800">{r.title}</p>
+                      <p className="mt-2 font-semibold text-brand-dark">{r.title}</p>
                     ) : null}
-                    <p className="mt-2 text-sm leading-relaxed text-[var(--foreground-muted)]">
+                    <p className="mt-2 text-sm leading-relaxed text-gray-600">
                       {r.comment}
                     </p>
                   </li>
@@ -406,16 +534,16 @@ function DetailContent() {
 
         <aside className="space-y-6 lg:sticky lg:top-24 lg:self-start">
           {(d.streetAddress || locationLine || hasMapPin) && (
-            <div className="rounded-2xl border border-stone-200/90 bg-white p-6 card-shadow">
-              <h3 className="text-sm font-bold uppercase tracking-wider text-stone-500">Location</h3>
+            <div className="rounded-2xl border border-gray-100 bg-white p-6 shadow-sm">
+              <h3 className="text-xs font-bold uppercase tracking-wider text-brand-red">Location</h3>
               {d.streetAddress ? (
-                <p className="mt-3 text-sm font-medium leading-relaxed text-stone-800">
+                <p className="mt-3 text-sm font-medium leading-relaxed text-brand-dark">
                   {d.streetAddress}
                 </p>
               ) : null}
               {locationLine ? (
                 <p
-                  className={`text-sm leading-relaxed text-[var(--foreground-muted)] ${d.streetAddress ? "mt-2" : "mt-3"}`}
+                  className={`text-sm leading-relaxed text-gray-500 ${d.streetAddress ? "mt-2" : "mt-3"}`}
                 >
                   {locationLine}
                 </p>
@@ -435,64 +563,64 @@ function DetailContent() {
                   href={externalMapsHref}
                   target="_blank"
                   rel="noopener noreferrer"
-                  className="mt-4 inline-flex text-sm font-bold text-[var(--primary)] hover:underline"
+                  className="mt-4 inline-flex text-sm font-bold text-brand-red hover:underline"
                 >
                   Open in Google Maps
                 </a>
               ) : null}
             </div>
           )}
-          <div className="rounded-2xl border border-stone-200/90 bg-white p-6 card-shadow">
-            <h3 className="text-sm font-bold uppercase tracking-wider text-stone-500">Quick facts</h3>
+          <div className="rounded-2xl border border-gray-100 bg-white p-6 shadow-sm">
+            <h3 className="text-xs font-bold uppercase tracking-wider text-brand-red">Quick facts</h3>
             <dl className="mt-5 space-y-4 text-sm">
               {d.primaryCategoryName ? (
                 <div>
-                  <dt className="font-semibold text-stone-500">Service focus</dt>
-                  <dd className="mt-1 font-bold text-stone-900">{d.primaryCategoryName}</dd>
+                  <dt className="font-semibold text-gray-500">Service focus</dt>
+                  <dd className="mt-1 font-bold text-brand-dark">{d.primaryCategoryName}</dd>
                 </div>
               ) : null}
               {priceLine ? (
                 <div>
-                  <dt className="font-semibold text-stone-500">Indicative pricing</dt>
-                  <dd className="mt-1 font-bold text-stone-900">{priceLine}</dd>
+                  <dt className="font-semibold text-gray-500">Indicative pricing</dt>
+                  <dd className="mt-1 font-bold text-brand-dark">{priceLine}</dd>
                 </div>
               ) : null}
               {d.yearsInBusiness != null ? (
                 <div>
-                  <dt className="font-semibold text-stone-500">Years in business</dt>
-                  <dd className="mt-1 font-bold text-stone-900">{d.yearsInBusiness}+ years</dd>
+                  <dt className="font-semibold text-gray-500">Years in business</dt>
+                  <dd className="mt-1 font-bold text-brand-dark">{d.yearsInBusiness}+ years</dd>
                 </div>
               ) : null}
               {capacityLine ? (
                 <div>
-                  <dt className="font-semibold text-stone-500">Typical event size</dt>
-                  <dd className="mt-1 font-bold text-stone-900">{capacityLine}</dd>
+                  <dt className="font-semibold text-gray-500">Typical event size</dt>
+                  <dd className="mt-1 font-bold text-brand-dark">{capacityLine}</dd>
                 </div>
               ) : null}
               {d.subdomain ? (
                 <div>
-                  <dt className="font-semibold text-stone-500">Workspace</dt>
-                  <dd className="mt-1 break-all font-mono text-xs text-stone-800">{d.subdomain}</dd>
+                  <dt className="font-semibold text-gray-500">Workspace</dt>
+                  <dd className="mt-1 break-all font-mono text-xs text-brand-dark">{d.subdomain}</dd>
                 </div>
               ) : null}
             </dl>
           </div>
 
-          <div className="rounded-2xl border border-stone-200/90 bg-gradient-to-br from-[var(--primary-soft)] to-white p-6 card-shadow">
-            <h3 className="text-lg font-extrabold text-stone-900">Interested?</h3>
-            <p className="mt-2 text-sm text-[var(--foreground-muted)]">
+          <div className="rounded-2xl border border-brand-red/20 bg-gradient-to-br from-brand-red/5 to-white p-6 shadow-sm">
+            <h3 className="font-heading text-lg font-extrabold text-brand-dark">Interested?</h3>
+            <p className="mt-2 text-sm text-gray-600">
               Send a brief with your event date, guest count, and city — the caterer will follow up.
             </p>
             <a
               href={`mailto:hello@example.com?subject=${encodeURIComponent(`Quote request: ${d.businessName}`)}`}
-              className="mt-5 flex w-full items-center justify-center gap-2 rounded-xl bg-gradient-to-r from-[var(--primary)] to-[var(--orange-deep)] py-3.5 text-sm font-bold text-white shadow-md shadow-[var(--primary)]/25 transition hover:opacity-[0.96]"
+              className="mt-5 flex w-full items-center justify-center gap-2 rounded-lg bg-brand-red py-3.5 text-sm font-bold text-white shadow-md shadow-brand-red/25 transition hover:bg-red-700"
             >
               <FaEnvelope size={14} aria-hidden />
               Request a quote
             </a>
             <Link
               href="/caterers"
-              className="mt-3 block w-full rounded-xl border border-stone-200 bg-white py-3 text-center text-sm font-bold text-stone-800 transition hover:border-[var(--primary)]/30"
+              className="mt-3 block w-full rounded-lg border border-gray-200 bg-white py-3 text-center text-sm font-bold text-brand-dark transition hover:border-brand-red/30"
             >
               Back to listings
             </Link>
@@ -507,8 +635,9 @@ export default function CatererDetailPage() {
   return (
     <Suspense
       fallback={
-        <div className="min-h-screen bg-[var(--background)] py-24 text-center text-stone-500">
-          Loading profile…
+        <div className="flex min-h-screen flex-col items-center justify-center bg-gray-50 py-24">
+          <div className="h-10 w-10 animate-spin rounded-full border-2 border-brand-red border-t-transparent" aria-hidden />
+          <p className="mt-4 font-heading text-sm font-semibold text-brand-dark">Loading profile…</p>
         </div>
       }
     >

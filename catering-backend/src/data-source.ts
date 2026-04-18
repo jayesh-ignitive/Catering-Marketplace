@@ -1,6 +1,8 @@
 import 'reflect-metadata';
 import { config } from 'dotenv';
 import { DataSource } from 'typeorm';
+import { BlogPost } from './catalog/blog-post.entity';
+import { ContactSubmission } from './contact/contact-submission.entity';
 import { CatererMarketplaceListing } from './marketplace/caterer-marketplace-listing.entity';
 import { CatererProfileCategory } from './marketplace/caterer-profile-category.entity';
 import { CatererProfileCuisine } from './marketplace/caterer-profile-cuisine.entity';
@@ -30,6 +32,8 @@ const AppDataSource = new DataSource({
   synchronize: false,
   logging: process.env.TYPEORM_LOGGING === 'true',
   entities: [
+    BlogPost,
+    ContactSubmission,
     User,
     Tenant,
     CatererMarketplaceListing,

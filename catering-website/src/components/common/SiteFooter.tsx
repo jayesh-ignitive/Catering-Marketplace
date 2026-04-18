@@ -1,73 +1,152 @@
+"use client";
+
+import { ChefHat, Envelope, FacebookLogo, InstagramLogo, MapPin, Phone, TwitterLogo } from "@phosphor-icons/react";
 import Link from "next/link";
 
 export function SiteFooter() {
   return (
-    <footer className="relative mt-auto overflow-hidden border-t border-stone-800/50 bg-gradient-to-b from-stone-900 to-stone-950 text-white">
-      <div
-        className="pointer-events-none absolute -right-24 -top-24 h-64 w-64 rounded-full bg-[var(--primary)]/20 blur-3xl"
-        aria-hidden
-      />
-      <div
-        className="pointer-events-none absolute -bottom-16 -left-16 h-48 w-48 rounded-full bg-[var(--secondary)]/10 blur-3xl"
-        aria-hidden
-      />
-      <div className="container-max relative py-12 sm:py-14">
-        <div className="flex flex-col gap-10 sm:flex-row sm:items-start sm:justify-between">
-          <div className="max-w-sm">
-            <p className="flex items-center gap-2 text-lg font-extrabold tracking-tight">
-              <span className="flex h-9 w-9 items-center justify-center rounded-lg bg-gradient-to-br from-[var(--primary)] to-[var(--orange-deep)] text-sm font-black text-white">
-                C
-              </span>
-              <span className="text-white">
-                <span className="text-[var(--orange-mid)]">Catering</span> Website
-              </span>
+    <footer className="zig-zag-border bg-[#111] pb-10 pt-20 text-gray-400">
+      <div className="mx-auto max-w-7xl px-6">
+        <div className="mb-16 grid grid-cols-1 gap-12 md:grid-cols-2 lg:grid-cols-4">
+          <div>
+            <Link href="/" className="mb-6 flex items-center gap-2">
+              <div className="flex h-10 w-10 items-center justify-center rounded-full bg-brand-red text-white">
+                <ChefHat className="text-2xl" aria-hidden />
+              </div>
+              <div className="flex flex-col text-white">
+                <span className="font-heading text-xl font-bold leading-none tracking-tight">BHARAT</span>
+                <span className="text-[10px] font-semibold uppercase tracking-widest text-brand-red">Caterers</span>
+              </div>
+            </Link>
+            <p className="mb-6 text-sm leading-relaxed">
+              India&apos;s trusted directory for finding top-rated catering services. We bring the best flavors to
+              your special occasions.
             </p>
-            <p className="mt-3 text-sm leading-relaxed text-stone-400">
-              Next.js storefront with a NestJS catalog API — find caterers by city and service.
-            </p>
+            <div className="mt-6 flex gap-4">
+              <a
+                href="#"
+                className="flex h-10 w-10 items-center justify-center rounded-full bg-white/10 text-white transition-all duration-300 hover:-translate-y-1 hover:bg-brand-red hover:shadow-[0_4px_15px_rgba(229,57,53,0.4)]"
+                aria-label="Facebook"
+              >
+                <FacebookLogo className="text-lg" weight="regular" />
+              </a>
+              <a
+                href="#"
+                className="flex h-10 w-10 items-center justify-center rounded-full bg-white/10 text-white transition-all duration-300 hover:-translate-y-1 hover:bg-brand-red hover:shadow-[0_4px_15px_rgba(229,57,53,0.4)]"
+                aria-label="Twitter"
+              >
+                <TwitterLogo className="text-lg" weight="regular" />
+              </a>
+              <a
+                href="#"
+                className="flex h-10 w-10 items-center justify-center rounded-full bg-white/10 text-white transition-all duration-300 hover:-translate-y-1 hover:bg-brand-red hover:shadow-[0_4px_15px_rgba(229,57,53,0.4)]"
+                aria-label="Instagram"
+              >
+                <InstagramLogo className="text-lg" weight="regular" />
+              </a>
+            </div>
           </div>
-          <div className="flex flex-col gap-6 sm:flex-row sm:gap-16">
-            <div>
-              <p className="text-xs font-bold uppercase tracking-widest text-[var(--orange-mid)]/90">
-                Explore
-              </p>
-              <ul className="mt-4 flex flex-col gap-2 text-sm text-stone-300">
+
+          <div>
+            <h4 className="mb-6 font-heading text-lg font-bold text-white">Quick Links</h4>
+            <ul className="space-y-3 text-sm">
+              <li>
+                <Link href="/" className="transition hover:text-brand-yellow">
+                  Home
+                </Link>
+              </li>
                 <li>
-                  <Link href="/" className="transition hover:text-white">
-                    Home
+                  <a href="#about" className="transition hover:text-brand-yellow">
+                    About Us
+                  </a>
+                </li>
+                <li>
+                  <Link href="/blog" className="transition hover:text-brand-yellow">
+                    Blog
                   </Link>
                 </li>
                 <li>
-                  <a href="#service-categories" className="transition hover:text-white">
-                    Categories
-                  </a>
+                  <Link href="/caterers" className="transition hover:text-brand-yellow">
+                    Catering Services
+                  </Link>
                 </li>
-                <li>
-                  <a href="#how-it-works" className="transition hover:text-white">
-                    How it works
-                  </a>
-                </li>
-              </ul>
-            </div>
-            <div>
-              <p className="text-xs font-bold uppercase tracking-widest text-[var(--orange-mid)]/90">
-                Contact
-              </p>
-              <ul className="mt-4 flex flex-col gap-2 text-sm text-stone-300">
-                <li>
-                  <a href="mailto:info@example.com" className="transition hover:text-white">
-                    info@example.com
-                  </a>
-                </li>
-              </ul>
-            </div>
+              <li>
+                <a href="#service-categories" className="transition hover:text-brand-yellow">
+                  Pricing Plans
+                </a>
+              </li>
+              <li>
+                <Link href="/contact" className="transition hover:text-brand-yellow">
+                  Contact Us
+                </Link>
+              </li>
+            </ul>
+          </div>
+
+          <div>
+            <h4 className="mb-6 font-heading text-lg font-bold text-white">Services</h4>
+            <ul className="space-y-3 text-sm">
+              <li>
+                <Link href="/caterers" className="transition hover:text-brand-yellow">
+                  Wedding Catering
+                </Link>
+              </li>
+              <li>
+                <Link href="/caterers" className="transition hover:text-brand-yellow">
+                  Corporate Events
+                </Link>
+              </li>
+              <li>
+                <Link href="/caterers" className="transition hover:text-brand-yellow">
+                  Birthday Parties
+                </Link>
+              </li>
+              <li>
+                <Link href="/caterers" className="transition hover:text-brand-yellow">
+                  House Warming
+                </Link>
+              </li>
+              <li>
+                <Link href="/caterers" className="transition hover:text-brand-yellow">
+                  Festival Catering
+                </Link>
+              </li>
+            </ul>
+          </div>
+
+          <div id="footer-contact">
+            <h4 className="mb-6 font-heading text-lg font-bold text-white">Get In Touch</h4>
+            <ul className="space-y-4 text-sm">
+              <li className="flex items-start gap-3">
+                <MapPin className="mt-0.5 shrink-0 text-xl text-brand-red" aria-hidden />
+                <span>
+                  123 Catering Hub, Food Street,
+                  <br />
+                  Mumbai, Maharashtra 400001
+                </span>
+              </li>
+              <li className="flex items-center gap-3">
+                <Phone className="text-xl text-brand-red" aria-hidden />
+                <span>+91 0123456789</span>
+              </li>
+              <li className="flex items-center gap-3">
+                <Envelope className="text-xl text-brand-red" aria-hidden />
+                <span>hello@bharatcaterers.in</span>
+              </li>
+            </ul>
           </div>
         </div>
-        <div className="mt-12 flex flex-col items-center justify-between gap-4 border-t border-white/10 pt-8 sm:flex-row">
-          <p className="text-center text-xs text-stone-500 sm:text-left">
-            © {new Date().getFullYear()} Catering Website. All rights reserved.
-          </p>
-          <p className="text-xs text-stone-600">Built with Next.js · NestJS</p>
+
+        <div className="flex flex-col items-center justify-between gap-4 border-t border-white/10 pt-8 text-sm text-gray-500 md:flex-row">
+          <p>&copy; {new Date().getFullYear()} Bharat Caterers. All rights reserved.</p>
+          <div className="flex gap-6">
+            <a href="#" className="transition hover:text-white">
+              Privacy Policy
+            </a>
+            <a href="#" className="transition hover:text-white">
+              Terms of Service
+            </a>
+          </div>
         </div>
       </div>
     </footer>

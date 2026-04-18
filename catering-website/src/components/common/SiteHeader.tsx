@@ -1,167 +1,385 @@
 "use client";
 
-import { useAuth } from "@/context/AuthContext";
+import {
+  Buildings,
+  Cake,
+  CaretDown,
+  ChefHat,
+  BowlFood,
+  List,
+  MagnifyingGlass,
+  SignOut,
+  UserCircle,
+  X,
+} from "@phosphor-icons/react";
 import Link from "next/link";
-import { useState } from "react";
-import { FaBars, FaTimes } from "react-icons/fa";
+import { useAuth } from "@/context/AuthContext";
+import type { AuthUser } from "@/lib/auth-api";
+import { useEffect, useRef, useState } from "react";
 
-const links = [
-  { label: "Home", href: "/" },
-  { label: "Caterers", href: "/caterers" },
-  { label: "Categories", href: "/#service-categories" },
-  { label: "How it works", href: "/#how-it-works" },
-  { label: "Trust", href: "/#trust" },
-  { label: "Reviews", href: "/#testimonials" },
-];
+function initialsFromName(name: string) {
+  const parts = name.trim().split(/\s+/).filter(Boolean);
+  if (parts.length === 0) return "?";
+  if (parts.length === 1) return parts[0]!.slice(0, 2).toUpperCase();
+  return `${parts[0]![0] ?? ""}${parts[parts.length - 1]![0] ?? ""}`.toUpperCase() || "?";
+}
+
+function profileHref(user: AuthUser) {
+  if (user.role === "admin") return "/";
+  return "/workspace/business";
+}
+
+function UserAvatarButton({
+  user,
+  expanded,
+  onToggle,
+  buttonRef,
+}: {
+  user: AuthUser;
+  expanded: boolean;
+  onToggle: () => void;
+  buttonRef: React.RefObject<HTMLButtonElement | null>;
+}) {
+  const label = initialsFromName(user.fullName);
+  return (
+    <button
+      ref={buttonRef}
+      type="button"
+      onClick={onToggle}
+      aria-expanded={expanded}
+      aria-haspopup="menu"
+      aria-label="Account menu"
+      className="flex items-center gap-2 rounded-full border border-gray-200 bg-white py-1 pl-1 pr-2 shadow-sm transition hover:border-brand-red/40 hover:shadow-md focus-visible:outline focus-visible:ring-4 focus-visible:ring-brand-red/20"
+    >
+      <span
+        className="flex h-9 w-9 shrink-0 items-center justify-center rounded-full bg-gradient-to-br from-brand-red to-red-800 text-xs font-bold text-white shadow-inner ring-2 ring-white"
+        aria-hidden
+      >
+        {label.slice(0, 2)}
+      </span>
+      <span className="hidden max-w-[10rem] truncate text-left text-sm font-semibold text-brand-dark sm:inline">
+        {user.fullName}
+      </span>
+      <CaretDown
+        className={`hidden shrink-0 text-gray-500 transition-transform sm:block ${expanded ? "rotate-180" : ""}`}
+        size={16}
+        aria-hidden
+      />
+    </button>
+  );
+}
 
 export function SiteHeader() {
   const [open, setOpen] = useState(false);
+  const [userMenuOpen, setUserMenuOpen] = useState(false);
+  const userMenuRef = useRef<HTMLDivElement>(null);
+  const userMenuButtonRef = useRef<HTMLButtonElement>(null);
   const { user, ready, logout } = useAuth();
 
+  useEffect(() => {
+    if (!userMenuOpen) return;
+    function onDocMouseDown(e: MouseEvent) {
+      const el = userMenuRef.current;
+      if (el && !el.contains(e.target as Node)) {
+        setUserMenuOpen(false);
+      }
+    }
+    function onKey(e: KeyboardEvent) {
+      if (e.key === "Escape") setUserMenuOpen(false);
+    }
+    document.addEventListener("mousedown", onDocMouseDown);
+    document.addEventListener("keydown", onKey);
+    return () => {
+      document.removeEventListener("mousedown", onDocMouseDown);
+      document.removeEventListener("keydown", onKey);
+    };
+  }, [userMenuOpen]);
+
   return (
-    <header className="sticky top-0 z-50 border-b border-stone-200/80 bg-white/90 shadow-[0_1px_0_rgb(195_85_41/0.08)] backdrop-blur-xl backdrop-saturate-150">
-      <div
-        className="pointer-events-none absolute inset-x-0 top-0 h-0.5 bg-gradient-to-r from-transparent via-[var(--primary)] to-transparent opacity-90"
-        aria-hidden
-      />
-      <div className="container-max flex min-h-14 items-center justify-between gap-4 py-3">
-        <Link
-          href="/"
-          className="group flex items-center gap-2.5"
-          onClick={() => setOpen(false)}
-        >
-          <span
-            className="flex h-10 w-10 items-center justify-center rounded-xl bg-gradient-to-br from-[var(--primary)] to-[var(--orange-deep)] text-lg font-extrabold text-white shadow-md shadow-[var(--primary)]/25 transition group-hover:shadow-lg group-hover:shadow-[var(--primary)]/30"
-            aria-hidden
-          >
-            C
-          </span>
-          <span className="text-lg font-extrabold tracking-tight text-[var(--foreground)]">
-            <span className="text-[var(--primary)]">Catering</span>
-            <span className="font-semibold text-stone-600"> Website</span>
-          </span>
-        </Link>
-        <nav className="hidden items-center gap-1 md:flex">
-          {links.map((l) => (
-            <Link
-              key={l.href + l.label}
-              href={l.href}
-              className="rounded-lg px-3 py-2 text-sm font-semibold text-stone-600 transition hover:bg-[var(--primary-soft)] hover:text-[var(--primary)]"
-            >
-              {l.label}
-            </Link>
-          ))}
-        </nav>
-        <div className="hidden items-center gap-3 md:flex">
-          <Link
-            href="/caterers"
-            className="rounded-xl border border-stone-200 bg-white px-4 py-2.5 text-sm font-semibold text-stone-700 shadow-sm transition hover:border-[var(--primary)]/30 hover:text-[var(--primary)]"
-          >
-            Browse
-          </Link>
-          <Link
-            href="/caterers"
-            className="rounded-xl bg-gradient-to-r from-[var(--primary)] to-[var(--orange-deep)] px-5 py-2.5 text-sm font-bold text-white shadow-md shadow-[var(--primary)]/25 transition hover:opacity-[0.96] hover:shadow-lg hover:shadow-[var(--primary)]/30"
-          >
-            Find caterers
-          </Link>
-          {ready && user ? (
-            <>
-              <span
-                className="max-w-[10rem] truncate text-sm font-semibold text-stone-600"
-                title={user.email}
-              >
-                {user.fullName}
-              </span>
-              <button
-                type="button"
-                onClick={() => logout()}
-                className="rounded-xl border border-stone-200 bg-white px-4 py-2.5 text-sm font-semibold text-stone-700 shadow-sm transition hover:border-stone-300 hover:text-stone-900"
-              >
-                Sign out
-              </button>
-            </>
-          ) : ready ? (
-            <>
-              <Link
-                href="/login"
-                className="rounded-xl border border-stone-200 bg-white px-4 py-2.5 text-sm font-semibold text-stone-700 shadow-sm transition hover:border-[var(--primary)]/30 hover:text-[var(--primary)]"
-              >
-                Log in
-              </Link>
-              <Link
-                href="/register"
-                className="rounded-xl border border-transparent bg-[var(--primary-soft)] px-4 py-2.5 text-sm font-bold text-[var(--primary)] transition hover:bg-[color-mix(in_srgb,var(--primary)_22%,white)]"
-              >
-                List your business
-              </Link>
-            </>
-          ) : null}
+    <>
+      <div className="flex items-center justify-between bg-black px-6 py-2 text-[11px] font-medium tracking-wide text-gray-300">
+        <div>Sales &amp; Support: +91 0123456789</div>
+        <div className="hidden sm:block">
+          India&apos;s Trusted Catering Directory · 10,000+ Happy Customers
         </div>
-        <button
-          type="button"
-          className="flex h-11 w-11 items-center justify-center rounded-xl border border-stone-200 bg-white text-stone-700 shadow-sm md:hidden"
-          aria-expanded={open}
-          aria-label={open ? "Close menu" : "Open menu"}
-          onClick={() => setOpen((v) => !v)}
-        >
-          {open ? <FaTimes className="text-lg" /> : <FaBars className="text-lg" />}
-        </button>
       </div>
-      {open && (
-        <div className="border-t border-stone-100 bg-white/95 px-4 pb-5 pt-2 backdrop-blur-md md:hidden">
-          <nav className="flex flex-col gap-1">
-            {links.map((l) => (
-              <Link
-                key={l.href + l.label}
-                href={l.href}
-                className="rounded-xl px-4 py-3 text-sm font-semibold text-stone-700 transition hover:bg-[var(--primary-soft)] hover:text-[var(--primary)]"
-                onClick={() => setOpen(false)}
-              >
-                {l.label}
-              </Link>
-            ))}
+
+      <header className="sticky top-0 z-50 bg-white shadow-sm">
+        <div className="mx-auto flex max-w-7xl items-center justify-between px-6 py-4">
+          <Link href="/" className="flex items-center gap-2" onClick={() => setOpen(false)}>
+            <div className="relative flex flex-col pl-2">
+              <ChefHat
+                className="absolute -left-2 -top-4 -rotate-[10deg] text-3xl text-[#d4af37]"
+                weight="fill"
+                aria-hidden
+              />
+              <span className="font-logo translate-y-1 text-4xl leading-none tracking-tight text-brand-dark">
+                Bharat
+              </span>
+              <span className="relative z-10 -mt-1 -rotate-2 rounded-sm bg-brand-red px-2 py-0.5 text-[9px] font-bold uppercase tracking-[0.3em] text-white shadow-sm">
+                Catering
+              </span>
+            </div>
+          </Link>
+
+          <nav className="hidden items-center md:flex">
+            <div className="group relative flex cursor-pointer flex-col border-l border-gray-200 px-6">
+              <span className="mb-0.5 text-[9px] font-bold uppercase tracking-widest text-brand-red">
+                Catering Services
+              </span>
+              <div className="font-heading flex items-center gap-1 font-medium text-brand-dark transition group-hover:text-brand-red">
+                Service Categories{" "}
+                <CaretDown
+                  className="text-sm text-gray-400 transition-transform duration-300 group-hover:rotate-180 group-hover:text-brand-red"
+                  aria-hidden
+                />
+              </div>
+              <div className="invisible absolute left-0 top-full z-50 mt-4 w-64 translate-y-2 overflow-hidden rounded-lg border border-gray-100 bg-white opacity-0 shadow-2xl transition-all duration-300 group-hover:visible group-hover:translate-y-0 group-hover:opacity-100">
+                <div className="p-2">
+                  <Link
+                    href="/caterers"
+                    className="group/link flex items-center gap-3 rounded-md px-4 py-3 transition hover:bg-gray-50"
+                  >
+                    <div className="flex h-8 w-8 items-center justify-center rounded bg-red-50 text-brand-red transition group-hover/link:bg-brand-red group-hover/link:text-white">
+                      <BowlFood weight="fill" className="text-lg" />
+                    </div>
+                    <span className="font-heading font-semibold text-brand-dark group-hover/link:text-brand-red">
+                      Wedding Catering
+                    </span>
+                  </Link>
+                  <Link
+                    href="/caterers"
+                    className="group/link flex items-center gap-3 rounded-md px-4 py-3 transition hover:bg-gray-50"
+                  >
+                    <div className="flex h-8 w-8 items-center justify-center rounded bg-green-50 text-brand-green transition group-hover/link:bg-brand-green group-hover/link:text-white">
+                      <Cake weight="fill" className="text-lg" />
+                    </div>
+                    <span className="font-heading font-semibold text-brand-dark group-hover/link:text-brand-green">
+                      Birthday Parties
+                    </span>
+                  </Link>
+                  <Link
+                    href="/caterers"
+                    className="group/link flex items-center gap-3 rounded-md px-4 py-3 transition hover:bg-gray-50"
+                  >
+                    <div className="flex h-8 w-8 items-center justify-center rounded bg-yellow-50 text-brand-yellow transition group-hover/link:bg-brand-yellow group-hover/link:text-white">
+                      <Buildings weight="fill" className="text-lg" />
+                    </div>
+                    <span className="font-heading font-semibold text-brand-dark group-hover/link:text-brand-yellow">
+                      Corporate Events
+                    </span>
+                  </Link>
+                </div>
+                <div className="border-t border-gray-100 bg-gray-50 p-4 text-center">
+                  <Link href="/caterers" className="text-sm font-bold text-brand-red hover:text-red-700">
+                    View All Services →
+                  </Link>
+                </div>
+              </div>
+            </div>
+
+            <Link
+              href="/#service-categories"
+              className="group flex cursor-pointer flex-col border-l border-gray-200 px-6"
+            >
+              <span className="mb-0.5 text-[9px] font-bold uppercase tracking-widest text-brand-red">
+                Pricing Plans
+              </span>
+              <span className="font-heading font-medium text-brand-dark transition group-hover:text-brand-red">
+                Packages
+              </span>
+            </Link>
+
+            <Link
+              href="/blog"
+              className="group flex cursor-pointer flex-col border-l border-gray-200 px-6"
+            >
+              <span className="mb-0.5 text-[9px] font-bold uppercase tracking-widest text-brand-red">
+                Read
+              </span>
+              <span className="font-heading font-medium text-brand-dark transition group-hover:text-brand-red">
+                Insights
+              </span>
+            </Link>
+
+            <Link
+              href="/contact"
+              className="group flex cursor-pointer flex-col border-l border-gray-200 pl-6 pr-12"
+            >
+              <span className="mb-0.5 text-[9px] font-bold uppercase tracking-widest text-brand-red">
+                Get In Touch
+              </span>
+              <span className="font-heading font-medium text-brand-dark transition group-hover:text-brand-red">
+                Contact Us
+              </span>
+            </Link>
+          </nav>
+
+          <div className="flex items-center gap-2 sm:gap-4">
+            <Link
+              href="/caterers"
+              className="hidden h-10 w-10 items-center justify-center rounded-full border border-gray-200 text-brand-dark shadow-sm transition-all duration-300 hover:scale-110 hover:border-brand-red hover:bg-brand-red hover:text-white md:flex"
+              aria-label="Search caterers"
+            >
+              <MagnifyingGlass className="text-lg" aria-hidden />
+            </Link>
             {ready && user ? (
-              <div className="mt-2 flex flex-col gap-2">
-                <button
-                  type="button"
-                  className="w-full rounded-xl border border-stone-200 bg-white py-3.5 text-center text-sm font-semibold text-stone-800 shadow-sm"
-                  onClick={() => {
-                    logout();
-                    setOpen(false);
-                  }}
-                >
-                  Sign out ({user.fullName})
-                </button>
+              <div ref={userMenuRef} className="relative hidden md:block">
+                <UserAvatarButton
+                  user={user}
+                  expanded={userMenuOpen}
+                  onToggle={() => setUserMenuOpen((v) => !v)}
+                  buttonRef={userMenuButtonRef}
+                />
+                {userMenuOpen ? (
+                  <div
+                    role="menu"
+                    className="absolute right-0 z-[60] mt-2 min-w-[220px] overflow-hidden rounded-xl border border-gray-100 bg-white py-1 shadow-xl ring-1 ring-black/5"
+                  >
+                    <div className="border-b border-gray-100 px-4 py-3">
+                      <p className="truncate text-sm font-bold text-brand-dark">{user.fullName}</p>
+                      <p className="truncate text-xs text-gray-500">{user.email}</p>
+                    </div>
+                    <Link
+                      href={profileHref(user)}
+                      role="menuitem"
+                      className="flex items-center gap-3 px-4 py-3 text-sm font-semibold text-brand-dark transition hover:bg-gray-50"
+                      onClick={() => setUserMenuOpen(false)}
+                    >
+                      <UserCircle className="text-brand-red" size={22} weight="duotone" aria-hidden />
+                      Profile
+                    </Link>
+                    <button
+                      type="button"
+                      role="menuitem"
+                      className="flex w-full items-center gap-3 px-4 py-3 text-left text-sm font-semibold text-brand-dark transition hover:bg-gray-50"
+                      onClick={() => {
+                        setUserMenuOpen(false);
+                        logout();
+                      }}
+                    >
+                      <SignOut className="text-gray-500" size={22} aria-hidden />
+                      Log out
+                    </button>
+                  </div>
+                ) : null}
               </div>
             ) : ready ? (
-              <div className="mt-2 flex flex-col gap-2">
+              <>
                 <Link
                   href="/login"
-                  className="rounded-xl border border-stone-200 bg-white py-3.5 text-center text-sm font-semibold text-stone-800 shadow-sm"
-                  onClick={() => setOpen(false)}
+                  className="hidden text-sm font-semibold hover:text-brand-red md:inline-block"
                 >
                   Log in
                 </Link>
                 <Link
                   href="/register"
-                  className="rounded-xl bg-gradient-to-r from-[var(--primary)] to-[var(--orange-deep)] py-3.5 text-center text-sm font-bold text-white shadow-md"
-                  onClick={() => setOpen(false)}
+                  className="rounded-md bg-brand-red px-4 py-2.5 text-sm font-semibold text-white shadow-lg shadow-red-500/30 transition-all duration-300 hover:-translate-y-1 hover:bg-red-700 hover:shadow-xl sm:px-5"
                 >
-                  List your business
+                  Create an account
                 </Link>
-              </div>
+              </>
             ) : null}
-            <Link
-              href="/caterers"
-              className="mt-2 rounded-xl bg-gradient-to-r from-[var(--primary)] to-[var(--orange-deep)] py-3.5 text-center text-sm font-bold text-white shadow-md"
-              onClick={() => setOpen(false)}
+
+            <button
+              type="button"
+              className="flex h-10 w-10 items-center justify-center rounded-md border border-gray-200 text-brand-dark md:hidden"
+              aria-expanded={open}
+              aria-label={open ? "Close menu" : "Open menu"}
+              onClick={() => setOpen((v) => !v)}
             >
-              Find caterers
-            </Link>
-          </nav>
+              {open ? <X className="text-xl" /> : <List className="text-xl" />}
+            </button>
+          </div>
         </div>
-      )}
-    </header>
+
+        {open && (
+          <div className="border-t border-gray-100 bg-white px-4 pb-5 pt-2 md:hidden">
+            <nav className="flex flex-col gap-1">
+              <Link
+                href="/caterers"
+                className="rounded-lg px-4 py-3 text-sm font-semibold text-brand-dark hover:bg-gray-50"
+                onClick={() => setOpen(false)}
+              >
+                Browse caterers
+              </Link>
+              <Link
+                href="/#service-categories"
+                className="rounded-lg px-4 py-3 text-sm font-semibold text-brand-dark hover:bg-gray-50"
+                onClick={() => setOpen(false)}
+              >
+                Service categories
+              </Link>
+              <Link
+                href="/blog"
+                className="rounded-lg px-4 py-3 text-sm font-semibold text-brand-dark hover:bg-gray-50"
+                onClick={() => setOpen(false)}
+              >
+                Insights
+              </Link>
+              <Link
+                href="/contact"
+                className="rounded-lg px-4 py-3 text-sm font-semibold text-brand-dark hover:bg-gray-50"
+                onClick={() => setOpen(false)}
+              >
+                Contact
+              </Link>
+              {ready && user ? (
+                <div className="mt-3 border-t border-gray-100 pt-3">
+                  <div className="flex items-center gap-3 rounded-lg px-4 py-2">
+                    <span
+                      className="flex h-11 w-11 shrink-0 items-center justify-center rounded-full bg-gradient-to-br from-brand-red to-red-800 text-sm font-bold text-white"
+                      aria-hidden
+                    >
+                      {initialsFromName(user.fullName).slice(0, 2)}
+                    </span>
+                    <div className="min-w-0 flex-1">
+                      <p className="truncate text-sm font-bold text-brand-dark">{user.fullName}</p>
+                      <p className="truncate text-xs text-gray-500">{user.email}</p>
+                    </div>
+                  </div>
+                  <Link
+                    href={profileHref(user)}
+                    className="mt-2 flex items-center gap-3 rounded-lg px-4 py-3 text-sm font-semibold text-brand-dark hover:bg-gray-50"
+                    onClick={() => setOpen(false)}
+                  >
+                    <UserCircle className="text-brand-red" size={22} weight="duotone" aria-hidden />
+                    Profile
+                  </Link>
+                  <button
+                    type="button"
+                    className="mt-1 flex w-full items-center gap-3 rounded-lg px-4 py-3 text-left text-sm font-semibold text-brand-dark hover:bg-gray-50"
+                    onClick={() => {
+                      logout();
+                      setOpen(false);
+                    }}
+                  >
+                    <SignOut className="text-gray-500" size={22} aria-hidden />
+                    Log out
+                  </button>
+                </div>
+              ) : ready ? (
+                <>
+                  <Link
+                    href="/login"
+                    className="rounded-lg px-4 py-3 text-sm font-semibold text-brand-dark hover:bg-gray-50"
+                    onClick={() => setOpen(false)}
+                  >
+                    Log in
+                  </Link>
+                  <Link
+                    href="/register"
+                    className="rounded-lg bg-brand-red px-4 py-3 text-center text-sm font-bold text-white"
+                    onClick={() => setOpen(false)}
+                  >
+                    Create an account
+                  </Link>
+                </>
+              ) : null}
+            </nav>
+          </div>
+        )}
+      </header>
+    </>
   );
 }

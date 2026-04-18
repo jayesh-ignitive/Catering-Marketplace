@@ -252,13 +252,96 @@ export async function postCatererReview(
 }
 
 export async function searchCaterers(
-  cityId: string,
-  categoryId: string
+  cityId?: string,
+  categoryId?: string
 ): Promise<SearchResponse> {
-  const q = new URLSearchParams({ cityId, categoryId });
+  const sp = new URLSearchParams();
+  if (cityId?.trim()) sp.set("cityId", cityId.trim());
+  if (categoryId?.trim()) sp.set("categoryId", categoryId.trim());
+  const q = sp.toString();
   const res = await fetch(
-    `${getCateringApiBase()}/api/catalog/search?${q.toString()}`,
+    `${getCateringApiBase()}/api/catalog/search${q ? `?${q}` : ""}`,
     fetchOpts
   );
   return parseJson<SearchResponse>(res);
+}
+
+export type BlogPostSummary = {
+  id: string;
+  slug: string;
+  title: string;
+  excerpt: string;
+  categoryLabel: string;
+  featuredImageUrl: string | null;
+  publishedAt: string;
+};
+
+export type BlogPostDetail = BlogPostSummary & {
+  bodyHtml: string;
+};
+
+export type BlogListResponse = {
+  items: BlogPostSummary[];
+  total: number;
+  page: number;
+  limit: number;
+};
+
+export async function fetchBlogPosts(params?: {
+  page?: number;
+  limit?: number;
+}): Promise<BlogListResponse> {
+  const sp = new URLSearchParams();
+  if (params?.page != null) sp.set("page", String(params.page));
+  if (params?.limit != null) sp.set("limit", String(params.limit));
+  const q = sp.toString();
+  const res = await fetch(
+    `${getCateringApiBase()}/api/catalog/blog${q ? `?${q}` : ""}`,
+    fetchOpts
+  );
+  return parseJson<BlogListResponse>(res);
+}
+
+export async function fetchBlogPost(slug: string): Promise<BlogPostDetail> {
+  const res = await fetch(
+    `${getCateringApiBase()}/api/catalog/blog/${encodeURIComponent(slug)}`,
+    fetchOpts
+  );
+  if (res.status === 404) {
+    throw new Error("not_found");
+  }
+  if (!res.ok) {
+    throw new Error(`API error ${res.status}`);
+  }
+  return parseJson<BlogPostDetail>(res);
+}
+
+function formatContactApiError(data: unknown, status: number): string {
+  if (data && typeof data === "object") {
+    const o = data as Record<string, unknown>;
+    const msg = o.message;
+    if (Array.isArray(msg) && msg.length > 0) return String(msg[0]);
+    if (typeof msg === "string") return msg;
+  }
+  return `Could not send message (${status})`;
+}
+
+export async function postContact(body: {
+  name: string;
+  email: string;
+  phone?: string;
+  subject: string;
+  message: string;
+}): Promise<{ id: string }> {
+  const res = await fetch(`${getCateringApiBase()}/api/contact`, {
+    method: "POST",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify(body),
+    ...fetchOpts,
+  });
+  const data: unknown = await res.json().catch(() => ({}));
+  if (!res.ok) {
+    throw new Error(formatContactApiError(data, res.status));
+  }
+  return data as { id: string };
 }

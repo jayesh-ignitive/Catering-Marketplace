@@ -10,15 +10,13 @@ import { toast } from "react-toastify";
 function VerifyEmailInner() {
   const params = useSearchParams();
   const token = params.get("token");
-  const [status, setStatus] = useState<"loading" | "err">("loading");
-  const [message, setMessage] = useState("");
+  const [status, setStatus] = useState<"loading" | "err">(() => (token ? "loading" : "err"));
+  const [message, setMessage] = useState(() =>
+    token ? "" : "Missing verification token. Open the link from your email."
+  );
 
   useEffect(() => {
-    if (!token) {
-      setStatus("err");
-      setMessage("Missing verification token. Open the link from your email.");
-      return;
-    }
+    if (!token) return;
     let cancelled = false;
     (async () => {
       try {

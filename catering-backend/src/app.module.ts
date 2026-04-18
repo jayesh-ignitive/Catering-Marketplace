@@ -5,6 +5,7 @@ import { AppController } from './app.controller';
 import { AdminModule } from './admin/admin.module';
 import { AuthModule } from './auth/auth.module';
 import { CatalogModule } from './catalog/catalog.module';
+import { ContactModule } from './contact/contact.module';
 import { MarketplaceModule } from './marketplace/marketplace.module';
 
 @Module({
@@ -26,6 +27,7 @@ import { MarketplaceModule } from './marketplace/marketplace.module';
       inject: [ConfigService],
     }),
     CatalogModule,
+    ContactModule,
     MarketplaceModule,
     AuthModule,
     AdminModule,

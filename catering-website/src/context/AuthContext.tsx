@@ -33,6 +33,7 @@ const AuthContext = createContext<AuthContextValue | null>(null);
 
 export function AuthProvider({ children }: { children: ReactNode }) {
   const [user, setUser] = useState<AuthUser | null>(null);
+  /** Intentionally null on first paint (SSR + client) — read storage only in useEffect to avoid hydration mismatch. */
   const [token, setToken] = useState<string | null>(null);
   const [ready, setReady] = useState(false);
 
@@ -46,10 +47,14 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     let cancelled = false;
     const t = getStoredToken();
     if (!t) {
-      setReady(true);
+      queueMicrotask(() => {
+        if (!cancelled) setReady(true);
+      });
       return;
     }
-    setToken(t);
+    queueMicrotask(() => {
+      if (!cancelled) setToken(t);
+    });
     fetchCurrentUser(t)
       .then((u) => {
         if (!cancelled) setUser(u);

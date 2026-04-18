@@ -1,109 +1,100 @@
 "use client";
 
-import { useMutation, useQuery } from "@tanstack/react-query";
-import { useMemo, useState } from "react";
-import { toast } from "react-toastify";
-import Link from "next/link";
 import {
+  ArrowRight,
+  BowlFood,
+  Buildings,
+  Cake,
+  Coffee,
+  Confetti,
+  Hamburger,
+  Handshake,
+  MagnifyingGlass,
+  Martini,
+  Plant,
+  Quotes,
+  Scroll,
+} from "@phosphor-icons/react";
+import { HeroAutocomplete } from "@/components/home/HeroAutocomplete";
+import { useQuery } from "@tanstack/react-query";
+import Image from "next/image";
+import Link from "next/link";
+import { useRouter } from "next/navigation";
+import { useMemo, useState } from "react";
+import {
+  fetchBlogPosts,
   fetchCities,
   fetchServiceCategories,
   fetchTrustStats,
-  searchCaterers,
-  type CatererListing,
-  type SearchResponse,
-  type ServiceCategory,
 } from "@/lib/catering-api";
-import { FaArrowRight, FaMapMarkerAlt, FaSearch, FaStar, FaUtensils } from "react-icons/fa";
+import { caterersListingPath } from "@/lib/caterers-url";
 
 const nf = new Intl.NumberFormat("en-IN");
 
-const steps = [
-  { title: "Choose a service", body: "Pick the type of catering you need for your occasion." },
-  { title: "Select your city", body: "We surface verified caterers who operate in your area." },
-  { title: "Compare & read reviews", body: "Use ratings and specialties to shortlist with confidence." },
-  { title: "Request quotes", body: "Reach out to multiple providers and pick what fits your budget." },
-];
+const IMG = {
+  hero: "https://images.unsplash.com/photo-1555939594-58d7cb561ad1?auto=format&fit=crop&w=1920&q=80",
+  stats: "https://images.unsplash.com/photo-1556910103-1c02745aae4d?auto=format&fit=crop&w=1920&q=80",
+  testimonial:
+    "https://images.unsplash.com/photo-1565299624946-b28f40a0ae38?auto=format&fit=crop&w=1200&q=80",
+  blog: "https://images.unsplash.com/photo-1546069901-ba9599a7e63c?auto=format&fit=crop&w=400&q=80",
+};
 
-const testimonials = [
+/** Visual rotation for catalog-driven category cards */
+const CATEGORY_CARD_STYLES = [
   {
-    quote:
-      "We compared per-plate pricing from several caterers in a day. The directory made it effortless.",
-    name: "Narender Singh",
-    place: "Agra",
+    border: "border-brand-red",
+    hoverTitle: "group-hover:text-brand-red",
+    iconWrap:
+      "bg-red-50 text-brand-red group-hover:bg-brand-red group-hover:text-white",
+    Icon: BowlFood,
   },
   {
-    quote:
-      "Five quality caterers replied quickly for our corporate lunch. Selection was much easier than cold-calling.",
-    name: "Dhaval Vyas",
-    place: "Ahmedabad",
+    border: "border-brand-green",
+    hoverTitle: "group-hover:text-brand-green",
+    iconWrap:
+      "bg-green-50 text-brand-green group-hover:bg-brand-green group-hover:text-white",
+    Icon: Cake,
   },
   {
-    quote:
-      "Found specialists for a large wedding buffet without endless WhatsApp groups. Highly recommend.",
-    name: "Sandip Rana",
-    place: "Ahmedabad",
+    border: "border-brand-yellow",
+    hoverTitle: "group-hover:text-brand-yellow",
+    iconWrap:
+      "bg-yellow-50 text-brand-yellow group-hover:bg-brand-yellow group-hover:text-white",
+    Icon: Buildings,
   },
-];
-
-function CategoryCard({ c }: { c: ServiceCategory }) {
-  return (
-    <article
-      id={c.slug}
-      className="group relative overflow-hidden rounded-2xl border border-stone-200/90 bg-white p-6 card-shadow transition duration-300 hover:-translate-y-0.5 hover:border-[var(--primary)]/35 card-shadow-hover"
-    >
-      <div
-        className="pointer-events-none absolute -right-8 -top-8 h-24 w-24 rounded-full bg-gradient-to-br from-[var(--primary-soft)] to-transparent opacity-0 transition-opacity duration-300 group-hover:opacity-100"
-        aria-hidden
-      />
-      <div className="relative">
-        <div className="mb-4 flex h-12 w-12 items-center justify-center rounded-xl bg-gradient-to-br from-[var(--secondary-light)] to-[var(--secondary-muted)] text-[var(--primary)] shadow-inner transition duration-300 group-hover:bg-gradient-to-br group-hover:from-[var(--primary)] group-hover:to-[var(--orange-deep)] group-hover:text-white group-hover:shadow-md">
-          <FaUtensils className="text-lg" aria-hidden />
-        </div>
-        <h3 className="text-lg font-bold text-[var(--foreground)]">{c.name}</h3>
-        <p className="mt-2 text-sm leading-relaxed text-[var(--foreground-muted)]">{c.shortDescription}</p>
-      </div>
-    </article>
-  );
-}
-
-function CatererCard({ row }: { row: CatererListing }) {
-  return (
-    <article className="flex flex-col gap-4 rounded-2xl border border-stone-200/90 bg-white p-6 card-shadow transition duration-300 hover:border-[var(--primary)]/25 card-shadow-hover">
-      <div className="flex items-start justify-between gap-3">
-        <h3 className="text-lg font-bold text-[var(--foreground)] leading-snug">{row.name}</h3>
-        <span className="flex shrink-0 items-center gap-1 rounded-full bg-gradient-to-r from-amber-50 to-orange-50 px-3 py-1 text-sm font-bold text-amber-900 ring-1 ring-amber-200/80">
-          <FaStar className="text-[var(--primary)]" size={12} aria-hidden />
-          {row.rating.toFixed(1)}
-        </span>
-      </div>
-      <p className="text-sm text-[var(--foreground-muted)]">
-        {nf.format(row.reviewCount)} reviews · {row.priceHint}
-      </p>
-      <div className="flex flex-wrap gap-2">
-        {row.specialties.map((s) => (
-          <span
-            key={s}
-            className="rounded-lg bg-[var(--light-gray)] px-2.5 py-1 text-xs font-semibold text-stone-700 ring-1 ring-stone-200/60"
-          >
-            {s}
-          </span>
-        ))}
-      </div>
-      <button
-        type="button"
-        className="mt-auto inline-flex w-full items-center justify-center gap-2 rounded-xl bg-gradient-to-r from-[var(--primary)] to-[var(--orange-deep)] py-3 text-sm font-bold text-white shadow-md shadow-[var(--primary)]/20 transition hover:opacity-[0.97] hover:shadow-lg hover:shadow-[var(--primary)]/25"
-      >
-        Request quote
-        <FaArrowRight className="text-xs opacity-90" aria-hidden />
-      </button>
-    </article>
-  );
-}
+  {
+    border: "border-blue-500",
+    hoverTitle: "group-hover:text-blue-500",
+    iconWrap: "bg-blue-50 text-blue-500 group-hover:bg-blue-500 group-hover:text-white",
+    Icon: Martini,
+  },
+  {
+    border: "border-purple-500",
+    hoverTitle: "group-hover:text-purple-500",
+    iconWrap:
+      "bg-purple-50 text-purple-500 group-hover:bg-purple-500 group-hover:text-white",
+    Icon: Plant,
+  },
+  {
+    border: "border-orange-500",
+    hoverTitle: "group-hover:text-orange-500",
+    iconWrap:
+      "bg-orange-50 text-orange-500 group-hover:bg-orange-500 group-hover:text-white",
+    Icon: Hamburger,
+  },
+  {
+    border: "border-teal-500",
+    hoverTitle: "group-hover:text-teal-500",
+    iconWrap:
+      "bg-teal-50 text-teal-500 group-hover:bg-teal-500 group-hover:text-white",
+    Icon: Coffee,
+  },
+] as const;
 
 export default function Home() {
+  const router = useRouter();
   const [cityId, setCityId] = useState("");
   const [categoryId, setCategoryId] = useState("");
-  const [searchResult, setSearchResult] = useState<SearchResponse | null>(null);
 
   const citiesQ = useQuery({ queryKey: ["catalog", "cities"], queryFn: fetchCities });
   const categoriesQ = useQuery({
@@ -111,22 +102,9 @@ export default function Home() {
     queryFn: fetchServiceCategories,
   });
   const statsQ = useQuery({ queryKey: ["catalog", "stats"], queryFn: fetchTrustStats });
-
-  const searchM = useMutation({
-    mutationFn: () => searchCaterers(cityId, categoryId),
-    onSuccess: (data) => {
-      setSearchResult(data);
-      if (data.caterers.length === 0) {
-        toast.info("No listings for that combination yet — try Mumbai + Wedding or Delhi + Corporate.");
-      } else {
-        toast.success(`Found ${data.caterers.length} caterer(s).`);
-      }
-    },
-    onError: () => {
-      toast.error(
-        "Could not reach the API. Start the Nest server: cd catering-backend && npm run start:dev (port 4000).",
-      );
-    },
+  const blogQ = useQuery({
+    queryKey: ["catalog", "blog", "home-preview"],
+    queryFn: () => fetchBlogPosts({ page: 1, limit: 2 }),
   });
 
   const cities = citiesQ.data ?? [];
@@ -139,330 +117,402 @@ export default function Home() {
   );
 
   const onSearch = () => {
-    if (!cityId || !categoryId) {
-      toast.warning("Please select both city and service category.");
-      return;
-    }
-    searchM.mutate();
+    const cityName = cityId ? cities.find((c) => c.id === cityId)?.name : undefined;
+    const cat = categoryId ? categories.find((c) => c.id === categoryId) : undefined;
+    router.push(
+      caterersListingPath({
+        cityName: cityName ?? null,
+        categorySlug: cat?.slug ?? null,
+      })
+    );
   };
 
   return (
-    <div className="min-h-screen bg-[var(--background)]">
-      <section className="relative overflow-hidden border-b border-stone-200/80 mesh-hero">
-        <div
-          className="pointer-events-none absolute inset-0 opacity-[0.35]"
-          style={{
-            backgroundImage: `url("data:image/svg+xml,%3Csvg viewBox='0 0 256 256' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.85' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)' opacity='0.06'/%3E%3C/svg%3E")`,
-          }}
-          aria-hidden
-        />
-        <div className="container-max relative py-16 sm:py-24 lg:py-28">
-          <div className="mx-auto max-w-3xl text-center">
-            <p className="inline-flex items-center gap-2 rounded-full border border-[var(--primary)]/20 bg-white/80 px-4 py-1.5 text-xs font-bold uppercase tracking-[0.18em] text-[var(--primary)] shadow-sm backdrop-blur-sm">
-              <span className="h-1.5 w-1.5 rounded-full bg-[var(--primary)] shadow-[0_0_8px_var(--primary)]" />
-              Catering marketplace
-            </p>
-            <h1 className="mt-6 text-4xl font-extrabold tracking-tight text-[var(--foreground)] sm:text-5xl lg:text-[3.35rem] lg:leading-[1.1]">
-              Find trusted{" "}
-              <span className="text-gradient-brand">catering partners</span>
-              <br className="hidden sm:block" />
-              <span className="sm:ml-1.5">near you</span>
-            </h1>
-            <p className="mx-auto mt-6 max-w-2xl text-lg leading-relaxed text-[var(--foreground-muted)]">
-              Browse categories, compare caterers, and request quotes — a clean, fast directory experience
-              powered by your catalog API.
-            </p>
-          </div>
-
-          <div className="relative mx-auto mt-14 max-w-4xl">
-            <div
-              className="pointer-events-none absolute -inset-px rounded-[1.65rem] bg-gradient-to-br from-[var(--primary)]/25 via-transparent to-[var(--secondary)]/20 opacity-80 blur-sm"
-              aria-hidden
+    <div className="min-h-screen bg-white text-gray-800">
+      <main id="main-content">
+        {/* Hero */}
+        <section className="relative flex h-[min(600px,90vh)] items-center justify-center">
+          <div className="absolute inset-0 z-0">
+            <Image
+              src={IMG.hero}
+              alt=""
+              fill
+              className="object-cover"
+              sizes="100vw"
+              priority
             />
-            <div className="relative rounded-3xl border border-stone-200/90 bg-white/95 p-6 card-shadow backdrop-blur-md sm:p-8">
-              <div className="grid gap-5 sm:grid-cols-2">
-                <label className="flex flex-col gap-2 text-left text-sm font-bold text-[var(--foreground)]">
-                  <span className="inline-flex items-center gap-2 font-semibold text-[var(--foreground-muted)]">
-                    <span className="flex h-8 w-8 items-center justify-center rounded-lg bg-[var(--primary-soft)] text-[var(--primary)]">
-                      <FaMapMarkerAlt className="text-sm" aria-hidden />
-                    </span>
-                    City
-                  </span>
-                  <select
-                    className="rounded-xl border border-stone-200 bg-stone-50/80 px-4 py-3.5 text-base font-medium text-[var(--foreground)] outline-none transition focus:border-[var(--primary)]/40 focus:bg-white focus:ring-4 focus:ring-[var(--primary)]/15"
-                    value={cityId}
-                    disabled={!heroReady}
-                    onChange={(e) => setCityId(e.target.value)}
-                  >
-                    <option value="">Select city</option>
-                    {cities.map((c) => (
-                      <option key={c.id} value={c.id}>
-                        {c.name}
-                      </option>
-                    ))}
-                  </select>
-                </label>
-                <label className="flex flex-col gap-2 text-left text-sm font-bold text-[var(--foreground)]">
-                  <span className="inline-flex items-center gap-2 font-semibold text-[var(--foreground-muted)]">
-                    <span className="flex h-8 w-8 items-center justify-center rounded-lg bg-[var(--primary-soft)] text-[var(--primary)]">
-                      <FaUtensils className="text-sm" aria-hidden />
-                    </span>
-                    Service category
-                  </span>
-                  <select
-                    className="rounded-xl border border-stone-200 bg-stone-50/80 px-4 py-3.5 text-base font-medium text-[var(--foreground)] outline-none transition focus:border-[var(--primary)]/40 focus:bg-white focus:ring-4 focus:ring-[var(--primary)]/15"
-                    value={categoryId}
-                    disabled={!heroReady}
-                    onChange={(e) => setCategoryId(e.target.value)}
-                  >
-                    <option value="">Select category</option>
-                    {categories.map((c) => (
-                      <option key={c.id} value={c.id}>
-                        {c.name}
-                      </option>
-                    ))}
-                  </select>
-                </label>
-              </div>
-              <div className="mt-7 flex flex-col items-stretch gap-4 border-t border-stone-100 pt-7 sm:flex-row sm:items-center sm:justify-between">
-                <p className="text-sm text-[var(--foreground-muted)]">
-                  {citiesQ.isError || categoriesQ.isError ? (
-                    "Ensure the Nest API is running on port 4000."
-                  ) : (
-                    <>
-                      Live caterer profiles:{" "}
-                      <Link
-                        href="/caterers"
-                        className="font-bold text-[var(--primary)] underline-offset-2 hover:underline"
-                      >
-                        browse the full directory
-                      </Link>
-                      . Quick search below uses sample catalog data.
-                    </>
-                  )}
-                </p>
-                <button
-                  type="button"
-                  onClick={onSearch}
-                  disabled={searchM.isPending || !heroReady}
-                  className="inline-flex shrink-0 items-center justify-center gap-2 rounded-xl bg-gradient-to-r from-[var(--primary)] to-[var(--orange-deep)] px-8 py-3.5 text-base font-bold text-white shadow-lg shadow-[var(--primary)]/25 transition hover:opacity-[0.97] hover:shadow-xl hover:shadow-[var(--primary)]/30 disabled:cursor-not-allowed disabled:opacity-55"
-                >
-                  {searchM.isPending ? (
-                    "Searching…"
-                  ) : (
-                    <>
-                      <FaSearch aria-hidden />
-                      Search caterers
-                    </>
-                  )}
-                </button>
-              </div>
-            </div>
+            <div className="absolute inset-0 bg-gradient-to-r from-black/80 to-black/40" aria-hidden />
           </div>
-        </div>
-      </section>
 
-      {searchResult && searchResult.caterers.length > 0 && (
-        <section
-          className="border-b border-stone-200/80 bg-gradient-to-b from-white to-[var(--background)] py-16"
-          id="search-results"
-        >
-          <div className="container-max">
-            <div className="mb-10 flex flex-col gap-3 sm:flex-row sm:items-end sm:justify-between">
-              <div>
-                <p className="text-xs font-bold uppercase tracking-widest text-[var(--primary)]">Results</p>
-                <h2 className="mt-1 text-3xl font-extrabold tracking-tight text-[var(--foreground)]">
-                  Top matches
-                </h2>
-                <p className="mt-2 text-[var(--foreground-muted)]">
-                  {searchResult.city?.name} · {searchResult.category?.name}
-                </p>
+          <div className="relative z-10 mx-auto w-full max-w-4xl px-6 text-center">
+            <h1 className="font-heading mb-6 text-4xl font-bold leading-tight text-white md:text-6xl">
+              Find Best Catering Service <br /> Providers <span className="text-brand-yellow">Near You</span>
+            </h1>
+            <p className="mx-auto mb-10 max-w-2xl text-lg text-gray-200">
+              {stats?.customersHelped != null ? (
+                <>
+                  Join{" "}
+                  <span className="font-semibold text-white">
+                    {nf.format(stats.customersHelped)}+
+                  </span>{" "}
+                  hosts who used Bharat Catering to compare menus, cities, and caterer profiles—then book with
+                  confidence.
+                </>
+              ) : (
+                <>
+                  Bharat Catering connects hosts with verified-style caterer listings, published menus, and quotes
+                  across India.
+                </>
+              )}
+            </p>
+
+            <div className="relative z-20 mx-auto mt-8 flex w-full max-w-3xl flex-col gap-4 md:flex-row md:items-stretch">
+              <HeroAutocomplete
+                label="City (optional)"
+                placeholder="City — optional"
+                options={cities.map((c) => ({ id: c.id, name: c.name }))}
+                value={cityId}
+                onChange={setCityId}
+                disabled={!heroReady}
+              />
+              <HeroAutocomplete
+                label="Service category (optional)"
+                placeholder="Category — optional"
+                options={categories.map((c) => ({ id: c.id, name: c.name }))}
+                value={categoryId}
+                onChange={setCategoryId}
+                disabled={!heroReady}
+              />
+              <button
+                type="button"
+                onClick={onSearch}
+                disabled={!heroReady}
+                className="flex shrink-0 items-center justify-center gap-2 rounded bg-brand-red px-8 py-3 font-bold text-white transition-all duration-300 hover:-translate-y-1 hover:bg-red-700 hover:shadow-xl hover:shadow-brand-red/30 disabled:cursor-not-allowed disabled:opacity-60"
+              >
+                <MagnifyingGlass className="text-xl" aria-hidden />
+                SEARCH
+              </button>
+            </div>
+            {(citiesQ.isError || categoriesQ.isError) && (
+              <p className="mt-4 text-sm text-amber-200">
+                Catalog API unavailable — ensure Nest is running on port 4000.
+              </p>
+            )}
+          </div>
+        </section>
+
+        {/* Services */}
+        <section className="overflow-hidden bg-gray-50 py-20" id="service-categories">
+          <div className="mx-auto max-w-7xl px-6">
+            <div className="-ml-[5%] mb-20 w-[110%] rotate-[-1deg] overflow-hidden bg-brand-dark py-4 shadow-xl">
+              <div className="inline-flex animate-marquee whitespace-nowrap">
+                <span className="font-heading text-4xl font-bold uppercase tracking-widest text-outline">
+                  POPULAR DISHES &nbsp;&nbsp;•&nbsp;&nbsp; TOP CATERERS &nbsp;&nbsp;•&nbsp;&nbsp; PREMIUM
+                  SERVICE &nbsp;&nbsp;•&nbsp;&nbsp; BEST DEALS &nbsp;&nbsp;•&nbsp;&nbsp;
+                </span>
+                <span className="font-heading text-4xl font-bold uppercase tracking-widest text-outline" aria-hidden>
+                  POPULAR DISHES &nbsp;&nbsp;•&nbsp;&nbsp; TOP CATERERS &nbsp;&nbsp;•&nbsp;&nbsp; PREMIUM
+                  SERVICE &nbsp;&nbsp;•&nbsp;&nbsp; BEST DEALS &nbsp;&nbsp;•&nbsp;&nbsp;
+                </span>
               </div>
             </div>
-            <div className="grid gap-6 md:grid-cols-2 lg:grid-cols-3">
-              {searchResult.caterers.map((row) => (
-                <CatererCard key={row.id} row={row} />
+
+            <div className="mb-12 flex flex-col items-end justify-between md:flex-row">
+              <div>
+                <div className="mb-4 inline-block rounded bg-brand-green px-3 py-1 text-xs font-bold uppercase tracking-wider text-white">
+                  Browse All
+                </div>
+                <h2 className="font-heading text-4xl font-bold text-brand-dark">Catering Service Categories</h2>
+              </div>
+            </div>
+
+            <div className="grid grid-cols-1 gap-6 md:grid-cols-2 lg:grid-cols-4">
+              {categoriesQ.isPending &&
+                Array.from({ length: 8 }).map((_, i) => (
+                  <div
+                    key={i}
+                    className="h-[220px] animate-pulse rounded-xl bg-gradient-to-br from-gray-100 to-gray-200/80"
+                    aria-hidden
+                  />
+                ))}
+              {!categoriesQ.isPending &&
+                categories.slice(0, 7).map((cat, i) => {
+                  const style = CATEGORY_CARD_STYLES[i % CATEGORY_CARD_STYLES.length]!;
+                  const Icon = style.Icon;
+                  return (
+                    <Link
+                      key={cat.id}
+                      href="/caterers"
+                      className={`group flex flex-col items-center rounded-xl border-b-4 bg-white p-6 text-center shadow-sm transition-all duration-300 hover:-translate-y-2 hover:shadow-2xl ${style.border}`}
+                    >
+                      <div
+                        className={`mb-4 flex h-16 w-16 items-center justify-center rounded-full text-3xl transition-all duration-300 group-hover:scale-110 ${style.iconWrap}`}
+                      >
+                        <Icon className="text-3xl" />
+                      </div>
+                      <h3
+                        className={`font-heading mb-2 text-xl font-bold text-brand-dark transition-colors ${style.hoverTitle}`}
+                      >
+                        {cat.name}
+                      </h3>
+                      <p className="line-clamp-3 text-sm text-gray-500">{cat.shortDescription}</p>
+                    </Link>
+                  );
+                })}
+
+              <Link
+                href="/caterers"
+                className="group flex cursor-pointer flex-col items-center justify-center rounded-xl bg-brand-dark p-6 text-center shadow-sm transition-all duration-300 hover:-translate-y-2 hover:bg-black hover:shadow-2xl"
+              >
+                <div className="mb-4 flex h-16 w-16 items-center justify-center rounded-lg bg-brand-red text-3xl text-white transition-all duration-300 group-hover:rotate-12 group-hover:scale-110">
+                  <ArrowRight className="text-3xl" aria-hidden />
+                </div>
+                <h3 className="font-heading text-xl font-bold text-white">Browse All Services</h3>
+              </Link>
+            </div>
+
+            {!categoriesQ.isPending && categories.length === 0 && (
+              <p className="mt-10 text-center text-sm text-amber-700">
+                Categories could not be loaded. Check that the catalog API is running on port 4000.
+              </p>
+            )}
+          </div>
+        </section>
+
+        {/* How it works */}
+        <section className="relative bg-white py-24" id="how-it-works">
+          <div className="mx-auto max-w-7xl px-6 text-center">
+            <div className="mb-4 inline-block">
+              <span className="paint-stroke-bg font-heading text-sm font-bold uppercase tracking-widest text-white">
+                How It Works
+              </span>
+            </div>
+            <h2 className="font-heading mx-auto mb-20 max-w-2xl text-4xl font-bold leading-tight text-brand-dark md:text-5xl">
+              So How Does Bharat Catering Process Work?
+            </h2>
+
+            <div className="relative grid grid-cols-1 gap-12 md:grid-cols-4">
+              <div
+                className="absolute left-[12%] right-[12%] top-12 -z-10 hidden h-0.5 border-t-2 border-dashed border-gray-300 md:block"
+                aria-hidden
+              />
+
+              {[
+                {
+                  step: "01",
+                  icon: MagnifyingGlass,
+                  color: "text-brand-red",
+                  title: "Search Caterer",
+                  body: "Find the best caterers in your city based on your specific event requirements.",
+                },
+                {
+                  step: "02",
+                  icon: Scroll,
+                  color: "text-brand-green",
+                  title: "Get Quotes",
+                  body: "Receive detailed pricing and menu options from multiple top-rated providers.",
+                },
+                {
+                  step: "03",
+                  icon: Handshake,
+                  color: "text-brand-yellow",
+                  title: "Hire Best Match",
+                  body: "Compare reviews, taste their food, and finalize the one that fits your needs.",
+                },
+                {
+                  step: "04",
+                  icon: Confetti,
+                  color: "text-purple-500",
+                  title: "Enjoy Event",
+                  body: "Relax and enjoy your event while the caterers handle the delicious food.",
+                },
+              ].map((s) => (
+                <div key={s.step} className="flex flex-col items-center">
+                  <div className="relative z-10 mb-6 flex h-24 w-24 items-center justify-center rounded-full border border-gray-200 bg-white shadow-xl">
+                    <s.icon className={`text-4xl ${s.color}`} />
+                    <div className="absolute -right-2 -top-2 flex h-8 w-8 items-center justify-center rounded-full bg-brand-dark text-sm font-bold text-white">
+                      {s.step}
+                    </div>
+                  </div>
+                  <h3 className="font-heading mb-3 text-xl font-bold text-brand-dark">{s.title}</h3>
+                  <p className="text-sm text-gray-500">{s.body}</p>
+                </div>
               ))}
             </div>
           </div>
         </section>
-      )}
 
-      <section className="py-16 sm:py-20 lg:py-24" id="service-categories">
-        <div className="container-max">
-          <div className="mx-auto max-w-2xl text-center">
-            <p className="text-xs font-bold uppercase tracking-widest text-[var(--primary)]">Browse</p>
-            <h2 className="mt-2 text-3xl font-extrabold tracking-tight text-[var(--foreground)] sm:text-4xl">
-              Service categories
-            </h2>
-            <p className="mt-4 text-lg text-[var(--foreground-muted)]">
-              Every occasion covered — weddings, corporate, parties — in a scannable, modern grid.
-            </p>
+        {/* Stats */}
+        <section className="relative flex items-center bg-brand-dark py-24" id="trust">
+          <div className="absolute inset-0 z-0">
+            <Image src={IMG.stats} alt="" fill className="object-cover opacity-20" sizes="100vw" />
+            <div className="absolute inset-0 bg-brand-dark/80" aria-hidden />
           </div>
-          <div className="mt-14 grid gap-6 sm:grid-cols-2 lg:grid-cols-4">
-            {categoriesQ.isPending &&
-              Array.from({ length: 8 }).map((_, i) => (
-                <div
-                  key={i}
-                  className="h-44 animate-pulse rounded-2xl bg-gradient-to-br from-stone-100 to-stone-200/60"
-                  aria-hidden
-                />
-              ))}
-            {!categoriesQ.isPending &&
-              categories.map((c) => <CategoryCard key={c.id} c={c} />)}
-          </div>
-        </div>
-      </section>
 
-      <section
-        className="relative border-y border-stone-200/80 bg-gradient-to-b from-white via-[var(--background-warm)] to-white py-16 sm:py-20"
-        id="trust"
-      >
-        <div className="container-max relative">
-          <div className="mx-auto max-w-2xl text-center">
-            <p className="text-xs font-bold uppercase tracking-widest text-[var(--primary)]">Trust</p>
-            <h2 className="mt-2 text-3xl font-extrabold tracking-tight text-[var(--foreground)] sm:text-4xl">
-              Why hosts trust us
-            </h2>
-            <p className="mt-4 text-lg text-[var(--foreground-muted)]">
-              Live metrics from your NestJS stats endpoint — the same signals guests expect from top
-              marketplaces.
-            </p>
-          </div>
-          <div className="mt-14 grid gap-5 sm:grid-cols-2 lg:grid-cols-4">
-            {[
-              { label: "Verified reviews", value: stats?.verifiedReviews ?? "—", sub: "Authentic feedback" },
-              {
-                label: "Caterers listed",
-                value: stats?.cateringServicesListed ?? "—",
-                sub: "Growing network",
-              },
-              { label: "Guides & research", value: stats?.researchArticles ?? "—", sub: "Smarter planning" },
-              { label: "Events helped", value: stats?.customersHelped ?? "—", sub: "Hosts supported" },
-            ].map((card) => (
-              <div
-                key={card.label}
-                className="rounded-2xl border border-stone-200/90 bg-white p-7 text-center card-shadow transition duration-300 hover:-translate-y-0.5 hover:border-[var(--primary)]/25"
-              >
-                <p className="text-4xl font-extrabold tabular-nums text-gradient-brand">
-                  {typeof card.value === "number" ? nf.format(card.value) : card.value}
-                </p>
-                <p className="mt-3 font-bold text-[var(--foreground)]">{card.label}</p>
-                <p className="mt-1.5 text-sm text-[var(--foreground-muted)]">{card.sub}</p>
+          <div className="relative z-10 mx-auto flex w-full max-w-7xl flex-col items-center justify-between gap-12 px-6 md:flex-row">
+            <div className="text-white md:w-1/2">
+              <div className="mb-4 inline-block">
+                <span className="paint-stroke-bg green font-heading text-sm font-bold uppercase tracking-widest text-white">
+                  Since 2024
+                </span>
               </div>
-            ))}
-          </div>
-        </div>
-      </section>
-
-      <section className="py-16 sm:py-20 lg:py-24" id="how-it-works">
-        <div className="container-max">
-          <div className="mx-auto max-w-2xl text-center">
-            <p className="text-xs font-bold uppercase tracking-widest text-[var(--primary)]">Process</p>
-            <h2 className="mt-2 text-3xl font-extrabold tracking-tight text-[var(--foreground)] sm:text-4xl">
-              How it works
-            </h2>
-            <p className="mt-4 text-lg text-[var(--foreground-muted)]">Four clear steps from browse to booking.</p>
-          </div>
-          <div className="relative mx-auto mt-14 max-w-5xl">
-            <div
-              className="pointer-events-none absolute left-[8%] right-[8%] top-14 hidden h-0.5 lg:block"
-              style={{
-                background:
-                  "linear-gradient(90deg, color-mix(in srgb, var(--primary) 45%, transparent), color-mix(in srgb, var(--secondary) 50%, transparent))",
-              }}
-              aria-hidden
-            />
-            <ol className="relative grid gap-6 sm:grid-cols-2 lg:grid-cols-4">
-            {steps.map((s, i) => (
-              <li
-                key={s.title}
-                className="relative rounded-2xl border border-stone-200/90 bg-white p-7 card-shadow transition duration-300 hover:border-[var(--primary)]/20"
-              >
-                <span className="mb-5 flex h-11 w-11 items-center justify-center rounded-2xl bg-gradient-to-br from-[var(--primary)] to-[var(--orange-deep)] text-sm font-extrabold text-white shadow-md shadow-[var(--primary)]/25">
-                  {i + 1}
-                </span>
-                <h3 className="text-lg font-bold text-[var(--foreground)]">{s.title}</h3>
-                <p className="mt-2 text-sm leading-relaxed text-[var(--foreground-muted)]">{s.body}</p>
-              </li>
-            ))}
-            </ol>
-          </div>
-        </div>
-      </section>
-
-      <section
-        className="border-t border-stone-200/80 bg-gradient-to-b from-white to-[var(--background)] py-16 sm:py-20"
-        id="testimonials"
-      >
-        <div className="container-max">
-          <div className="mx-auto max-w-2xl text-center">
-            <p className="text-xs font-bold uppercase tracking-widest text-[var(--primary)]">Reviews</p>
-            <h2 className="mt-2 text-3xl font-extrabold tracking-tight text-[var(--foreground)] sm:text-4xl">
-              What hosts say
-            </h2>
-          </div>
-          <div className="mt-14 grid gap-6 lg:grid-cols-3">
-            {testimonials.map((t) => (
-              <blockquote
-                key={t.name}
-                className="relative flex h-full flex-col overflow-hidden rounded-2xl border border-stone-200/90 bg-white p-8 card-shadow transition duration-300 hover:border-[var(--primary)]/20"
-              >
-                <span
-                  className="absolute -right-2 -top-2 text-8xl font-serif leading-none text-[var(--primary)]/[0.07]"
-                  aria-hidden
-                >
-                  &ldquo;
-                </span>
-                <p className="relative flex-1 text-lg font-medium leading-relaxed text-[var(--foreground)]">
-                  {t.quote}
-                </p>
-                <footer className="relative mt-8 border-t border-stone-100 pt-5">
-                  <cite className="not-italic">
-                    <span className="font-bold text-[var(--primary)]">{t.name}</span>
-                    <span className="mt-0.5 block text-sm font-medium text-[var(--foreground-muted)]">
-                      {t.place}
-                    </span>
-                  </cite>
-                </footer>
-              </blockquote>
-            ))}
-          </div>
-        </div>
-      </section>
-
-      <section className="py-16 sm:py-20">
-        <div className="container-max">
-          <div className="relative overflow-hidden rounded-3xl px-8 py-14 text-center text-white sm:px-12 sm:py-16">
-            <div
-              className="absolute inset-0 bg-gradient-to-br from-[var(--orange-deep)] via-[var(--primary)] to-[var(--orange-mid)]"
-              aria-hidden
-            />
-            <div
-              className="pointer-events-none absolute -right-20 top-0 h-64 w-64 rounded-full bg-white/10 blur-3xl"
-              aria-hidden
-            />
-            <div
-              className="pointer-events-none absolute -bottom-24 -left-16 h-56 w-56 rounded-full bg-[var(--secondary)]/15 blur-3xl"
-              aria-hidden
-            />
-            <div className="relative">
-              <h2 className="text-2xl font-extrabold sm:text-3xl lg:text-4xl">List your catering business</h2>
-              <p className="mx-auto mt-4 max-w-xl text-base leading-relaxed text-white/90 sm:text-lg">
-                This stack pairs a Next.js storefront with a NestJS catalog you can extend into CRM, payments,
-                and lead routing.
+              <h2 className="font-heading mb-6 text-4xl font-bold leading-tight md:text-6xl">
+                Why Businesses Trust <span className="text-brand-red">Bharat Catering</span>
+              </h2>
+              <p className="mb-8 max-w-lg text-lg text-gray-300">
+                We connect you with the most reliable, hygienic, and highly-rated catering services across India.
+                Quality food for quality moments.
               </p>
-              <a
-                href="mailto:hello@example.com?subject=List%20my%20catering%20business"
-                className="mt-10 inline-flex items-center justify-center gap-2 rounded-xl bg-white px-8 py-4 text-base font-bold text-[var(--orange-deep)] shadow-xl shadow-black/15 transition hover:bg-[var(--secondary-light)] hover:text-[var(--foreground)]"
+              <Link
+                href="/register"
+                className="group inline-flex items-center gap-2 rounded-md bg-white px-8 py-4 font-bold text-brand-dark transition-all duration-300 hover:scale-105 hover:bg-gray-200 hover:shadow-lg"
               >
-                Get in touch
-                <FaArrowRight className="text-sm" aria-hidden />
-              </a>
+                Get Started <ArrowRight className="transition-transform group-hover:translate-x-1" />
+              </Link>
+            </div>
+
+            <div className="grid w-full grid-cols-2 gap-6 md:w-1/2">
+              {[
+                {
+                  label: "Verified reviews",
+                  value: stats?.verifiedReviews != null ? nf.format(stats.verifiedReviews) : "—",
+                  accent: "text-brand-yellow",
+                },
+                {
+                  label: "Caterers listed",
+                  value:
+                    stats?.cateringServicesListed != null
+                      ? `${nf.format(stats.cateringServicesListed)}+`
+                      : "—",
+                  accent: "text-brand-green",
+                  offset: true,
+                },
+                {
+                  label: "Hosts helped",
+                  value:
+                    stats?.customersHelped != null
+                      ? stats.customersHelped >= 1000
+                        ? `${Math.round(stats.customersHelped / 1000)}k+`
+                        : `${nf.format(stats.customersHelped)}+`
+                      : "—",
+                  accent: "text-blue-400",
+                },
+                {
+                  label: "Guides & articles",
+                  value: stats?.researchArticles != null ? nf.format(stats.researchArticles) : "—",
+                  accent: "text-orange-400",
+                  offset: true,
+                },
+              ].map((box) => (
+                <div
+                  key={box.label}
+                  className={`rounded-xl border border-white/20 bg-black/50 p-8 text-center backdrop-blur-sm ${box.offset ? "translate-y-6" : ""}`}
+                >
+                  <div className="font-heading mb-2 text-5xl font-bold text-outline text-white">{box.value}</div>
+                  <div className={`text-sm font-semibold uppercase tracking-wider ${box.accent}`}>{box.label}</div>
+                </div>
+              ))}
             </div>
           </div>
-        </div>
-      </section>
+        </section>
+
+        {/* Testimonials & blog */}
+        <section className="bg-gray-50 py-24">
+          <div className="mx-auto grid max-w-7xl grid-cols-1 gap-16 px-6 lg:grid-cols-2">
+            <div id="testimonials">
+              <h2 className="font-heading mb-8 text-3xl font-bold text-brand-dark">What Our Customers Say</h2>
+              <div className="group relative overflow-hidden rounded-2xl shadow-lg">
+                <div className="relative h-[400px] w-full">
+                  <Image
+                    src={IMG.testimonial}
+                    alt=""
+                    fill
+                    className="object-cover transition duration-700 group-hover:scale-105"
+                    sizes="(max-width: 1024px) 100vw, 50vw"
+                  />
+                </div>
+                <div className="absolute inset-0 bg-gradient-to-t from-black/90 via-black/40 to-transparent" />
+                <div className="absolute bottom-0 left-0 p-8 text-white">
+                  <Quotes className="mb-4 text-4xl text-brand-yellow opacity-80" weight="fill" />
+                  <p className="mb-6 text-lg italic">
+                    &ldquo;Finding a caterer for our corporate event was a breeze. The quality of food and service was
+                    exceptional. Highly recommended platform!&rdquo;
+                  </p>
+                  <div className="flex items-center gap-4">
+                    <div className="flex h-12 w-12 items-center justify-center rounded-full bg-brand-red text-xl font-bold">
+                      A
+                    </div>
+                    <div>
+                      <h4 className="text-lg font-bold">Anthom Bu Spar</h4>
+                      <p className="text-sm text-gray-300">Corporate Manager</p>
+                    </div>
+                  </div>
+                </div>
+              </div>
+            </div>
+
+            <div>
+              <h2 className="font-heading mb-8 text-3xl font-bold text-brand-dark">Latest Insights</h2>
+              {blogQ.isPending ? (
+                <div className="flex flex-col gap-6">
+                  {[1, 2].map((i) => (
+                    <div key={i} className="flex gap-6 rounded-2xl bg-white p-4 shadow-sm">
+                      <div className="h-32 w-32 shrink-0 animate-pulse rounded-xl bg-gray-200" />
+                      <div className="flex-1 space-y-3 py-1">
+                        <div className="h-4 w-20 animate-pulse rounded bg-gray-100" />
+                        <div className="h-6 w-full animate-pulse rounded bg-gray-100" />
+                        <div className="h-12 w-full animate-pulse rounded bg-gray-100" />
+                      </div>
+                    </div>
+                  ))}
+                </div>
+              ) : blogQ.isError || !blogQ.data?.items.length ? (
+                <p className="rounded-2xl border border-amber-100 bg-amber-50/80 px-4 py-6 text-sm text-amber-900">
+                  Insights will appear here once the blog API is available (run{" "}
+                  <code className="rounded bg-white px-1">npm run migration:run</code> in catering-backend).
+                </p>
+              ) : (
+                <div className="flex flex-col gap-6">
+                  {blogQ.data.items.map((post, idx) => (
+                    <Link
+                      key={post.id}
+                      href={`/blog/${encodeURIComponent(post.slug)}`}
+                      className="group flex cursor-pointer items-center gap-6 rounded-2xl bg-white p-4 shadow-sm transition-all duration-300 hover:-translate-y-2 hover:shadow-xl"
+                    >
+                      <div className="relative h-32 w-32 shrink-0 overflow-hidden rounded-xl">
+                        <Image
+                          src={post.featuredImageUrl ?? IMG.blog}
+                          alt=""
+                          fill
+                          className={`object-cover transition-transform duration-500 group-hover:scale-110 ${idx === 1 ? "grayscale group-hover:grayscale-0" : ""}`}
+                          sizes="128px"
+                        />
+                      </div>
+                      <div>
+                        <span
+                          className={`mb-2 block text-xs font-bold uppercase tracking-wider ${idx === 0 ? "text-brand-red" : "text-brand-green"}`}
+                        >
+                          {post.categoryLabel}
+                        </span>
+                        <h3 className="font-heading mb-2 text-xl font-bold text-brand-dark transition-colors group-hover:text-brand-red">
+                          {post.title}
+                        </h3>
+                        <p className="line-clamp-2 text-sm text-gray-500">{post.excerpt}</p>
+                      </div>
+                    </Link>
+                  ))}
+                </div>
+              )}
+              <Link
+                href="/blog"
+                className="group mt-8 inline-flex items-center gap-2 font-bold text-brand-red hover:text-red-800"
+              >
+                View all articles <ArrowRight className="transition-transform group-hover:translate-x-2" />
+              </Link>
+            </div>
+          </div>
+        </section>
+      </main>
     </div>
   );
 }
