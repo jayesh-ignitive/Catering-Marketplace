@@ -1,0 +1,57 @@
+# ─── Dependencies ─────────────────────────────────────────────
+node_modules/
+
+# ─── Logs & debug ─────────────────────────────────────────────
+logs/
+*.log
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+pnpm-debug.log*
+lerna-debug.log*
+
+# ─── Environment & secrets ────────────────────────────────────
+.env
+.env.*
+!.env.example
+!.env.sample
+*.pem
+
+# ─── OS ───────────────────────────────────────────────────────
+.DS_Store
+Thumbs.db
+Desktop.ini
+
+# ─── IDE / editors ────────────────────────────────────────────
+.idea/
+.vscode/*
+!.vscode/extensions.json
+
+# ─── Testing & coverage ───────────────────────────────────────
+coverage/
+*.lcov
+.nyc_output/
+
+# ─── TypeScript ───────────────────────────────────────────────
+*.tsbuildinfo
+
+# ─── Next.js ────────────────────────────────────────────────────
+.next/
+out/
+.vercel/
+next-env.d.ts
+
+# ─── NestJS (build output & cache) ──────────────────────────────
+dist/
+.temp/
+
+# ─── Misc build / bundler ─────────────────────────────────────
+build/
+
+# ─── Yarn (Berry / PnP — keep releases if you use Yarn) ─────────
+.pnp.*
+.yarn/*
+!.yarn/patches
+!.yarn/plugins
+!.yarn/releases
+!.yarn/versions
