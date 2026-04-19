@@ -5,6 +5,7 @@ import {
   BowlFood,
   Buildings,
   Cake,
+  Check,
   Coffee,
   Confetti,
   Hamburger,
@@ -14,6 +15,9 @@ import {
   Plant,
   Quotes,
   Scroll,
+  Sparkle,
+  Star,
+  Storefront,
 } from "@phosphor-icons/react";
 import { HeroAutocomplete } from "@/components/home/HeroAutocomplete";
 import { useQuery } from "@tanstack/react-query";
@@ -101,6 +105,7 @@ export default function Home() {
     queryKey: ["catalog", "service-categories"],
     queryFn: fetchServiceCategories,
   });
+  
   const statsQ = useQuery({ queryKey: ["catalog", "stats"], queryFn: fetchTrustStats });
   const blogQ = useQuery({
     queryKey: ["catalog", "blog", "home-preview"],
@@ -193,6 +198,55 @@ export default function Home() {
                 SEARCH
               </button>
             </div>
+
+            <nav
+              className="mt-8 flex flex-wrap items-center justify-center gap-x-1 gap-y-2 text-sm font-semibold text-white/80"
+              aria-label="Quick links"
+            >
+              <Link
+                href="/caterers"
+                className="rounded-full px-3 py-1.5 transition hover:bg-white/10 hover:text-brand-yellow"
+              >
+                Browse caterers
+              </Link>
+              <span className="px-1 text-white/35" aria-hidden>
+                ·
+              </span>
+              <Link
+                href="/packages"
+                className="rounded-full px-3 py-1.5 transition hover:bg-white/10 hover:text-brand-yellow"
+              >
+                Packages
+              </Link>
+              <span className="px-1 text-white/35" aria-hidden>
+                ·
+              </span>
+              <Link
+                href="/#service-categories"
+                className="rounded-full px-3 py-1.5 transition hover:bg-white/10 hover:text-brand-yellow"
+              >
+                Categories
+              </Link>
+              <span className="px-1 text-white/35" aria-hidden>
+                ·
+              </span>
+              <Link
+                href="/#how-it-works"
+                className="rounded-full px-3 py-1.5 transition hover:bg-white/10 hover:text-brand-yellow"
+              >
+                How it works
+              </Link>
+              <span className="px-1 text-white/35" aria-hidden>
+                ·
+              </span>
+              <Link
+                href="/blog"
+                className="rounded-full px-3 py-1.5 transition hover:bg-white/10 hover:text-brand-yellow"
+              >
+                Insights
+              </Link>
+            </nav>
+
             {(citiesQ.isError || categoriesQ.isError) && (
               <p className="mt-4 text-sm text-amber-200">
                 Catalog API unavailable — ensure Nest is running on port 4000.
@@ -217,13 +271,23 @@ export default function Home() {
               </div>
             </div>
 
-            <div className="mb-12 flex flex-col items-end justify-between md:flex-row">
+            <div className="mb-12 flex flex-col items-end justify-between gap-6 md:flex-row md:items-end">
               <div>
                 <div className="mb-4 inline-block rounded bg-brand-green px-3 py-1 text-xs font-bold uppercase tracking-wider text-white">
                   Browse All
                 </div>
                 <h2 className="font-heading text-4xl font-bold text-brand-dark">Catering Service Categories</h2>
               </div>
+              <Link
+                href="/packages"
+                className="group inline-flex items-center gap-2 text-sm font-bold text-brand-red transition hover:text-red-800"
+              >
+                View caterer packages
+                <ArrowRight
+                  className="transition-transform group-hover:translate-x-0.5"
+                  aria-hidden
+                />
+              </Link>
             </div>
 
             <div className="grid grid-cols-1 gap-6 md:grid-cols-2 lg:grid-cols-4">
@@ -242,7 +306,7 @@ export default function Home() {
                   return (
                     <Link
                       key={cat.id}
-                      href="/caterers"
+                      href={caterersListingPath({ categorySlug: cat.slug })}
                       className={`group flex flex-col items-center rounded-xl border-b-4 bg-white p-6 text-center shadow-sm transition-all duration-300 hover:-translate-y-2 hover:shadow-2xl ${style.border}`}
                     >
                       <div
@@ -339,6 +403,205 @@ export default function Home() {
                 </div>
               ))}
             </div>
+          </div>
+        </section>
+
+        {/* Packages — listing tiers for catering businesses */}
+        <section
+          className="relative overflow-hidden bg-gradient-to-b from-[#faf7f4] via-white to-[#faf7f4] py-24"
+          id="packages"
+        >
+          <div
+            className="pointer-events-none absolute -left-24 top-20 h-72 w-72 rounded-full bg-brand-red/[0.07] blur-3xl"
+            aria-hidden
+          />
+          <div
+            className="pointer-events-none absolute -right-20 bottom-10 h-64 w-64 rounded-full bg-brand-yellow/[0.12] blur-3xl"
+            aria-hidden
+          />
+          <div className="pointer-events-none absolute inset-0 opacity-[0.35] bg-[radial-gradient(circle_at_1px_1px,rgba(28,28,28,0.04)_1px,transparent_0)] bg-[length:22px_22px]" aria-hidden />
+
+          <div className="relative mx-auto max-w-7xl px-6">
+            <div className="mx-auto mb-14 max-w-2xl text-center">
+              <div className="mb-4 inline-flex items-center gap-2 rounded-full border border-brand-red/15 bg-brand-red/[0.06] px-3 py-1.5">
+                <Storefront className="text-lg text-brand-red" weight="duotone" aria-hidden />
+                <span className="text-[11px] font-bold uppercase tracking-[0.2em] text-brand-red">For caterers</span>
+              </div>
+              <h2 className="font-heading text-4xl font-extrabold tracking-tight text-brand-dark md:text-5xl">
+                Listing <span className="text-brand-red">packages</span> for your kitchen
+              </h2>
+              <p className="mt-4 text-lg leading-relaxed text-gray-600">
+                Grow on Bharat Catering with a profile guests can trust — from your first published listing to
+                hands-on partner support for larger teams.
+              </p>
+            </div>
+
+            <div className="grid gap-8 lg:grid-cols-3 lg:items-stretch">
+              {[
+                {
+                  name: "Listing starter",
+                  tag: "Get discovered",
+                  price: "Free",
+                  period: "to begin",
+                  blurb: "Create your account, verify your email, and publish a professional profile on the directory.",
+                  icon: MagnifyingGlass,
+                  accent: "border-gray-200 bg-white shadow-sm",
+                  cta: "Create account",
+                  href: "/register",
+                  featured: false,
+                  darkCard: false,
+                  perks: [
+                    "Appear in marketplace search by city & service type",
+                    "Business name, story, and contact-ready profile",
+                    "Email verification before you go live",
+                  ],
+                },
+                {
+                  name: "Workspace",
+                  tag: "Most popular",
+                  price: "Free",
+                  period: "with your listing",
+                  blurb: "Use your caterer workspace to keep menus, gallery, and categories polished as you scale.",
+                  icon: Star,
+                  accent:
+                    "border-2 border-brand-red/90 bg-white shadow-[0_28px_70px_-24px_rgba(229,57,53,0.22),0_0_0_1px_rgba(229,57,53,0.06)] ring-4 ring-brand-red/10 lg:-translate-y-1 lg:scale-[1.02]",
+                  cta: "Set up workspace",
+                  href: "/register",
+                  featured: true,
+                  darkCard: false,
+                  perks: [
+                    "Business hub: profile, gallery, and service categories",
+                    "Publish the details hosts compare before they enquire",
+                    "Built for teams updating menus and photos often",
+                  ],
+                },
+                {
+                  name: "Partner program",
+                  tag: "Kitchens at scale",
+                  price: "Custom",
+                  period: "let’s talk",
+                  blurb: "Multi-location brands, high-volume kitchens, or bespoke onboarding — we align with your ops team.",
+                  icon: Sparkle,
+                  accent: "border border-gray-200/90 bg-brand-dark text-white shadow-xl",
+                  cta: "Talk to sales",
+                  href: "/contact",
+                  featured: false,
+                  darkCard: true,
+                  perks: [
+                    "Priority onboarding and listing reviews",
+                    "Support for multi-brand or multi-city rollouts",
+                    "Commercial terms tailored to your footprint",
+                  ],
+                },
+              ].map((pkg) => {
+                const Icon = pkg.icon;
+                const isDark = pkg.darkCard;
+                return (
+                  <article
+                    key={pkg.name}
+                    className={`relative flex flex-col rounded-3xl p-8 transition duration-300 hover:-translate-y-1 ${pkg.accent}`}
+                  >
+                    {pkg.featured ? (
+                      <div className="absolute -top-3 left-1/2 z-10 -translate-x-1/2 rounded-full bg-brand-red px-4 py-1 text-[10px] font-bold uppercase tracking-widest text-white shadow-lg shadow-brand-red/30">
+                        {pkg.tag}
+                      </div>
+                    ) : (
+                      <span
+                        className={`text-[10px] font-bold uppercase tracking-[0.2em] ${isDark ? "text-brand-yellow" : "text-brand-red"}`}
+                      >
+                        {pkg.tag}
+                      </span>
+                    )}
+
+                    <div className="mt-5 flex items-start gap-4">
+                      <div
+                        className={`flex h-14 w-14 shrink-0 items-center justify-center rounded-2xl ${
+                          isDark
+                            ? "bg-white/10 text-brand-yellow"
+                            : pkg.featured
+                              ? "bg-brand-red/10 text-brand-red"
+                              : "bg-gray-100 text-brand-dark"
+                        }`}
+                      >
+                        <Icon className="text-2xl" weight={pkg.featured || isDark ? "duotone" : "regular"} aria-hidden />
+                      </div>
+                      <div>
+                        <h3
+                          className={`font-heading text-2xl font-extrabold tracking-tight ${isDark ? "text-white" : "text-brand-dark"}`}
+                        >
+                          {pkg.name}
+                        </h3>
+                        <p
+                          className={`mt-1 text-sm leading-relaxed ${isDark ? "text-white/70" : "text-gray-600"}`}
+                        >
+                          {pkg.blurb}
+                        </p>
+                      </div>
+                    </div>
+
+                    <div
+                      className={`mt-8 flex items-baseline gap-2 border-t border-dashed pt-8 ${isDark ? "border-white/15" : "border-gray-200/80"}`}
+                    >
+                      <span
+                        className={`font-heading text-4xl font-extrabold tabular-nums ${isDark ? "text-white" : "text-brand-dark"}`}
+                      >
+                        {pkg.price}
+                      </span>
+                      <span className={`text-sm font-medium ${isDark ? "text-white/55" : "text-gray-500"}`}>
+                        {pkg.period}
+                      </span>
+                    </div>
+
+                    <ul className="mt-6 flex flex-1 flex-col gap-3">
+                      {pkg.perks.map((line) => (
+                        <li key={line} className="flex gap-3 text-sm leading-snug">
+                          <span
+                            className={`mt-0.5 flex h-5 w-5 shrink-0 items-center justify-center rounded-full ${
+                              isDark ? "bg-brand-red text-white" : "bg-brand-green/15 text-brand-green"
+                            }`}
+                          >
+                            <Check className="text-xs" weight="bold" aria-hidden />
+                          </span>
+                          <span className={isDark ? "text-white/85" : "text-gray-600"}>{line}</span>
+                        </li>
+                      ))}
+                    </ul>
+
+                    <Link
+                      href={pkg.href}
+                      className={`mt-10 inline-flex items-center justify-center gap-2 rounded-2xl px-6 py-3.5 text-sm font-bold transition ${
+                        isDark
+                          ? "bg-brand-yellow text-brand-dark shadow-md hover:bg-amber-300"
+                          : pkg.featured
+                            ? "bg-brand-red text-white shadow-lg shadow-brand-red/25 hover:bg-red-700"
+                            : "border border-gray-200 bg-white text-brand-dark hover:border-brand-red/30 hover:text-brand-red"
+                      }`}
+                    >
+                      {pkg.cta}
+                      <ArrowRight className="text-lg" aria-hidden />
+                    </Link>
+                  </article>
+                );
+              })}
+            </div>
+
+            <p className="mx-auto mt-12 max-w-2xl text-center text-sm leading-relaxed text-gray-500">
+              Final fees for food and service stay between you and your clients. These packages are about your{" "}
+              <strong className="font-semibold text-brand-dark">presence on Bharat Catering</strong> — not guest
+              tickets.{" "}
+              <Link href="/caterers" className="font-semibold text-brand-red underline-offset-2 hover:underline">
+                Looking to hire a caterer? Browse the directory.
+              </Link>
+            </p>
+            <p className="mx-auto mt-4 text-center">
+              <Link
+                href="/packages"
+                className="inline-flex items-center gap-2 text-sm font-bold text-brand-red underline-offset-4 hover:underline"
+              >
+                Full yearly plans, feature table &amp; how to choose
+                <ArrowRight className="text-base" aria-hidden />
+              </Link>
+            </p>
           </div>
         </section>
 

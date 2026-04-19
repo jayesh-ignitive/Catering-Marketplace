@@ -71,9 +71,9 @@ export function SiteFooter() {
                   </Link>
                 </li>
               <li>
-                <a href="#service-categories" className="transition hover:text-brand-yellow">
-                  Pricing Plans
-                </a>
+                <Link href="/packages" className="transition hover:text-brand-yellow">
+                  Packages
+                </Link>
               </li>
               <li>
                 <Link href="/contact" className="transition hover:text-brand-yellow">

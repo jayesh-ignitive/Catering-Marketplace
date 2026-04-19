@@ -1,0 +1,41 @@
+/* admin.css */
+
+/* Hide scrollbar for Chrome, Safari and Opera */
+.no-scrollbar::-webkit-scrollbar {
+  display: none;
+}
+/* Hide scrollbar for IE, Edge and Firefox */
+.no-scrollbar {
+  -ms-overflow-style: none;  /* IE and Edge */
+  scrollbar-width: none;  /* Firefox */
+}
+
+/* Custom Soft Shadow */
+.shadow-soft {
+  box-shadow: 0 10px 30px -10px rgba(0, 0, 0, 0.05);
+}
+
+.shadow-card {
+  box-shadow: 0 4px 15px rgba(0, 0, 0, 0.03);
+}
+
+.shadow-card-hover {
+  box-shadow: 0 15px 35px rgba(0, 0, 0, 0.08);
+}
+
+.gradient-text {
+  background: linear-gradient(to right, #EA6A12, #FF9B44);
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+}
+
+.nav-link-active {
+  background-color: #EA6A12;
+  color: white !important;
+  box-shadow: 0 4px 15px rgba(234, 106, 18, 0.3);
+}
+
+/* Dashboard specific custom styles */
+body {
+    background-color: #F8F9FA;
+}

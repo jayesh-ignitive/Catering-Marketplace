@@ -16,6 +16,33 @@ export function findMarketplaceCityNameBySlug(
   return hit?.city ?? null;
 }
 
+/** Resolve city display name from URL slug using catalog cities (all supported locations). */
+export function findCatalogCityNameBySlug(
+  slug: string,
+  catalogCities: { name: string; slug: string }[]
+): string | null {
+  const s = slug.trim().toLowerCase();
+  const hit = catalogCities.find(
+    (c) => c.slug.toLowerCase() === s || slugifyCitySegment(c.name) === s
+  );
+  return hit?.name ?? null;
+}
+
+/**
+ * Valid listing city URL: slug matches a marketplace-listed city name, or a catalog city.
+ * (Marketplace cities alone omit locations with zero published caterers — those should still resolve.)
+ */
+export function resolveListingCityNameFromSlug(
+  slug: string,
+  marketplaceCities: { city: string }[],
+  catalogCities: { name: string; slug: string }[]
+): string | null {
+  return (
+    findMarketplaceCityNameBySlug(slug, marketplaceCities) ??
+    findCatalogCityNameBySlug(slug, catalogCities)
+  );
+}
+
 /** Path-only marketplace listing URL (no query string). */
 export function caterersListingPath(opts: {
   cityName?: string | null;

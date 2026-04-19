@@ -179,11 +179,11 @@ export function SiteHeader() {
             </div>
 
             <Link
-              href="/#service-categories"
+              href="/packages"
               className="group flex cursor-pointer flex-col border-l border-gray-200 px-6"
             >
               <span className="mb-0.5 text-[9px] font-bold uppercase tracking-widest text-brand-red">
-                Pricing Plans
+                For caterers
               </span>
               <span className="font-heading font-medium text-brand-dark transition group-hover:text-brand-red">
                 Packages
@@ -309,6 +309,13 @@ export function SiteHeader() {
                 onClick={() => setOpen(false)}
               >
                 Service categories
+              </Link>
+              <Link
+                href="/packages"
+                className="rounded-lg px-4 py-3 text-sm font-semibold text-brand-dark hover:bg-gray-50"
+                onClick={() => setOpen(false)}
+              >
+                Packages
               </Link>
               <Link
                 href="/blog"

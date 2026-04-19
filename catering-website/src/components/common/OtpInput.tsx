@@ -124,9 +124,9 @@ export function OtpInput({
   const boxBase =
     "h-12 w-full min-w-0 rounded-xl border text-center text-lg font-semibold tabular-nums shadow-sm outline-none transition sm:h-14 sm:text-xl";
   const boxOk =
-    "border-stone-200 bg-white text-stone-900 ring-[var(--primary)]/20 focus:z-10 focus:border-[var(--primary)] focus:ring-4";
+    "border-gray-200 bg-white text-brand-dark focus:z-10 focus:border-brand-red focus:ring-4 focus:ring-brand-red/12";
   const boxErr =
-    "border-red-500/80 bg-white text-stone-900 ring-red-500/20 focus:z-10 focus:border-red-500 focus:ring-4";
+    "border-red-400 bg-red-50/40 text-brand-dark focus:z-10 focus:border-red-500 focus:ring-4 focus:ring-red-500/15";
   const boxDisabled = "cursor-not-allowed opacity-60";
 
   return (
@@ -159,7 +159,7 @@ export function OtpInput({
           />
         ))}
       </div>
-      <p className="mt-2 text-xs text-stone-500">
+      <p className="mt-2 text-xs text-gray-500">
         Tip: paste your 6-digit code from email — all boxes fill automatically.
       </p>
     </div>

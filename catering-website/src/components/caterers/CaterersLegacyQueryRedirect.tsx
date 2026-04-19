@@ -1,7 +1,7 @@
 "use client";
 
-import { fetchMarketplaceCities, fetchServiceCategories } from "@/lib/catering-api";
-import { caterersListingPath, slugifyCitySegment } from "@/lib/caterers-url";
+import { fetchCities, fetchMarketplaceCities, fetchServiceCategories } from "@/lib/catering-api";
+import { caterersListingPath, resolveListingCityNameFromSlug, slugifyCitySegment } from "@/lib/caterers-url";
 import { useRouter, useSearchParams } from "next/navigation";
 import { useEffect, useRef } from "react";
 
@@ -18,14 +18,13 @@ export function CaterersLegacyQueryRedirect() {
     if (!cityQ && !catId) return;
     ran.current = true;
 
-    void Promise.all([fetchMarketplaceCities(), fetchServiceCategories()])
-      .then(([cities, cats]) => {
+    void Promise.all([fetchMarketplaceCities(), fetchCities(), fetchServiceCategories()])
+      .then(([mCities, catalogCities, cats]) => {
         const cat = catId ? cats.find((c) => c.id === catId) : undefined;
         const citySeg = cityQ ? slugifyCitySegment(cityQ) : null;
-        const resolvedCityName =
-          citySeg && cities.some((x) => slugifyCitySegment(x.city) === citySeg)
-            ? cities.find((x) => slugifyCitySegment(x.city) === citySeg)!.city
-            : null;
+        const resolvedCityName = citySeg
+          ? resolveListingCityNameFromSlug(citySeg, mCities, catalogCities)
+          : null;
 
         const path = caterersListingPath({
           cityName: resolvedCityName,

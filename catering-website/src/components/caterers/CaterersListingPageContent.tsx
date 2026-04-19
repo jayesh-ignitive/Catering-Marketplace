@@ -304,7 +304,13 @@ export function CaterersListingPageContent({
   );
 
   const totalPages = listQ.data ? Math.max(1, Math.ceil(listQ.data.total / listQ.data.limit)) : 1;
-  const cities = citiesQ.data ?? [];
+  const cityRows = useMemo(() => {
+    const raw = citiesQ.data ?? [];
+    if (presetCityName && !raw.some((r) => r.city === presetCityName)) {
+      return [{ city: presetCityName }, ...raw];
+    }
+    return raw;
+  }, [citiesQ.data, presetCityName]);
 
   const filterInput =
     "w-full appearance-none rounded-xl border border-gray-200/90 bg-white py-3 pl-4 pr-10 text-sm font-medium text-brand-dark shadow-sm outline-none transition hover:border-gray-300 focus:border-brand-red focus:ring-4 focus:ring-brand-red/12";
@@ -499,7 +505,7 @@ export function CaterersListingPageContent({
                   className={filterInput}
                 >
                   <option value="">All cities</option>
-                  {cities.map((c) => (
+                  {cityRows.map((c) => (
                     <option key={c.city} value={c.city}>
                       {c.city}
                     </option>
@@ -598,9 +604,10 @@ export function CaterersListingPageContent({
             <div className="mx-auto flex h-16 w-16 items-center justify-center rounded-2xl bg-brand-red/10 text-brand-red">
               <MagnifyingGlass className="text-3xl" weight="duotone" aria-hidden />
             </div>
-            <p className="font-heading mt-6 text-xl font-bold text-brand-dark">No matches for these filters</p>
+            <p className="font-heading mt-6 text-xl font-bold text-brand-dark">No records available</p>
             <p className="mx-auto mt-2 max-w-md text-sm text-gray-500">
-              Broaden your search or list your own catering business to appear here after verification.
+              Nothing matched these filters yet. Try widening your search, or list your catering business to
+              appear here after verification.
             </p>
             <div className="mt-8 flex flex-wrap items-center justify-center gap-3">
               <button
