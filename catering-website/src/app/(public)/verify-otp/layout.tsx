@@ -1,9 +1,7 @@
 import type { Metadata } from "next";
+import { routeSeo } from "@/lib/seo";
 
-export const metadata: Metadata = {
-  title: "Enter verification code",
-  description: "Confirm your email with the 6-digit code we sent you.",
-};
+export const metadata: Metadata = routeSeo.verifyOtp;
 
 export default function VerifyOtpLayout({ children }: { children: React.ReactNode }) {
   return children;

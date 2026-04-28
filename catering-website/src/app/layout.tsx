@@ -1,6 +1,7 @@
 import type { Metadata } from "next";
 import { Great_Vibes, Inter, Outfit } from "next/font/google";
 import { ToastContainer } from "react-toastify";
+import { seoConfig } from "@/lib/seo";
 import { AppProviders } from "./providers";
 import "./globals.css";
 import "react-toastify/dist/ReactToastify.css";
@@ -25,11 +26,29 @@ const greatVibes = Great_Vibes({
 
 export const metadata: Metadata = {
   title: {
-    default: "Bharat Caterers — India's Trusted Catering Directory",
-    template: "%s | Bharat Caterers",
+    default: seoConfig.defaultTitle,
+    template: seoConfig.titleTemplate,
   },
-  description:
-    "Find the best catering service providers near you. India's trusted catering directory with 10,000+ happy customers.",
+  description: seoConfig.description,
+  metadataBase: new URL(seoConfig.baseUrl),
+  icons: {
+    icon: [{ url: "/favicon.svg", type: "image/svg+xml" }],
+    shortcut: ["/favicon.svg"],
+    apple: [{ url: "/favicon.svg", type: "image/svg+xml" }],
+  },
+  openGraph: {
+    type: "website",
+    siteName: seoConfig.siteName,
+    title: seoConfig.defaultTitle,
+    description: seoConfig.description,
+    images: [{ url: seoConfig.defaultOgImage }],
+  },
+  twitter: {
+    card: "summary_large_image",
+    title: seoConfig.defaultTitle,
+    description: seoConfig.description,
+    images: [seoConfig.defaultOgImage],
+  },
 };
 
 export default function RootLayout({

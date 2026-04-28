@@ -1,10 +1,7 @@
 import type { Metadata } from "next";
+import { routeSeo } from "@/lib/seo";
 
-export const metadata: Metadata = {
-  title: { default: "Workspace", template: "%s · My business" },
-  description: "Manage your catering business profile, gallery, and listings.",
-  robots: { index: false, follow: false },
-};
+export const metadata: Metadata = routeSeo.workspace;
 
 export default function WorkspaceRootLayout({ children }: { children: React.ReactNode }) {
   return (

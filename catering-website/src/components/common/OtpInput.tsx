@@ -122,11 +122,11 @@ export function OtpInput({
   };
 
   const boxBase =
-    "h-12 w-full min-w-0 rounded-xl border text-center text-lg font-semibold tabular-nums shadow-sm outline-none transition sm:h-14 sm:text-xl";
+    "h-12 w-full min-w-0 rounded-lg border text-center text-lg font-semibold tabular-nums outline-none transition sm:h-14 sm:text-xl";
   const boxOk =
-    "border-gray-200 bg-white text-brand-dark focus:z-10 focus:border-brand-red focus:ring-4 focus:ring-brand-red/12";
+    "border-gray-300 bg-white text-brand-dark focus:z-10 focus:border-brand-red focus:ring-1 focus:ring-brand-red";
   const boxErr =
-    "border-red-400 bg-red-50/40 text-brand-dark focus:z-10 focus:border-red-500 focus:ring-4 focus:ring-red-500/15";
+    "border-red-500 bg-red-50/50 text-brand-dark focus:z-10 focus:border-red-500 focus:ring-1 focus:ring-red-500";
   const boxDisabled = "cursor-not-allowed opacity-60";
 
   return (

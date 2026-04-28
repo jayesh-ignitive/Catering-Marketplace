@@ -1,9 +1,7 @@
 import type { Metadata } from "next";
+import { routeSeo } from "@/lib/seo";
 
-export const metadata: Metadata = {
-  title: "Register",
-  description: "Create your Bharat Catering caterer account and list your business.",
-};
+export const metadata: Metadata = routeSeo.register;
 
 export default function RegisterLayout({ children }: { children: React.ReactNode }) {
   return children;
