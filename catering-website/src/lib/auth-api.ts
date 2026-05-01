@@ -170,3 +170,26 @@ export async function fetchCurrentUser(accessToken: string): Promise<AuthUser> {
   }
   return data as AuthUser;
 }
+
+export async function patchAccountProfile(
+  accessToken: string,
+  body: { fullName: string; businessName: string }
+): Promise<AuthUser> {
+  const res = await fetch(`${getCateringApiBase()}/api/auth/me`, {
+    method: "PATCH",
+    headers: {
+      Authorization: `Bearer ${accessToken}`,
+      "Content-Type": "application/json",
+    },
+    body: JSON.stringify({
+      fullName: body.fullName.trim(),
+      businessName: body.businessName.trim(),
+    }),
+  });
+  const data: unknown = await parseJsonUnknown(res);
+  if (!res.ok) {
+    const { message, code } = formatApiError(data, res.status);
+    throw new AuthApiError(message, res.status, code);
+  }
+  return data as AuthUser;
+}

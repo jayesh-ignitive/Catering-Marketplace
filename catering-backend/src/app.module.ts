@@ -7,6 +7,7 @@ import { AuthModule } from './auth/auth.module';
 import { CatalogModule } from './catalog/catalog.module';
 import { ContactModule } from './contact/contact.module';
 import { MarketplaceModule } from './marketplace/marketplace.module';
+import { UploadModule } from './upload/upload.module';
 
 @Module({
   imports: [
@@ -29,6 +30,7 @@ import { MarketplaceModule } from './marketplace/marketplace.module';
     CatalogModule,
     ContactModule,
     MarketplaceModule,
+    UploadModule,
     AuthModule,
     AdminModule,
   ],

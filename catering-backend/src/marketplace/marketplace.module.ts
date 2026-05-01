@@ -1,5 +1,7 @@
 import { Module } from '@nestjs/common';
 import { TypeOrmModule } from '@nestjs/typeorm';
+import { TenantProvisioningModule } from '../tenant-provisioning/tenant-provisioning.module';
+import { User } from '../user/user.entity';
 import { Tenant } from '../tenant/tenant.entity';
 import { CatererMarketplaceListing } from './caterer-marketplace-listing.entity';
 import { CatererProfileCategory } from './caterer-profile-category.entity';
@@ -20,10 +22,12 @@ import { MarketplaceService } from './marketplace.service';
 
 @Module({
   imports: [
+    TenantProvisioningModule,
     TypeOrmModule.forFeature([
       CatererMarketplaceListing,
       CatererReview,
       Tenant,
+      User,
       Category,
       Country,
       State,

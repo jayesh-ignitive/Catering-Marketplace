@@ -156,6 +156,30 @@ export type MarketplaceDetail = MarketplaceListItem & {
   reviews: CatererReviewView[];
 };
 
+export type WorkspaceCompletionStatus = {
+  isComplete: boolean;
+  missingFields: string[];
+};
+
+export type CatererWorkspaceProfile = {
+  cityId: string | null;
+  streetAddress: string | null;
+  tagline: string | null;
+  about: string | null;
+  heroImageUrl: string | null;
+  priceBand: "budget" | "mid" | "premium" | "custom" | null;
+  priceFrom: number | null;
+  yearsInBusiness: number | null;
+  capacityGuestMin: number | null;
+  capacityGuestMax: number | null;
+  categoryCodes: string[];
+  serviceOfferingIds: string[];
+  keywords: string[];
+  galleryImageUrls: string[];
+  published: boolean;
+  completion: WorkspaceCompletionStatus;
+};
+
 export type MarketplaceListResponse = {
   items: MarketplaceListItem[];
   total: number;
@@ -166,6 +190,20 @@ export type MarketplaceListResponse = {
 export async function fetchMarketplaceCities(): Promise<{ city: string }[]> {
   const res = await fetch(`${getCateringApiBase()}/api/marketplace/caterers/cities`, fetchOpts);
   return parseJson<{ city: string }[]>(res);
+}
+
+export async function fetchMarketplaceCitiesForWorkspace(): Promise<{ id: string; name: string }[]> {
+  const res = await fetch(`${getCateringApiBase()}/api/marketplace/cities`, fetchOpts);
+  return parseJson<{ id: string; name: string }[]>(res);
+}
+
+/** Distinct keywords used on published caterer profiles (browse list for workspace picker). */
+export async function fetchPublishedKeywordCatalog(): Promise<MarketplaceKeywordRef[]> {
+  const res = await fetch(
+    `${getCateringApiBase()}/api/marketplace/caterers/keywords`,
+    fetchOpts
+  );
+  return parseJson<MarketplaceKeywordRef[]>(res);
 }
 
 export async function fetchMarketplaceKeywordSuggestions(term: string): Promise<MarketplaceKeywordRef[]> {
@@ -219,6 +257,164 @@ export async function fetchMarketplaceCaterer(slug: string): Promise<Marketplace
     return { ...data, reviews: [] };
   }
   return data;
+}
+
+export async function fetchServiceOfferings(): Promise<{ id: string; name: string }[]> {
+  const res = await fetch(`${getCateringApiBase()}/api/marketplace/service-offerings`, fetchOpts);
+  return parseJson<{ id: string; name: string }[]>(res);
+}
+
+export async function fetchWorkspaceCatererProfile(accessToken: string): Promise<CatererWorkspaceProfile> {
+  const res = await fetch(`${getCateringApiBase()}/api/marketplace/caterer/profile`, {
+    ...fetchOpts,
+    headers: { Authorization: `Bearer ${accessToken}` },
+  });
+  return parseJson<CatererWorkspaceProfile>(res);
+}
+
+function formatUploadImageError(data: unknown, status: number): string {
+  if (data && typeof data === "object" && "message" in data) {
+    const msg = (data as { message?: string | string[] }).message;
+    if (Array.isArray(msg) && msg.length > 0) return String(msg[0]);
+    if (typeof msg === "string") return msg;
+  }
+  return `Could not upload image (${status})`;
+}
+
+/** Multipart field name `file`. Returns public URL under API `/uploads/…` (requires caterer or admin JWT). */
+export async function uploadCateringImage(
+  accessToken: string,
+  file: File
+): Promise<{ url: string; key: string }> {
+  const fd = new FormData();
+  fd.append("file", file);
+  const res = await fetch(`${getCateringApiBase()}/api/upload/image`, {
+    method: "POST",
+    headers: { Authorization: `Bearer ${accessToken}` },
+    body: fd,
+    cache: "no-store",
+  });
+  const data: unknown = await res.json().catch(() => ({}));
+  if (!res.ok) {
+    throw new Error(formatUploadImageError(data, res.status));
+  }
+  if (!data || typeof data !== "object" || typeof (data as { url?: unknown }).url !== "string") {
+    throw new Error("Invalid upload response");
+  }
+  const o = data as { url: string; key?: string };
+  return { url: o.url, key: typeof o.key === "string" ? o.key : "" };
+}
+
+function formatWorkspaceProfileSaveError(data: unknown, status: number): string {
+  if (data && typeof data === "object" && "message" in data) {
+    const msg = (data as { message?: string | string[] }).message;
+    if (Array.isArray(msg) && msg.length > 0) return String(msg[0]);
+    if (typeof msg === "string") return msg;
+  }
+  return `Could not save workspace profile (${status})`;
+}
+
+/** Align `ABOUT_MIN_LEN` on the workspace wizard with backend `WORKSPACE_ABOUT_MIN_LEN`. */
+export type PatchWorkspaceProfileStep0Body = {
+  cityId: string;
+  about: string;
+  streetAddress?: string;
+  tagline?: string;
+  heroImageUrl?: string;
+  priceBand?: "budget" | "mid" | "premium" | "custom";
+  priceFrom?: number;
+  yearsInBusiness?: number;
+  capacityGuestMin?: number;
+  capacityGuestMax?: number;
+};
+
+export type PatchWorkspaceProfileStep1Body = {
+  categoryCodes: string[];
+  serviceOfferingIds: string[];
+  keywords: string[];
+  priceBand?: "budget" | "mid" | "premium" | "custom";
+  priceFrom?: number;
+  yearsInBusiness?: number;
+  capacityGuestMin?: number;
+  capacityGuestMax?: number;
+};
+
+export type PatchWorkspaceProfileStep2Body = {
+  galleryImageUrls: string[];
+  heroImageUrl?: string;
+};
+
+export async function patchWorkspaceCatererProfileStep(
+  accessToken: string,
+  step: 0 | 1 | 2,
+  body: PatchWorkspaceProfileStep0Body | PatchWorkspaceProfileStep1Body | PatchWorkspaceProfileStep2Body
+): Promise<CatererWorkspaceProfile> {
+  const res = await fetch(`${getCateringApiBase()}/api/marketplace/caterer/profile/step/${step}`, {
+    method: "PATCH",
+    headers: {
+      Authorization: `Bearer ${accessToken}`,
+      "Content-Type": "application/json",
+    },
+    body: JSON.stringify(body),
+    ...fetchOpts,
+  });
+  const data: unknown = await res.json().catch(() => ({}));
+  if (!res.ok) {
+    throw new Error(formatWorkspaceProfileSaveError(data, res.status));
+  }
+  return data as CatererWorkspaceProfile;
+}
+
+export async function publishWorkspaceCatererProfile(accessToken: string): Promise<CatererWorkspaceProfile> {
+  const res = await fetch(`${getCateringApiBase()}/api/marketplace/caterer/profile/step/3`, {
+    method: "PATCH",
+    headers: {
+      Authorization: `Bearer ${accessToken}`,
+      "Content-Type": "application/json",
+    },
+    body: "{}",
+    ...fetchOpts,
+  });
+  const data: unknown = await res.json().catch(() => ({}));
+  if (!res.ok) {
+    throw new Error(formatWorkspaceProfileSaveError(data, res.status));
+  }
+  return data as CatererWorkspaceProfile;
+}
+
+export async function updateWorkspaceCatererProfile(
+  accessToken: string,
+  body: {
+    cityId: string;
+    streetAddress?: string;
+    tagline?: string;
+    about: string;
+    heroImageUrl?: string;
+    priceBand?: "budget" | "mid" | "premium" | "custom";
+    priceFrom?: number;
+    yearsInBusiness?: number;
+    capacityGuestMin?: number;
+    capacityGuestMax?: number;
+    categoryCodes: string[];
+    serviceOfferingIds: string[];
+    keywords: string[];
+    galleryImageUrls: string[];
+  }
+): Promise<CatererWorkspaceProfile> {
+  const res = await fetch(`${getCateringApiBase()}/api/marketplace/caterer/profile`, {
+    method: "PATCH",
+    headers: {
+      Authorization: `Bearer ${accessToken}`,
+      "Content-Type": "application/json",
+    },
+    body: JSON.stringify(body),
+    ...fetchOpts,
+  });
+  const data: unknown = await res.json().catch(() => ({}));
+  if (!res.ok) {
+    throw new Error(formatWorkspaceProfileSaveError(data, res.status));
+  }
+  return data as CatererWorkspaceProfile;
 }
 
 function formatPostReviewError(data: unknown, status: number): string {

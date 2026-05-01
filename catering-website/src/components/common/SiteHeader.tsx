@@ -14,8 +14,8 @@ import {
 } from "@phosphor-icons/react";
 import Link from "next/link";
 import { useAuth } from "@/context/AuthContext";
-import type { AuthUser } from "@/lib/auth-api";
-import { useEffect, useRef, useState } from "react";
+import { profileHref, UserAccountMenu } from "@/components/common/UserAccountMenu";
+import { useState } from "react";
 
 function initialsFromName(name: string) {
   const parts = name.trim().split(/\s+/).filter(Boolean);
@@ -24,76 +24,9 @@ function initialsFromName(name: string) {
   return `${parts[0]![0] ?? ""}${parts[parts.length - 1]![0] ?? ""}`.toUpperCase() || "?";
 }
 
-function profileHref(user: AuthUser) {
-  if (user.role === "admin") return "/";
-  return "/workspace/business";
-}
-
-function UserAvatarButton({
-  user,
-  expanded,
-  onToggle,
-  buttonRef,
-}: {
-  user: AuthUser;
-  expanded: boolean;
-  onToggle: () => void;
-  buttonRef: React.RefObject<HTMLButtonElement | null>;
-}) {
-  const label = initialsFromName(user.fullName);
-  return (
-    <button
-      ref={buttonRef}
-      type="button"
-      onClick={onToggle}
-      aria-expanded={expanded}
-      aria-haspopup="menu"
-      aria-label="Account menu"
-      className="flex items-center gap-2 rounded-full border border-gray-200 bg-white py-1 pl-1 pr-2 shadow-sm transition hover:border-brand-red/40 hover:shadow-md focus-visible:outline focus-visible:ring-4 focus-visible:ring-brand-red/20"
-    >
-      <span
-        className="flex h-9 w-9 shrink-0 items-center justify-center rounded-full bg-gradient-to-br from-brand-red to-red-800 text-xs font-bold text-white shadow-inner ring-2 ring-white"
-        aria-hidden
-      >
-        {label.slice(0, 2)}
-      </span>
-      <span className="hidden max-w-[10rem] truncate text-left text-sm font-semibold text-brand-dark sm:inline">
-        {user.fullName}
-      </span>
-      <CaretDown
-        className={`hidden shrink-0 text-gray-500 transition-transform sm:block ${expanded ? "rotate-180" : ""}`}
-        size={16}
-        aria-hidden
-      />
-    </button>
-  );
-}
-
 export function SiteHeader() {
   const [open, setOpen] = useState(false);
-  const [userMenuOpen, setUserMenuOpen] = useState(false);
-  const userMenuRef = useRef<HTMLDivElement>(null);
-  const userMenuButtonRef = useRef<HTMLButtonElement>(null);
   const { user, ready, logout } = useAuth();
-
-  useEffect(() => {
-    if (!userMenuOpen) return;
-    function onDocMouseDown(e: MouseEvent) {
-      const el = userMenuRef.current;
-      if (el && !el.contains(e.target as Node)) {
-        setUserMenuOpen(false);
-      }
-    }
-    function onKey(e: KeyboardEvent) {
-      if (e.key === "Escape") setUserMenuOpen(false);
-    }
-    document.addEventListener("mousedown", onDocMouseDown);
-    document.addEventListener("keydown", onKey);
-    return () => {
-      document.removeEventListener("mousedown", onDocMouseDown);
-      document.removeEventListener("keydown", onKey);
-    };
-  }, [userMenuOpen]);
 
   return (
     <>
@@ -224,45 +157,8 @@ export function SiteHeader() {
               <MagnifyingGlass className="text-lg" aria-hidden />
             </Link>
             {ready && user ? (
-              <div ref={userMenuRef} className="relative hidden md:block">
-                <UserAvatarButton
-                  user={user}
-                  expanded={userMenuOpen}
-                  onToggle={() => setUserMenuOpen((v) => !v)}
-                  buttonRef={userMenuButtonRef}
-                />
-                {userMenuOpen ? (
-                  <div
-                    role="menu"
-                    className="absolute right-0 z-[60] mt-2 min-w-[220px] overflow-hidden rounded-xl border border-gray-100 bg-white py-1 shadow-xl ring-1 ring-black/5"
-                  >
-                    <div className="border-b border-gray-100 px-4 py-3">
-                      <p className="truncate text-sm font-bold text-brand-dark">{user.fullName}</p>
-                      <p className="truncate text-xs text-gray-500">{user.email}</p>
-                    </div>
-                    <Link
-                      href={profileHref(user)}
-                      role="menuitem"
-                      className="flex items-center gap-3 px-4 py-3 text-sm font-semibold text-brand-dark transition hover:bg-gray-50"
-                      onClick={() => setUserMenuOpen(false)}
-                    >
-                      <UserCircle className="text-brand-red" size={22} weight="duotone" aria-hidden />
-                      Profile
-                    </Link>
-                    <button
-                      type="button"
-                      role="menuitem"
-                      className="flex w-full items-center gap-3 px-4 py-3 text-left text-sm font-semibold text-brand-dark transition hover:bg-gray-50"
-                      onClick={() => {
-                        setUserMenuOpen(false);
-                        logout();
-                      }}
-                    >
-                      <SignOut className="text-gray-500" size={22} aria-hidden />
-                      Log out
-                    </button>
-                  </div>
-                ) : null}
+              <div className="hidden md:block">
+                <UserAccountMenu user={user} onLogout={logout} />
               </div>
             ) : ready ? (
               <>

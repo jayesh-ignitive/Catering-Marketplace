@@ -24,15 +24,15 @@
 }
 
 .gradient-text {
-  background: linear-gradient(to right, #EA6A12, #FF9B44);
+  background: linear-gradient(to right, #E53935, #FF5252);
   -webkit-background-clip: text;
   -webkit-text-fill-color: transparent;
 }
 
 .nav-link-active {
-  background-color: #EA6A12;
+  background-color: #E53935;
   color: white !important;
-  box-shadow: 0 4px 15px rgba(234, 106, 18, 0.3);
+  box-shadow: 0 4px 15px rgba(229, 57, 53, 0.3);
 }
 
 /* Dashboard specific custom styles */

@@ -1,4 +1,4 @@
-import { Body, Controller, Get, Post, Req, UseGuards } from '@nestjs/common';
+import { Body, Controller, Get, Patch, Post, Req, UseGuards } from '@nestjs/common';
 import type { Request } from 'express';
 import { AuthService } from './auth.service';
 import { JwtAuthGuard } from './jwt-auth.guard';
@@ -7,6 +7,7 @@ import { RegisterDto } from './dto/register.dto';
 import { ResendVerificationDto } from './dto/resend-verification.dto';
 import { VerifyEmailDto } from './dto/verify-email.dto';
 import { VerifyOtpDto } from './dto/verify-otp.dto';
+import { UpdateAccountProfileDto } from './dto/update-account-profile.dto';
 import type { User } from '../user/user.entity';
 
 @Controller('auth')
@@ -42,5 +43,11 @@ export class AuthController {
   @UseGuards(JwtAuthGuard)
   me(@Req() req: Request & { user: User }) {
     return this.auth.serializeAuthUser(req.user);
+  }
+
+  @Patch('me')
+  @UseGuards(JwtAuthGuard)
+  updateMe(@Req() req: Request & { user: User }, @Body() dto: UpdateAccountProfileDto) {
+    return this.auth.updateAccountProfile(req.user.id, dto);
   }
 }

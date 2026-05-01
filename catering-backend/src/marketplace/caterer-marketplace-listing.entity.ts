@@ -67,7 +67,8 @@ export class CatererMarketplaceListing {
   @Column({ type: 'text', nullable: true })
   about!: string | null;
 
-  @Column({ name: 'hero_image_url', type: 'varchar', length: 512, nullable: true })
+  /** Hosted URL, `/uploads/…`, or inline `data:image/…` — can exceed 512 chars. */
+  @Column({ name: 'hero_image_url', type: 'longtext', nullable: true })
   heroImageUrl!: string | null;
 
   @Column({ name: 'years_in_business', type: 'smallint', unsigned: true, nullable: true })

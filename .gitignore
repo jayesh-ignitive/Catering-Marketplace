@@ -45,6 +45,9 @@ next-env.d.ts
 dist/
 .temp/
 
+# ─── Local uploaded files (Nest upload API) ─────────────────────
+catering-backend/storage/public/
+
 # ─── Misc build / bundler ─────────────────────────────────────
 build/
 

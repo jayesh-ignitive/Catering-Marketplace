@@ -1,9 +1,18 @@
 import { ValidationPipe } from '@nestjs/common';
 import { NestFactory } from '@nestjs/core';
+import { NestExpressApplication } from '@nestjs/platform-express';
+import { existsSync, mkdirSync } from 'fs';
+import { join } from 'path';
 import { AppModule } from './app.module';
 
 async function bootstrap() {
-  const app = await NestFactory.create(AppModule);
+  const app = await NestFactory.create<NestExpressApplication>(AppModule);
+
+  const uploadPublicRoot = join(process.cwd(), 'storage', 'public');
+  if (!existsSync(uploadPublicRoot)) {
+    mkdirSync(uploadPublicRoot, { recursive: true });
+  }
+  app.useStaticAssets(uploadPublicRoot, { prefix: '/uploads/', index: false });
   app.setGlobalPrefix('api');
   app.useGlobalPipes(
     new ValidationPipe({

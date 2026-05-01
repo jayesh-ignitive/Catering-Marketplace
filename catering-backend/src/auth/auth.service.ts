@@ -1,5 +1,6 @@
 import {
   ConflictException,
+  ForbiddenException,
   HttpException,
   HttpStatus,
   Injectable,
@@ -14,6 +15,7 @@ import { randomBytes, randomInt, randomUUID } from 'crypto';
 import { Repository } from 'typeorm';
 import type { LoginDto } from './dto/login.dto';
 import type { RegisterDto } from './dto/register.dto';
+import type { UpdateAccountProfileDto } from './dto/update-account-profile.dto';
 import type { JwtPayload } from './jwt-payload.type';
 import { MailService } from '../mail/mail.service';
 import { mysqlDbNameFromTenantSlug, slugify, subdomainLabelFrom } from '../tenant/slug.util';
@@ -74,6 +76,29 @@ export class AuthService {
 
   serializeAuthUser(user: User): AuthUserView {
     return this.toView(user);
+  }
+
+  /** Caterer: update display name and business name (syncs linked tenant name). */
+  async updateAccountProfile(userId: string, dto: UpdateAccountProfileDto): Promise<AuthUserView> {
+    const fullName = dto.fullName.trim().slice(0, 120);
+    const businessName = dto.businessName.trim().slice(0, 120);
+
+    const user = await this.loadUserWithTenant(userId);
+    if (user.role !== UserRole.CATERER) {
+      throw new ForbiddenException('Only caterer accounts can update this profile');
+    }
+
+    user.fullName = fullName;
+    user.businessName = businessName;
+
+    if (user.tenant) {
+      user.tenant.name = businessName;
+      await this.users.manager.getRepository(Tenant).save(user.tenant);
+    }
+
+    await this.users.save(user);
+    const fresh = await this.loadUserWithTenant(user.id);
+    return this.toView(fresh);
   }
 
   private tenantSummary(user: User): TenantSummary | null {

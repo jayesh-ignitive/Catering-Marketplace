@@ -16,8 +16,10 @@
                 extend: {
                     colors: {
                         brand: {
-                            orange: '#EA6A12',
-                            orangeLight: '#FFF0E6',
+                            red: '#E53935',
+                            redLight: '#FFEBEE',
+                            yellow: '#FFC107',
+                            green: '#4CAF50',
                             dark: '#1C1C1C',
                             gray: '#F8F9FA',
                             text: '#8A92A6',
@@ -32,6 +34,7 @@
             }
         }
     </script>
+    <link rel="stylesheet" href="style.css">
     <link rel="stylesheet" href="admin.css">
     <!-- Phosphor Icons -->
     <script src="https://unpkg.com/@phosphor-icons/web"></script>
@@ -46,11 +49,12 @@
         <div>
             <!-- Logo -->
             <div class="h-20 flex items-center px-6 border-b border-gray-50">
-                <a href="#" class="flex items-center gap-2">
-                    <div class="w-8 h-8 bg-brand-orange rounded flex items-center justify-center text-white">
-                        <i class="ph-bold ph-chef-hat text-xl"></i>
+                <a href="/" class="flex items-center gap-2">
+                    <i class="ph-fill ph-chef-hat text-3xl text-[#d4af37] shrink-0"></i>
+                    <div class="flex flex-col relative logo-text pl-1">
+                        <span class="font-logo text-3xl text-brand-dark leading-none tracking-tight translate-y-1">Bharat</span>
+                        <span class="bg-brand-red text-white text-[8px] uppercase tracking-[0.3em] font-bold px-1 py-0.5 rounded-sm -rotate-2 -mt-1 shadow-sm relative z-10 w-fit">Catering</span>
                     </div>
-                    <span class="logo-text font-heading font-bold text-2xl text-brand-textDark tracking-tight">Aprycot</span>
                 </a>
             </div>
 
@@ -63,42 +67,42 @@
                     <span class="nav-text font-medium text-sm">Dashboard</span>
                 </a>
 
-                <a href="#" class="nav-link flex items-center justify-between px-3 py-3 rounded-xl text-brand-text hover:bg-brand-orangeLight hover:text-brand-orange hover:translate-x-1 group transition-all duration-300">
+                <a href="#" class="nav-link flex items-center justify-between px-3 py-3 rounded-xl text-brand-text hover:bg-brand-redLight hover:text-brand-red hover:translate-x-1 group transition-all duration-300">
                     <div class="flex items-center gap-3">
-                        <i class="ph ph-shopping-bag text-xl shrink-0 group-hover:fill-brand-orange group-hover:scale-110 transition-all"></i>
+                        <i class="ph ph-shopping-bag text-xl shrink-0 group-hover:fill-brand-red group-hover:scale-110 transition-all"></i>
                         <span class="nav-text font-medium text-sm">Orders</span>
                     </div>
-                    <span class="nav-badge bg-brand-orangeLight text-brand-orange text-xs font-bold px-2 py-0.5 rounded-full group-hover:bg-brand-orange group-hover:text-white transition-colors">2</span>
+                    <span class="nav-badge bg-brand-redLight text-brand-red text-xs font-bold px-2 py-0.5 rounded-full group-hover:bg-brand-red group-hover:text-white transition-colors">2</span>
                 </a>
 
-                <a href="#" class="nav-link flex items-center gap-3 px-3 py-3 rounded-xl text-brand-text hover:bg-brand-orangeLight hover:text-brand-orange hover:translate-x-1 group transition-all duration-300">
-                    <i class="ph ph-users text-xl shrink-0 group-hover:fill-brand-orange group-hover:scale-110 transition-all"></i>
+                <a href="#" class="nav-link flex items-center gap-3 px-3 py-3 rounded-xl text-brand-text hover:bg-brand-redLight hover:text-brand-red hover:translate-x-1 group transition-all duration-300">
+                    <i class="ph ph-users text-xl shrink-0 group-hover:fill-brand-red group-hover:scale-110 transition-all"></i>
                     <span class="nav-text font-medium text-sm">Customer</span>
                 </a>
                 
-                <a href="#" class="nav-link flex items-center gap-3 px-3 py-3 rounded-xl text-brand-text hover:bg-brand-orangeLight hover:text-brand-orange hover:translate-x-1 group transition-all duration-300">
-                    <i class="ph ph-chart-line-up text-xl shrink-0 group-hover:fill-brand-orange group-hover:scale-110 transition-all"></i>
+                <a href="#" class="nav-link flex items-center gap-3 px-3 py-3 rounded-xl text-brand-text hover:bg-brand-redLight hover:text-brand-red hover:translate-x-1 group transition-all duration-300">
+                    <i class="ph ph-chart-line-up text-xl shrink-0 group-hover:fill-brand-red group-hover:scale-110 transition-all"></i>
                     <span class="nav-text font-medium text-sm">Analytics</span>
                 </a>
 
-                <a href="#" class="nav-link flex items-center gap-3 px-3 py-3 rounded-xl text-brand-text hover:bg-brand-orangeLight hover:text-brand-orange hover:translate-x-1 group transition-all duration-300">
-                    <i class="ph ph-star text-xl shrink-0 group-hover:fill-brand-orange group-hover:scale-110 transition-all"></i>
+                <a href="#" class="nav-link flex items-center gap-3 px-3 py-3 rounded-xl text-brand-text hover:bg-brand-redLight hover:text-brand-red hover:translate-x-1 group transition-all duration-300">
+                    <i class="ph ph-star text-xl shrink-0 group-hover:fill-brand-red group-hover:scale-110 transition-all"></i>
                     <span class="nav-text font-medium text-sm">Reviews</span>
                 </a>
 
                 <div class="menu-header text-xs font-bold text-gray-400 uppercase tracking-wider mb-2 mt-6 px-3 transition-all duration-300">Food Menu</div>
 
-                <a href="#" class="nav-link flex items-center justify-between px-3 py-3 rounded-xl text-brand-text hover:bg-brand-orangeLight hover:text-brand-orange hover:translate-x-1 group transition-all duration-300">
+                <a href="#" class="nav-link flex items-center justify-between px-3 py-3 rounded-xl text-brand-text hover:bg-brand-redLight hover:text-brand-red hover:translate-x-1 group transition-all duration-300">
                     <div class="flex items-center gap-3">
-                        <i class="ph ph-bowl-food text-xl shrink-0 group-hover:fill-brand-orange group-hover:scale-110 transition-all"></i>
+                        <i class="ph ph-bowl-food text-xl shrink-0 group-hover:fill-brand-red group-hover:scale-110 transition-all"></i>
                         <span class="nav-text font-medium text-sm">Menu List</span>
                     </div>
                     <i class="nav-caret ph ph-caret-right text-sm"></i>
                 </a>
 
-                <a href="#" class="nav-link flex items-center justify-between px-3 py-3 rounded-xl text-brand-text hover:bg-brand-orangeLight hover:text-brand-orange hover:translate-x-1 group transition-all duration-300">
+                <a href="#" class="nav-link flex items-center justify-between px-3 py-3 rounded-xl text-brand-text hover:bg-brand-redLight hover:text-brand-red hover:translate-x-1 group transition-all duration-300">
                     <div class="flex items-center gap-3">
-                        <i class="ph ph-list-dashes text-xl shrink-0 group-hover:fill-brand-orange group-hover:scale-110 transition-all"></i>
+                        <i class="ph ph-list-dashes text-xl shrink-0 group-hover:fill-brand-red group-hover:scale-110 transition-all"></i>
                         <span class="nav-text font-medium text-sm">Categories</span>
                     </div>
                     <i class="nav-caret ph ph-caret-right text-sm"></i>
@@ -108,15 +112,15 @@
 
         <!-- Promo / Upgrade -->
         <div class="promo-box p-4">
-            <div class="bg-brand-orangeLight rounded-2xl p-4 text-center relative overflow-hidden">
-                <div class="absolute -right-4 -top-4 w-16 h-16 bg-brand-orange rounded-full opacity-10"></div>
-                <div class="absolute -left-4 -bottom-4 w-12 h-12 bg-brand-orange rounded-full opacity-10"></div>
-                <div class="w-12 h-12 bg-white rounded-full flex items-center justify-center mx-auto mb-3 text-brand-orange shadow-sm relative z-10">
+            <div class="bg-brand-redLight rounded-2xl p-4 text-center relative overflow-hidden">
+                <div class="absolute -right-4 -top-4 w-16 h-16 bg-brand-red rounded-full opacity-10"></div>
+                <div class="absolute -left-4 -bottom-4 w-12 h-12 bg-brand-red rounded-full opacity-10"></div>
+                <div class="w-12 h-12 bg-white rounded-full flex items-center justify-center mx-auto mb-3 text-brand-red shadow-sm relative z-10">
                     <i class="ph-fill ph-crown text-xl"></i>
                 </div>
                 <h4 class="font-heading font-bold text-brand-textDark text-sm mb-1 relative z-10">Upgrade to Pro</h4>
                 <p class="text-xs text-brand-text mb-3 relative z-10">Get access to all features</p>
-                <button class="bg-brand-orange text-white text-xs font-semibold py-2 px-4 rounded-lg w-full hover:shadow-lg hover:-translate-y-0.5 transition-all duration-300 relative z-10">Upgrade</button>
+                <button class="bg-brand-red text-white text-xs font-semibold py-2 px-4 rounded-lg w-full hover:shadow-lg hover:-translate-y-0.5 transition-all duration-300 relative z-10">Upgrade</button>
             </div>
         </div>
     </aside>
@@ -127,23 +131,23 @@
         <!-- Header -->
         <header class="h-20 bg-white/80 backdrop-blur-md border-b border-gray-100 flex items-center justify-between px-8 shrink-0 z-10 sticky top-0">
             <div class="flex items-center gap-4">
-                <button onclick="toggleSidebar()" class="text-brand-text hover:text-brand-orange transition-colors">
+                <button onclick="toggleSidebar()" class="text-brand-text hover:text-brand-red transition-colors">
                     <i class="ph ph-list text-2xl"></i>
                 </button>
                 <div class="relative hidden md:block w-72">
                     <i class="ph ph-magnifying-glass absolute left-3 top-1/2 -translate-y-1/2 text-gray-400 text-lg"></i>
-                    <input type="text" placeholder="Search here..." class="w-full bg-brand-gray border border-transparent focus:border-brand-orange focus:bg-white rounded-xl py-2.5 pl-10 pr-4 text-sm outline-none transition-all duration-300">
+                    <input type="text" placeholder="Search here..." class="w-full bg-brand-gray border border-transparent focus:border-brand-red focus:bg-white rounded-xl py-2.5 pl-10 pr-4 text-sm outline-none transition-all duration-300">
                 </div>
             </div>
 
             <div class="flex items-center gap-4">
-                <button class="relative w-10 h-10 rounded-full bg-brand-gray flex items-center justify-center text-brand-text hover:text-brand-orange hover:bg-brand-orangeLight transition-all">
+                <button class="relative w-10 h-10 rounded-full bg-brand-gray flex items-center justify-center text-brand-text hover:text-brand-red hover:bg-brand-redLight transition-all">
                     <i class="ph ph-bell text-xl"></i>
                     <span class="absolute top-2 right-2 w-2 h-2 bg-red-500 rounded-full border-2 border-brand-gray"></span>
                 </button>
-                <button class="relative w-10 h-10 rounded-full bg-brand-gray flex items-center justify-center text-brand-text hover:text-brand-orange hover:bg-brand-orangeLight transition-all">
+                <button class="relative w-10 h-10 rounded-full bg-brand-gray flex items-center justify-center text-brand-text hover:text-brand-red hover:bg-brand-redLight transition-all">
                     <i class="ph ph-envelope-simple text-xl"></i>
-                    <span class="absolute top-2 right-2 w-2 h-2 bg-brand-orange rounded-full border-2 border-brand-gray"></span>
+                    <span class="absolute top-2 right-2 w-2 h-2 bg-brand-red rounded-full border-2 border-brand-gray"></span>
                 </button>
                 <div class="h-8 w-px bg-gray-200 mx-2"></div>
                 <div class="flex items-center gap-3 cursor-pointer group">
@@ -151,8 +155,8 @@
                         <p class="text-sm font-bold text-brand-textDark leading-none">Austin Robertson</p>
                         <p class="text-xs text-brand-text">Admin</p>
                     </div>
-                    <img src="https://images.unsplash.com/photo-1535713875002-d1d0cf377fde?auto=format&fit=crop&w=100&q=80" alt="User" class="w-10 h-10 rounded-full object-cover border-2 border-transparent group-hover:border-brand-orange transition-all">
-                    <i class="ph ph-caret-down text-brand-text group-hover:text-brand-orange transition-colors"></i>
+                    <img src="https://images.unsplash.com/photo-1535713875002-d1d0cf377fde?auto=format&fit=crop&w=100&q=80" alt="User" class="w-10 h-10 rounded-full object-cover border-2 border-transparent group-hover:border-brand-red transition-all">
+                    <i class="ph ph-caret-down text-brand-text group-hover:text-brand-red transition-colors"></i>
                 </div>
             </div>
         </header>
@@ -168,11 +172,11 @@
                     <!-- Welcome Banner -->
                     <div class="bg-white rounded-2xl p-8 flex-1 flex items-center justify-between shadow-card relative overflow-hidden group">
                         <!-- Decorative background elements -->
-                        <div class="absolute -right-20 -bottom-20 w-64 h-64 bg-brand-orangeLight rounded-full opacity-50 group-hover:scale-110 transition-transform duration-700"></div>
+                        <div class="absolute -right-20 -bottom-20 w-64 h-64 bg-brand-redLight rounded-full opacity-50 group-hover:scale-110 transition-transform duration-700"></div>
                         <div class="relative z-10 w-full md:w-3/5">
                             <h2 class="font-heading font-bold text-2xl text-brand-textDark mb-2">Hello, Austin Robertson!</h2>
                             <p class="text-brand-text text-sm mb-6 leading-relaxed">Welcome back! You have 2 new orders today. Check your dashboard to see full details and manage your catering services.</p>
-                            <button class="bg-brand-textDark text-white px-6 py-2.5 rounded-xl text-sm font-medium hover:bg-brand-orange hover:shadow-[0_8px_20px_rgba(234,106,18,0.3)] hover:-translate-y-1 transition-all duration-300">View Orders</button>
+                            <button class="bg-brand-textDark text-white px-6 py-2.5 rounded-xl text-sm font-medium hover:bg-brand-red hover:shadow-[0_8px_20px_rgba(229,57,53,0.3)] hover:-translate-y-1 transition-all duration-300">View Orders</button>
                         </div>
                         <div class="relative z-10 hidden md:block w-40 h-40">
                             <!-- Illustration Placeholder using an emoji or small image -->
@@ -181,11 +185,11 @@
                     </div>
 
                     <!-- Discount Promo -->
-                    <div class="bg-brand-orange rounded-2xl p-6 xl:w-72 text-white shadow-[0_10px_30px_rgba(234,106,18,0.3)] relative overflow-hidden flex flex-col justify-center">
+                    <div class="bg-brand-red rounded-2xl p-6 xl:w-72 text-white shadow-[0_10px_30px_rgba(229,57,53,0.3)] relative overflow-hidden flex flex-col justify-center">
                         <div class="absolute -right-8 -top-8 w-32 h-32 bg-white/10 rounded-full"></div>
                         <div class="absolute -left-8 -bottom-8 w-24 h-24 bg-black/10 rounded-full"></div>
                         <div class="relative z-10 flex items-center gap-4">
-                            <div class="w-14 h-14 bg-white rounded-xl flex items-center justify-center text-brand-orange shrink-0">
+                            <div class="w-14 h-14 bg-white rounded-xl flex items-center justify-center text-brand-red shrink-0">
                                 <i class="ph-fill ph-ticket text-3xl"></i>
                             </div>
                             <div>
@@ -201,25 +205,25 @@
                 <div>
                     <div class="flex items-center justify-between mb-4">
                         <h3 class="font-heading font-bold text-xl text-brand-textDark">Categories</h3>
-                        <a href="#" class="text-sm text-brand-orange font-medium hover:underline">View All</a>
+                        <a href="#" class="text-sm text-brand-red font-medium hover:underline">View All</a>
                     </div>
                     <div class="flex gap-4 overflow-x-auto no-scrollbar pb-4 snap-x">
-                        <button class="snap-start bg-brand-orange text-white px-6 py-2.5 rounded-full text-sm font-medium shadow-md shrink-0 flex items-center gap-2 hover:-translate-y-0.5 transition-transform">
+                        <button class="snap-start bg-brand-red text-white px-6 py-2.5 rounded-full text-sm font-medium shadow-md shrink-0 flex items-center gap-2 hover:-translate-y-0.5 transition-transform">
                             <i class="ph-fill ph-hamburger"></i> All
                         </button>
-                        <button class="snap-start bg-white text-brand-text px-6 py-2.5 rounded-full text-sm font-medium shadow-card hover:shadow-md hover:text-brand-orange shrink-0 flex items-center gap-2 transition-all">
+                        <button class="snap-start bg-white text-brand-text px-6 py-2.5 rounded-full text-sm font-medium shadow-card hover:shadow-md hover:text-brand-red shrink-0 flex items-center gap-2 transition-all">
                             <i class="ph ph-pizza"></i> Pizza
                         </button>
-                        <button class="snap-start bg-white text-brand-text px-6 py-2.5 rounded-full text-sm font-medium shadow-card hover:shadow-md hover:text-brand-orange shrink-0 flex items-center gap-2 transition-all">
+                        <button class="snap-start bg-white text-brand-text px-6 py-2.5 rounded-full text-sm font-medium shadow-card hover:shadow-md hover:text-brand-red shrink-0 flex items-center gap-2 transition-all">
                             <i class="ph ph-hamburger"></i> Burger
                         </button>
-                        <button class="snap-start bg-white text-brand-text px-6 py-2.5 rounded-full text-sm font-medium shadow-card hover:shadow-md hover:text-brand-orange shrink-0 flex items-center gap-2 transition-all">
+                        <button class="snap-start bg-white text-brand-text px-6 py-2.5 rounded-full text-sm font-medium shadow-card hover:shadow-md hover:text-brand-red shrink-0 flex items-center gap-2 transition-all">
                             <i class="ph ph-bowl-food"></i> Noodles
                         </button>
-                        <button class="snap-start bg-white text-brand-text px-6 py-2.5 rounded-full text-sm font-medium shadow-card hover:shadow-md hover:text-brand-orange shrink-0 flex items-center gap-2 transition-all">
+                        <button class="snap-start bg-white text-brand-text px-6 py-2.5 rounded-full text-sm font-medium shadow-card hover:shadow-md hover:text-brand-red shrink-0 flex items-center gap-2 transition-all">
                             <i class="ph ph-coffee"></i> Drinks
                         </button>
-                        <button class="snap-start bg-white text-brand-text px-6 py-2.5 rounded-full text-sm font-medium shadow-card hover:shadow-md hover:text-brand-orange shrink-0 flex items-center gap-2 transition-all">
+                        <button class="snap-start bg-white text-brand-text px-6 py-2.5 rounded-full text-sm font-medium shadow-card hover:shadow-md hover:text-brand-red shrink-0 flex items-center gap-2 transition-all">
                             <i class="ph ph-ice-cream"></i> Desserts
                         </button>
                     </div>
@@ -230,8 +234,8 @@
                     <div class="flex items-center justify-between mb-6">
                         <h3 class="font-heading font-bold text-xl text-brand-textDark">Popular Dishes</h3>
                         <div class="flex gap-2">
-                            <button class="w-8 h-8 rounded bg-white flex items-center justify-center shadow-sm text-brand-text hover:text-brand-orange transition-colors"><i class="ph ph-caret-left"></i></button>
-                            <button class="w-8 h-8 rounded bg-brand-orange flex items-center justify-center shadow-sm text-white hover:bg-orange-600 transition-colors"><i class="ph ph-caret-right"></i></button>
+                            <button class="w-8 h-8 rounded bg-white flex items-center justify-center shadow-sm text-brand-text hover:text-brand-red transition-colors"><i class="ph ph-caret-left"></i></button>
+                            <button class="w-8 h-8 rounded bg-brand-red flex items-center justify-center shadow-sm text-white hover:bg-red-700 transition-colors"><i class="ph ph-caret-right"></i></button>
                         </div>
                     </div>
                     
@@ -241,17 +245,17 @@
                             <div class="relative h-40 rounded-xl overflow-hidden mb-4">
                                 <img src="https://images.unsplash.com/photo-1568901346375-23c9450c58cd?auto=format&fit=crop&w=500&q=80" alt="Burger" class="w-full h-full object-cover group-hover:scale-110 transition-transform duration-500">
                                 <div class="absolute top-2 right-2 bg-white/90 backdrop-blur-sm text-brand-textDark text-xs font-bold px-2 py-1 rounded flex items-center gap-1 shadow-sm">
-                                    <i class="ph-fill ph-star text-brand-orange"></i> 4.8
+                                    <i class="ph-fill ph-star text-brand-red"></i> 4.8
                                 </div>
                             </div>
                             <div class="mb-1">
                                 <span class="text-xs text-brand-text uppercase tracking-wider font-semibold">Burger</span>
                             </div>
-                            <h4 class="font-heading font-bold text-lg text-brand-textDark mb-1 group-hover:text-brand-orange transition-colors">Classic Beef Burger</h4>
+                            <h4 class="font-heading font-bold text-lg text-brand-textDark mb-1 group-hover:text-brand-red transition-colors">Classic Beef Burger</h4>
                             <p class="text-xs text-brand-text mb-4 line-clamp-2">Juicy beef patty with fresh lettuce, tomatoes, and our secret sauce.</p>
                             <div class="flex items-center justify-between mt-auto">
                                 <div class="font-bold text-xl text-brand-textDark">$12.<span class="text-sm">50</span></div>
-                                <button class="w-10 h-10 bg-brand-orangeLight text-brand-orange rounded-full flex items-center justify-center hover:bg-brand-orange hover:text-white transition-colors">
+                                <button class="w-10 h-10 bg-brand-redLight text-brand-red rounded-full flex items-center justify-center hover:bg-brand-red hover:text-white transition-colors">
                                     <i class="ph ph-plus text-xl"></i>
                                 </button>
                             </div>
@@ -262,17 +266,17 @@
                             <div class="relative h-40 rounded-xl overflow-hidden mb-4">
                                 <img src="https://images.unsplash.com/photo-1513104890138-7c749659a591?auto=format&fit=crop&w=500&q=80" alt="Pizza" class="w-full h-full object-cover group-hover:scale-110 transition-transform duration-500">
                                 <div class="absolute top-2 right-2 bg-white/90 backdrop-blur-sm text-brand-textDark text-xs font-bold px-2 py-1 rounded flex items-center gap-1 shadow-sm">
-                                    <i class="ph-fill ph-star text-brand-orange"></i> 4.9
+                                    <i class="ph-fill ph-star text-brand-red"></i> 4.9
                                 </div>
                             </div>
                             <div class="mb-1">
                                 <span class="text-xs text-brand-text uppercase tracking-wider font-semibold">Pizza</span>
                             </div>
-                            <h4 class="font-heading font-bold text-lg text-brand-textDark mb-1 group-hover:text-brand-orange transition-colors">Margherita Pizza</h4>
+                            <h4 class="font-heading font-bold text-lg text-brand-textDark mb-1 group-hover:text-brand-red transition-colors">Margherita Pizza</h4>
                             <p class="text-xs text-brand-text mb-4 line-clamp-2">Fresh mozzarella, tomatoes, and basil on a crispy crust.</p>
                             <div class="flex items-center justify-between mt-auto">
                                 <div class="font-bold text-xl text-brand-textDark">$18.<span class="text-sm">00</span></div>
-                                <button class="w-10 h-10 bg-brand-orangeLight text-brand-orange rounded-full flex items-center justify-center hover:bg-brand-orange hover:text-white transition-colors">
+                                <button class="w-10 h-10 bg-brand-redLight text-brand-red rounded-full flex items-center justify-center hover:bg-brand-red hover:text-white transition-colors">
                                     <i class="ph ph-plus text-xl"></i>
                                 </button>
                             </div>
@@ -283,17 +287,17 @@
                             <div class="relative h-40 rounded-xl overflow-hidden mb-4">
                                 <img src="https://images.unsplash.com/photo-1550547660-d9450f859349?auto=format&fit=crop&w=500&q=80" alt="Burger" class="w-full h-full object-cover group-hover:scale-110 transition-transform duration-500">
                                 <div class="absolute top-2 right-2 bg-white/90 backdrop-blur-sm text-brand-textDark text-xs font-bold px-2 py-1 rounded flex items-center gap-1 shadow-sm">
-                                    <i class="ph-fill ph-star text-brand-orange"></i> 4.7
+                                    <i class="ph-fill ph-star text-brand-red"></i> 4.7
                                 </div>
                             </div>
                             <div class="mb-1">
                                 <span class="text-xs text-brand-text uppercase tracking-wider font-semibold">Burger</span>
                             </div>
-                            <h4 class="font-heading font-bold text-lg text-brand-textDark mb-1 group-hover:text-brand-orange transition-colors">Double Cheese</h4>
+                            <h4 class="font-heading font-bold text-lg text-brand-textDark mb-1 group-hover:text-brand-red transition-colors">Double Cheese</h4>
                             <p class="text-xs text-brand-text mb-4 line-clamp-2">Extra cheese, extra happiness in every single bite.</p>
                             <div class="flex items-center justify-between mt-auto">
                                 <div class="font-bold text-xl text-brand-textDark">$15.<span class="text-sm">99</span></div>
-                                <button class="w-10 h-10 bg-brand-orangeLight text-brand-orange rounded-full flex items-center justify-center hover:bg-brand-orange hover:text-white transition-colors">
+                                <button class="w-10 h-10 bg-brand-redLight text-brand-red rounded-full flex items-center justify-center hover:bg-brand-red hover:text-white transition-colors">
                                     <i class="ph ph-plus text-xl"></i>
                                 </button>
                             </div>
@@ -304,17 +308,17 @@
                             <div class="relative h-40 rounded-xl overflow-hidden mb-4">
                                 <img src="https://images.unsplash.com/photo-1585032226651-759b368d7246?auto=format&fit=crop&w=500&q=80" alt="Noodles" class="w-full h-full object-cover group-hover:scale-110 transition-transform duration-500">
                                 <div class="absolute top-2 right-2 bg-white/90 backdrop-blur-sm text-brand-textDark text-xs font-bold px-2 py-1 rounded flex items-center gap-1 shadow-sm">
-                                    <i class="ph-fill ph-star text-brand-orange"></i> 4.6
+                                    <i class="ph-fill ph-star text-brand-red"></i> 4.6
                                 </div>
                             </div>
                             <div class="mb-1">
                                 <span class="text-xs text-brand-text uppercase tracking-wider font-semibold">Noodles</span>
                             </div>
-                            <h4 class="font-heading font-bold text-lg text-brand-textDark mb-1 group-hover:text-brand-orange transition-colors">Spicy Ramen</h4>
+                            <h4 class="font-heading font-bold text-lg text-brand-textDark mb-1 group-hover:text-brand-red transition-colors">Spicy Ramen</h4>
                             <p class="text-xs text-brand-text mb-4 line-clamp-2">Hot and spicy noodle soup with a perfectly boiled egg.</p>
                             <div class="flex items-center justify-between mt-auto">
                                 <div class="font-bold text-xl text-brand-textDark">$14.<span class="text-sm">50</span></div>
-                                <button class="w-10 h-10 bg-brand-orangeLight text-brand-orange rounded-full flex items-center justify-center hover:bg-brand-orange hover:text-white transition-colors">
+                                <button class="w-10 h-10 bg-brand-redLight text-brand-red rounded-full flex items-center justify-center hover:bg-brand-red hover:text-white transition-colors">
                                     <i class="ph ph-plus text-xl"></i>
                                 </button>
                             </div>
@@ -328,7 +332,7 @@
             <div class="w-full lg:w-80 bg-white rounded-2xl shadow-card p-6 flex flex-col shrink-0 lg:h-[calc(100vh-140px)] lg:sticky top-8 mb-8 lg:mb-0">
                 <div class="flex items-center justify-between mb-6">
                     <h3 class="font-heading font-bold text-xl text-brand-textDark">My Order</h3>
-                    <div class="w-8 h-8 rounded-full bg-brand-orangeLight text-brand-orange flex items-center justify-center font-bold text-sm">3</div>
+                    <div class="w-8 h-8 rounded-full bg-brand-redLight text-brand-red flex items-center justify-center font-bold text-sm">3</div>
                 </div>
 
                 <!-- Order List -->
@@ -338,12 +342,12 @@
                         <img src="https://images.unsplash.com/photo-1568901346375-23c9450c58cd?auto=format&fit=crop&w=100&q=80" alt="Item" class="w-16 h-16 rounded-xl object-cover">
                         <div class="flex-1">
                             <h5 class="font-bold text-brand-textDark text-sm mb-1">Classic Burger</h5>
-                            <div class="font-bold text-brand-orange text-sm mb-2">$12.50</div>
+                            <div class="font-bold text-brand-red text-sm mb-2">$12.50</div>
                         </div>
                         <div class="flex flex-col items-center bg-brand-gray rounded-lg p-1 gap-1">
-                            <button class="w-6 h-6 rounded bg-white shadow-sm flex items-center justify-center hover:text-brand-orange"><i class="ph ph-minus"></i></button>
+                            <button class="w-6 h-6 rounded bg-white shadow-sm flex items-center justify-center hover:text-brand-red"><i class="ph ph-minus"></i></button>
                             <span class="text-xs font-bold text-brand-textDark">1</span>
-                            <button class="w-6 h-6 rounded bg-white shadow-sm flex items-center justify-center hover:text-brand-orange"><i class="ph ph-plus"></i></button>
+                            <button class="w-6 h-6 rounded bg-white shadow-sm flex items-center justify-center hover:text-brand-red"><i class="ph ph-plus"></i></button>
                         </div>
                     </div>
 
@@ -352,12 +356,12 @@
                         <img src="https://images.unsplash.com/photo-1513104890138-7c749659a591?auto=format&fit=crop&w=100&q=80" alt="Item" class="w-16 h-16 rounded-xl object-cover">
                         <div class="flex-1">
                             <h5 class="font-bold text-brand-textDark text-sm mb-1">Margherita</h5>
-                            <div class="font-bold text-brand-orange text-sm mb-2">$18.00</div>
+                            <div class="font-bold text-brand-red text-sm mb-2">$18.00</div>
                         </div>
                         <div class="flex flex-col items-center bg-brand-gray rounded-lg p-1 gap-1">
-                            <button class="w-6 h-6 rounded bg-white shadow-sm flex items-center justify-center hover:text-brand-orange"><i class="ph ph-minus"></i></button>
+                            <button class="w-6 h-6 rounded bg-white shadow-sm flex items-center justify-center hover:text-brand-red"><i class="ph ph-minus"></i></button>
                             <span class="text-xs font-bold text-brand-textDark">2</span>
-                            <button class="w-6 h-6 rounded bg-white shadow-sm flex items-center justify-center hover:text-brand-orange"><i class="ph ph-plus"></i></button>
+                            <button class="w-6 h-6 rounded bg-white shadow-sm flex items-center justify-center hover:text-brand-red"><i class="ph ph-plus"></i></button>
                         </div>
                     </div>
                 </div>
@@ -378,11 +382,11 @@
                     </div>
                     <div class="flex justify-between text-lg pt-2 border-t border-gray-100 border-dashed">
                         <span class="font-bold text-brand-textDark">Total</span>
-                        <span class="font-bold text-brand-orange">$55.00</span>
+                        <span class="font-bold text-brand-red">$55.00</span>
                     </div>
                 </div>
 
-                <button class="w-full bg-brand-orange text-white py-4 rounded-xl font-bold shadow-[0_8px_20px_rgba(234,106,18,0.3)] hover:-translate-y-1 hover:shadow-[0_12px_25px_rgba(234,106,18,0.4)] transition-all duration-300 flex items-center justify-center gap-2">
+                <button class="w-full bg-brand-red text-white py-4 rounded-xl font-bold shadow-[0_8px_20px_rgba(229,57,53,0.3)] hover:-translate-y-1 hover:shadow-[0_12px_25px_rgba(229,57,53,0.4)] transition-all duration-300 flex items-center justify-center gap-2">
                     Checkout <i class="ph-bold ph-arrow-right"></i>
                 </button>
             </div>

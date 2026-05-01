@@ -27,6 +27,8 @@ type AuthContextValue = {
   /** Caterer self-serve signup — completes only after email verification. */
   register: (values: RegisterFormValues) => Promise<{ email: string; subdomain: string | null }>;
   logout: () => void;
+  /** Reload `/api/auth/me` into context (e.g. after profile PATCH). */
+  refreshUser: () => Promise<void>;
 };
 
 const AuthContext = createContext<AuthContextValue | null>(null);
@@ -90,6 +92,17 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     return { email: res.email, subdomain: res.subdomain };
   }, []);
 
+  const refreshUser = useCallback(async () => {
+    const t = getStoredToken();
+    if (!t) return;
+    try {
+      const u = await fetchCurrentUser(t);
+      setUser(u);
+    } catch {
+      logout();
+    }
+  }, [logout]);
+
   const value = useMemo(
     () => ({
       user,
@@ -98,8 +111,9 @@ export function AuthProvider({ children }: { children: ReactNode }) {
       login,
       register,
       logout,
+      refreshUser,
     }),
-    [user, token, ready, login, register, logout]
+    [user, token, ready, login, register, logout, refreshUser]
   );
 
   return <AuthContext.Provider value={value}>{children}</AuthContext.Provider>;

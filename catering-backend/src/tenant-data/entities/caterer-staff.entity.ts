@@ -9,10 +9,10 @@ export class CatererStaff {
   @Column({ name: 'full_name', length: 120 })
   fullName!: string;
 
-  @Column({ length: 80, nullable: true })
+  @Column({ type: 'varchar', length: 80, nullable: true })
   title!: string | null;
 
-  @Column({ length: 32, nullable: true })
+  @Column({ type: 'varchar', length: 32, nullable: true })
   phone!: string | null;
 
   @CreateDateColumn({ name: 'created_at', type: 'datetime', precision: 6 })
