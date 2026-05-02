@@ -38,15 +38,15 @@ function CatererProfileEditorContent() {
   const profile = profileQ.data;
 
   return (
-    <div className="mx-auto max-w-5xl">
-      <div className="mb-8">
-        <p className="text-xs font-bold uppercase tracking-wider text-[var(--foreground-muted)]">
-          Listing
+    <div className="w-full min-w-0 max-w-none">
+      <div className="mb-10">
+        <p className="mb-1 text-xs font-bold uppercase tracking-widest text-[#8A92A6]">
+          Listing Management
         </p>
-        <h1 className="mt-2 text-2xl font-extrabold tracking-tight text-[var(--foreground)]">
+        <h1 className="font-heading mt-2 mb-2 text-3xl font-bold tracking-tight text-[#232D42]">
           Manage your listing
         </h1>
-        <p className="mt-2 text-sm text-[var(--foreground-muted)]">
+        <p className="mt-2 text-sm text-[#8A92A6]">
           Update business details, services, and gallery — changes save per tab.
         </p>
       </div>
@@ -61,7 +61,6 @@ function CatererProfileEditorContent() {
           offerings={offeringsQ.data}
           keywordBrowseCatalog={keywordCatalogQ.data ?? []}
           accountUser={user}
-          uiVariant="onboarding"
           layout="tabs"
         />
       ) : (

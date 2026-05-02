@@ -18,7 +18,10 @@ import {
   uploadCateringImage,
 } from "@/lib/catering-api";
 import {
+  Briefcase,
+  ForkKnife,
   Images,
+  Image as ImageIcon,
   PaperPlaneRight,
   UploadSimple,
   CheckCircle,
@@ -96,6 +99,15 @@ export function WorkspaceBusinessWizard({
     const t = searchParams.get("tab");
     return t === "business" || t === "services" || t === "gallery" ? t : "business";
   }, [searchParams]);
+
+  /** Profile tabs: white shell only (`admin-profile.html`); fields match onboarding everywhere */
+  const isProfileTabs = layout === "tabs";
+  /** Same services-step UX as onboarding (guest tiers, chips, etc.), including `/workspace/profile?tab=services` */
+  const richServicesStepUi = uiVariant === "onboarding" || layout === "tabs";
+  const fieldInput = inputClassName;
+  const fieldTextarea = textareaClassName;
+  const fieldMulti = multiSelectClassName;
+  const surfaceRound = fieldRadius;
 
   const [step, setStep] = useState<WizardStepIndex>(firstIncompleteStep(profile));
 
@@ -185,6 +197,7 @@ export function WorkspaceBusinessWizard({
 
   const validateStepFields = useCallback(
     (s: WizardStepIndex): Record<string, string> => {
+      const servicesLikeOnboarding = uiVariant === "onboarding" || layout === "tabs";
       const e: Record<string, string> = {};
       if (s === 0) {
         if (accountUser) {
@@ -213,10 +226,10 @@ export function WorkspaceBusinessWizard({
         const capMin = capMinRaw === "" ? NaN : Number(capMinRaw);
         const capMax = capMaxRaw === "" ? NaN : Number(capMaxRaw);
 
-        /** Guest capacity, experience & price are on services step during onboarding */
-        const skipCapacityDetail = uiVariant === "onboarding";
-        const skipYearsDetail = uiVariant === "onboarding";
-        const skipPriceFromFormat = uiVariant === "onboarding";
+        /** Guest capacity, experience & price are on services step (onboarding + profile tabs) */
+        const skipCapacityDetail = servicesLikeOnboarding;
+        const skipYearsDetail = servicesLikeOnboarding;
+        const skipPriceFromFormat = servicesLikeOnboarding;
 
         if (!skipCapacityDetail) {
           if (
@@ -266,10 +279,10 @@ export function WorkspaceBusinessWizard({
         const capMaxN = capMax1 === "" ? NaN : Number(capMax1);
 
         const skipGuestsCapacityDetail =
-          uiVariant !== "onboarding" ||
+          !servicesLikeOnboarding ||
           (Boolean(guestPresetId) && guestPresetId !== "cap-custom");
 
-        if (uiVariant === "onboarding") {
+        if (servicesLikeOnboarding) {
           if (!guestPresetId) {
             e.guestServe = "Choose how many guests you can typically serve.";
           } else if (guestPresetId === "cap-custom") {
@@ -304,13 +317,13 @@ export function WorkspaceBusinessWizard({
         }
 
         const skipExpNumericStep1 =
-          uiVariant !== "onboarding" ||
+          !servicesLikeOnboarding ||
           (Boolean(experiencePresetId) && experiencePresetId !== "exp-custom");
         const skipPriceFmtStep1 =
-          uiVariant !== "onboarding" ||
+          !servicesLikeOnboarding ||
           (Boolean(pricePresetId) && pricePresetId !== "price-custom");
 
-        if (uiVariant === "onboarding") {
+        if (servicesLikeOnboarding) {
           if (!experiencePresetId) {
             e.experience = "Tell us how experienced you are.";
           } else if (experiencePresetId === "exp-custom" && !yearsInBusiness.trim()) {
@@ -385,6 +398,7 @@ export function WorkspaceBusinessWizard({
       guestPresetId,
       pricePresetId,
       uiVariant,
+      layout,
       yearsInBusiness,
     ]
   );
@@ -414,7 +428,7 @@ export function WorkspaceBusinessWizard({
         if (tl) body.tagline = tl;
         if (heroImageUrl.trim()) body.heroImageUrl = heroImageUrl;
 
-        if (uiVariant !== "onboarding") {
+        if (uiVariant !== "onboarding" && layout !== "tabs") {
           const pb = parsePriceBand(priceBand);
           if (pb) body.priceBand = pb;
           const pf = priceFrom.trim();
@@ -436,7 +450,7 @@ export function WorkspaceBusinessWizard({
           serviceOfferingIds,
           keywords,
         };
-        if (uiVariant === "onboarding") {
+        if (uiVariant === "onboarding" || layout === "tabs") {
           body.capacityGuestMin = Number(capacityGuestMin);
           body.capacityGuestMax = Number(capacityGuestMax);
           body.yearsInBusiness = Number(yearsInBusiness);
@@ -503,7 +517,7 @@ export function WorkspaceBusinessWizard({
         }
         const slice = accepted.slice(0, remaining);
         clearFieldError("gallery");
-        return [...prev, ...slice];
+        return [...slice, ...prev];
       });
     },
     [clearFieldError, token]
@@ -519,7 +533,9 @@ export function WorkspaceBusinessWizard({
       className={
         uiVariant === "onboarding"
           ? ""
-          : `mt-6 overflow-hidden ${fieldRadius} border border-gray-200 bg-white shadow-sm`
+          : layout === "tabs"
+            ? "w-full min-w-0"
+            : `mt-6 overflow-hidden ${fieldRadius} border border-gray-200 bg-white shadow-sm`
       }
     >
       {/* Stepper (full wizard only) */}
@@ -589,17 +605,13 @@ export function WorkspaceBusinessWizard({
       ) : null}
 
       {layout === "tabs" ? (
-        <div
-          role="tablist"
-          aria-label="Listing sections"
-          className="mx-auto mb-8 flex max-w-3xl flex-wrap gap-1 rounded-xl border border-[#E5E7EB] bg-white p-1 shadow-sm"
-        >
+        <div role="tablist" aria-label="Listing sections" className="ws-listing-tab-strip">
           {PROFILE_TAB_ORDER.map((tabId) => {
             const label =
               tabId === "business"
                 ? "Business"
                 : tabId === "services"
-                  ? "Services & keywords"
+                  ? "Services & Keywords"
                   : "Gallery";
             const active = profileTab === tabId;
             return (
@@ -609,9 +621,7 @@ export function WorkspaceBusinessWizard({
                 aria-selected={active}
                 href={`/workspace/profile?tab=${tabId}`}
                 scroll={false}
-                className={`min-w-[8rem] flex-1 rounded-lg px-3 py-2.5 text-center text-sm font-semibold transition-colors ${
-                  active ? "bg-brand-red text-white shadow-sm" : "text-[#6B7280] hover:bg-stone-50"
-                }`}
+                className={`ws-listing-tab-link ${active ? "ws-listing-tab-link--active" : "ws-listing-tab-link--idle"}`}
               >
                 {label}
               </Link>
@@ -620,10 +630,49 @@ export function WorkspaceBusinessWizard({
         </div>
       ) : null}
 
-      <div className={uiVariant === "onboarding" ? "pb-4" : "p-6 sm:p-10 lg:p-12"}>
-        <div
-          className={`grid md:grid-cols-2 ${uiVariant === "onboarding" ? "gap-x-8 gap-y-5" : "gap-x-10 gap-y-8"}`}
-        >
+      <div
+        className={
+          isProfileTabs ? "pb-20" : uiVariant === "onboarding" ? "pb-4" : "p-6 sm:p-10 lg:p-12"
+        }
+      >
+        <div className={isProfileTabs ? "ws-listing-card" : ""}>
+          {isProfileTabs && profileTab === "business" ? (
+            <div className="mb-6 flex items-center gap-3">
+              <span className="ws-listing-section-icon" aria-hidden>
+                <Briefcase weight="fill" className="h-4 w-4" />
+              </span>
+              <h3 className="font-heading text-xl font-bold text-[#232D42]">Business Information</h3>
+            </div>
+          ) : null}
+          {isProfileTabs && profileTab === "services" ? (
+            <div className="mb-6 flex items-center gap-3">
+              <span className="ws-listing-section-icon" aria-hidden>
+                <ForkKnife weight="fill" className="h-4 w-4" />
+              </span>
+              <h3 className="font-heading text-xl font-bold text-[#232D42]">Services & Keywords</h3>
+            </div>
+          ) : null}
+          {isProfileTabs && profileTab === "gallery" ? (
+            <div className="mb-6">
+              <div className="flex items-center gap-3">
+                <span className="ws-listing-section-icon" aria-hidden>
+                  <ImageIcon weight="fill" className="h-4 w-4" />
+                </span>
+                <h3 className="font-heading text-xl font-bold text-[#232D42]">Business Gallery</h3>
+              </div>
+              <p className="mt-2 text-sm text-[#8A92A6]">
+                Upload photos of your food, setup, and previous events.
+              </p>
+            </div>
+          ) : null}
+
+          <div
+            className={`grid md:grid-cols-2 ${
+              isProfileTabs || uiVariant === "onboarding"
+                ? "gap-x-8 gap-y-5"
+                : "gap-x-10 gap-y-8"
+            }`}
+          >
           {displayStep === 0 ? (
             <>
               <StepIntro step={0} uiVariant={uiVariant} />
@@ -642,7 +691,7 @@ export function WorkspaceBusinessWizard({
                       autoComplete="organization"
                       aria-invalid={Boolean(fieldErrors.businessName)}
                       aria-describedby={fieldErrors.businessName ? "ws-business-name-err" : undefined}
-                      className={fieldClassErrored(inputClassName, Boolean(fieldErrors.businessName))}
+                      className={fieldClassErrored(fieldInput, Boolean(fieldErrors.businessName))}
                       value={businessName}
                       onChange={(e) => {
                         setBusinessName(e.target.value);
@@ -665,7 +714,7 @@ export function WorkspaceBusinessWizard({
                       autoComplete="name"
                       aria-invalid={Boolean(fieldErrors.contactFullName)}
                       aria-describedby={fieldErrors.contactFullName ? "ws-contact-name-err" : undefined}
-                      className={fieldClassErrored(inputClassName, Boolean(fieldErrors.contactFullName))}
+                      className={fieldClassErrored(fieldInput, Boolean(fieldErrors.contactFullName))}
                       value={contactFullName}
                       onChange={(e) => {
                         setContactFullName(e.target.value);
@@ -688,7 +737,7 @@ export function WorkspaceBusinessWizard({
                   value={streetLine}
                   onChange={(e) => setStreetLine(e.target.value)}
                   placeholder="e.g. Unit 3, Link Road"
-                  className={inputClassName}
+                  className={fieldInput}
                   autoComplete="street-address"
                 />
               </div>
@@ -721,7 +770,11 @@ export function WorkspaceBusinessWizard({
                   id="ws-pincode"
                   aria-invalid={Boolean(fieldErrors.pincode)}
                   aria-describedby={
-                    fieldErrors.pincode ? "ws-pincode-err" : uiVariant === "onboarding" ? "ws-pincode-hint" : undefined
+                    fieldErrors.pincode
+                      ? "ws-pincode-err"
+                      : uiVariant === "onboarding"
+                        ? "ws-pincode-hint"
+                        : undefined
                   }
                   value={pincode}
                   onChange={(e) => {
@@ -729,7 +782,7 @@ export function WorkspaceBusinessWizard({
                     clearFieldError("pincode");
                   }}
                   placeholder="e.g. 400001"
-                  className={fieldClassErrored(inputClassName, Boolean(fieldErrors.pincode))}
+                  className={fieldClassErrored(fieldInput, Boolean(fieldErrors.pincode))}
                   inputMode="numeric"
                   autoComplete="postal-code"
                   maxLength={6}
@@ -749,7 +802,7 @@ export function WorkspaceBusinessWizard({
                   value={tagline}
                   onChange={(e) => setTagline(e.target.value)}
                   placeholder="e.g. Creating unforgettable culinary experiences"
-                  className={inputClassName}
+                  className={fieldInput}
                 />
               </div>
               <div className="md:col-span-2" {...(fieldErrors.about ? { "data-invalid-field": "" } : {})}>
@@ -767,12 +820,12 @@ export function WorkspaceBusinessWizard({
                     clearFieldError("about");
                   }}
                   placeholder="Describe your catering business, your story, and what makes you unique..."
-                  className={fieldClassErrored(textareaClassName, Boolean(fieldErrors.about))}
+                  className={fieldClassErrored(fieldTextarea, Boolean(fieldErrors.about))}
                 />
                 <FieldError id="ws-about-err" message={fieldErrors.about} />
               </div>
 
-              {uiVariant !== "onboarding" ? (
+              {uiVariant !== "onboarding" && layout !== "tabs" ? (
               <>
               <div
                 className="grid grid-cols-1 gap-5 md:col-span-2 md:grid-cols-2 md:gap-5"
@@ -802,7 +855,7 @@ export function WorkspaceBusinessWizard({
                       clearFieldError("capacityRange");
                     }}
                     className={fieldClassErrored(
-                      inputClassName,
+                      fieldInput,
                       Boolean(fieldErrors.capacityGuestMin || fieldErrors.capacityRange)
                     )}
                   />
@@ -830,7 +883,7 @@ export function WorkspaceBusinessWizard({
                       clearFieldError("capacityRange");
                     }}
                     className={fieldClassErrored(
-                      inputClassName,
+                      fieldInput,
                       Boolean(fieldErrors.capacityGuestMax || fieldErrors.capacityRange)
                     )}
                   />
@@ -856,7 +909,7 @@ export function WorkspaceBusinessWizard({
                     setYearsInBusiness(e.target.value);
                     clearFieldError("yearsInBusiness");
                   }}
-                  className={fieldClassErrored(inputClassName, Boolean(fieldErrors.yearsInBusiness))}
+                  className={fieldClassErrored(fieldInput, Boolean(fieldErrors.yearsInBusiness))}
                 />
                 <FieldError id="ws-years-err" message={fieldErrors.yearsInBusiness} />
               </div>
@@ -866,7 +919,7 @@ export function WorkspaceBusinessWizard({
                   id="ws-price-band"
                   value={priceBand}
                   onChange={(e) => setPriceBand(e.target.value)}
-                  className={inputClassName}
+                  className={fieldInput}
                 >
                   <option value="">Select price band</option>
                   <option value="budget">Budget-Friendly</option>
@@ -889,7 +942,7 @@ export function WorkspaceBusinessWizard({
                     setPriceFrom(e.target.value);
                     clearFieldError("priceFrom");
                   }}
-                  className={fieldClassErrored(inputClassName, Boolean(fieldErrors.priceFrom))}
+                  className={fieldClassErrored(fieldInput, Boolean(fieldErrors.priceFrom))}
                 />
                 <FieldError id="ws-price-from-err" message={fieldErrors.priceFrom} />
               </div>
@@ -902,7 +955,7 @@ export function WorkspaceBusinessWizard({
             <>
               <StepIntro step={1} uiVariant={uiVariant} />
 
-              {uiVariant === "onboarding" ? (
+              {richServicesStepUi ? (
                 <>
                   <section
                     className="md:col-span-2 space-y-3 border-b border-[#E5E7EB] pb-8"
@@ -961,7 +1014,7 @@ export function WorkspaceBusinessWizard({
                               clearFieldError("capacityRange");
                             }}
                             className={fieldClassErrored(
-                              inputClassName,
+                              fieldInput,
                               Boolean(fieldErrors.capacityGuestMin || fieldErrors.capacityRange)
                             )}
                             placeholder="e.g. 50"
@@ -983,7 +1036,7 @@ export function WorkspaceBusinessWizard({
                               clearFieldError("capacityRange");
                             }}
                             className={fieldClassErrored(
-                              inputClassName,
+                              fieldInput,
                               Boolean(fieldErrors.capacityGuestMax || fieldErrors.capacityRange)
                             )}
                             placeholder="e.g. 500"
@@ -1048,7 +1101,7 @@ export function WorkspaceBusinessWizard({
                             clearFieldError("experience");
                             clearFieldError("yearsInBusiness");
                           }}
-                          className={fieldClassErrored(inputClassName, Boolean(fieldErrors.yearsInBusiness))}
+                          className={fieldClassErrored(fieldInput, Boolean(fieldErrors.yearsInBusiness))}
                           placeholder="e.g. 5"
                         />
                         <FieldError id="ws-years-onb-err" message={fieldErrors.yearsInBusiness} />
@@ -1114,7 +1167,7 @@ export function WorkspaceBusinessWizard({
                               clearFieldError("priceFrom");
                             }}
                             className={fieldClassErrored(
-                              inputClassName,
+                              fieldInput,
                               Boolean(fieldErrors.priceFrom || fieldErrors.priceTier)
                             )}
                             placeholder="e.g. 550"
@@ -1131,7 +1184,7 @@ export function WorkspaceBusinessWizard({
                               setPricePresetId("price-custom");
                               clearFieldError("priceTier");
                             }}
-                            className={inputClassName}
+                            className={fieldInput}
                           >
                             <option value="custom">Custom</option>
                             <option value="budget">Budget-friendly</option>
@@ -1265,7 +1318,7 @@ export function WorkspaceBusinessWizard({
                         setCategoryCodes(Array.from(e.target.selectedOptions).map((opt) => opt.value));
                         clearFieldError("categories");
                       }}
-                      className={fieldClassErrored(multiSelectClassName, Boolean(fieldErrors.categories))}
+                      className={fieldClassErrored(fieldMulti, Boolean(fieldErrors.categories))}
                     >
                       {categories.map((c) => (
                         <option key={c.id} value={c.id} className="rounded-sm py-2 text-sm">
@@ -1342,7 +1395,7 @@ export function WorkspaceBusinessWizard({
                 <InputLabel>Banner image (optional)</InputLabel>
                 <p className="text-xs text-[#6B7280]">Wide hero shown across the top of your listing.</p>
                 <div
-                  className={`relative flex min-h-[168px] w-full cursor-pointer flex-col items-center justify-center overflow-hidden ${fieldRadius} border-2 border-dashed p-8 text-center transition-all duration-300 ${
+                  className={`relative flex min-h-[168px] w-full cursor-pointer flex-col items-center justify-center overflow-hidden ${surfaceRound} border-2 border-dashed p-8 text-center transition-all duration-300 ${
                     bannerDragging
                       ? "border-brand-red bg-red-50"
                       : "border-[#E5E7EB] bg-[#F9FAFB] hover:border-brand-red hover:bg-red-50/30"
@@ -1404,77 +1457,95 @@ export function WorkspaceBusinessWizard({
                     Gallery photos <span className="text-brand-red">*</span>
                   </InputLabel>
                   <p id="ws-gallery-hint" className="mt-1 text-xs text-[#6B7280]">
-                    Up to {WORKSPACE_GALLERY_MAX} images (~5 MB each). Select multiple files or drag them here.
+                    Up to {WORKSPACE_GALLERY_MAX} images (~5 MB each). The first tile adds photos (drag, drop, or click); new shots appear in the same grid. Trash removes a photo.
                   </p>
                 </div>
 
-                {galleryUrls.length > 0 ? (
-                  <ul
-                    className="grid grid-cols-2 gap-3 sm:grid-cols-3 md:grid-cols-4"
-                    aria-label="Gallery photo previews"
-                  >
-                    {galleryUrls.map((url, idx) => (
-                      <li
-                        key={`${idx}-${url.slice(0, 64)}`}
-                        className="group relative aspect-square overflow-hidden rounded-sm border border-[#E5E7EB] bg-[#F9FAFB]"
-                      >
-                        {/* eslint-disable-next-line @next/next/no-img-element */}
-                        <img src={url} alt="" className="h-full w-full object-cover" />
-                        <button
-                          type="button"
-                          aria-label={`Remove gallery photo ${idx + 1}`}
-                          className="absolute top-1 right-1 flex h-8 w-8 items-center justify-center rounded-sm bg-black/55 text-white opacity-0 transition-opacity hover:bg-black/75 group-hover:opacity-100 focus-visible:opacity-100 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand-red"
-                          onClick={() => removeGalleryAt(idx)}
-                        >
-                          <Trash className="h-4 w-4" weight="bold" aria-hidden />
-                        </button>
-                      </li>
-                    ))}
-                  </ul>
-                ) : null}
-
-                <div
-                  className={`relative flex min-h-[140px] w-full cursor-pointer flex-col items-center justify-center overflow-hidden ${fieldRadius} border-2 border-dashed p-6 text-center transition-all duration-300 ${
-                    galleryDragging
-                      ? "border-brand-red bg-red-50"
-                      : "border-[#E5E7EB] bg-[#F9FAFB] hover:border-brand-red hover:bg-red-50/30"
-                  }`}
-                  onDragOver={(e) => {
-                    e.preventDefault();
-                    setGalleryDragging(true);
-                  }}
-                  onDragLeave={(e) => {
-                    e.preventDefault();
-                    setGalleryDragging(false);
-                  }}
-                  onDrop={(e) => {
-                    e.preventDefault();
-                    setGalleryDragging(false);
-                    if (e.dataTransfer.files?.length) void appendGalleryFiles(e.dataTransfer.files);
-                  }}
-                  onClick={() => galleryFileInputRef.current?.click()}
+                <ul
+                  className="list-none grid grid-cols-2 gap-3 p-0 sm:grid-cols-3 md:grid-cols-4"
+                  aria-label="Gallery upload and photo previews"
                 >
-                  <input
-                    id="ws-gallery-files-trigger"
-                    type="file"
-                    accept="image/*"
-                    multiple
-                    className="hidden"
-                    ref={galleryFileInputRef}
-                    aria-describedby="ws-gallery-hint"
-                    onChange={(e) => {
-                      void appendGalleryFiles(e.target.files);
-                      e.target.value = "";
-                    }}
-                  />
-                  <div className="mb-2 flex h-11 w-11 items-center justify-center rounded-full bg-red-50 text-brand-red">
-                    <Images className="h-5 w-5" weight="bold" aria-hidden />
-                  </div>
-                  <p className="mb-1 text-sm font-bold text-[#1c1c1c]">Gallery — add multiple images</p>
-                  <p className="max-w-md text-xs text-gray-500">
-                    Click to browse or drop files here. You can select several photos at once.
-                  </p>
-                </div>
+                  <li className={`relative aspect-square min-h-0 min-w-0 ${surfaceRound}`}>
+                    <div
+                      className={`absolute inset-0 flex cursor-pointer flex-col items-center justify-center overflow-hidden p-2 text-center transition-all duration-300 sm:p-3 ${surfaceRound} border-2 border-dashed ${
+                        galleryDragging
+                          ? "border-brand-red bg-red-50"
+                          : "border-[#E5E7EB] bg-[#F9FAFB] hover:border-brand-red hover:bg-red-50/30"
+                      }`}
+                      onDragEnter={(e) => {
+                        e.preventDefault();
+                        setGalleryDragging(true);
+                      }}
+                      onDragOver={(e) => {
+                        e.preventDefault();
+                        e.dataTransfer.dropEffect = "copy";
+                        setGalleryDragging(true);
+                      }}
+                      onDragLeave={(e) => {
+                        e.preventDefault();
+                        if (!e.currentTarget.contains(e.relatedTarget as Node)) {
+                          setGalleryDragging(false);
+                        }
+                      }}
+                      onDrop={(e) => {
+                        e.preventDefault();
+                        setGalleryDragging(false);
+                        if (e.dataTransfer.files?.length) void appendGalleryFiles(e.dataTransfer.files);
+                      }}
+                      onClick={() => galleryFileInputRef.current?.click()}
+                      role="button"
+                      tabIndex={0}
+                      onKeyDown={(e) => {
+                        if (e.key === "Enter" || e.key === " ") {
+                          e.preventDefault();
+                          galleryFileInputRef.current?.click();
+                        }
+                      }}
+                    >
+                      <input
+                        id="ws-gallery-files-trigger"
+                        type="file"
+                        accept="image/*"
+                        multiple
+                        className="hidden"
+                        ref={galleryFileInputRef}
+                        aria-describedby="ws-gallery-hint"
+                        onChange={(e) => {
+                          void appendGalleryFiles(e.target.files);
+                          e.target.value = "";
+                        }}
+                      />
+                      <div className="mb-1 flex h-9 w-9 shrink-0 items-center justify-center rounded-full bg-red-50 text-brand-red sm:h-10 sm:w-10">
+                        <Images className="h-4 w-4 sm:h-5 sm:w-5" weight="bold" aria-hidden />
+                      </div>
+                      <p className="text-[11px] font-bold leading-tight text-[#1c1c1c] sm:text-xs">Add photos</p>
+                      <p className="mt-0.5 hidden text-[10px] leading-snug text-gray-500 sm:block sm:text-[11px]">
+                        Drop or click
+                      </p>
+                    </div>
+                  </li>
+                  {galleryUrls.map((url, idx) => (
+                    <li
+                      key={`${idx}-${url.slice(0, 64)}`}
+                      className={`relative aspect-square min-h-0 min-w-0 overflow-hidden border border-[#E5E7EB] bg-[#F9FAFB] ${surfaceRound}`}
+                    >
+                      {/* eslint-disable-next-line @next/next/no-img-element */}
+                      <img src={url} alt="" className="h-full w-full object-cover" />
+                      <button
+                        type="button"
+                        aria-label={`Remove gallery photo ${idx + 1}`}
+                        className="absolute top-2 right-2 z-10 flex h-10 w-10 cursor-pointer items-center justify-center rounded-full bg-white text-brand-red shadow-md ring-1 ring-black/10 transition hover:scale-105 hover:bg-red-50 hover:shadow-lg focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand-red focus-visible:ring-offset-2 active:scale-95"
+                        onClick={(e) => {
+                          e.preventDefault();
+                          e.stopPropagation();
+                          removeGalleryAt(idx);
+                        }}
+                      >
+                        <Trash className="h-5 w-5" weight="bold" aria-hidden />
+                      </button>
+                    </li>
+                  ))}
+                </ul>
 
                 <FieldError id="ws-gallery-err" message={fieldErrors.gallery} />
               </section>
@@ -1561,8 +1632,8 @@ export function WorkspaceBusinessWizard({
           ) : null}
         </div>
 
-        {layout === "tabs" ? (
-          <div className="mt-10 flex justify-end border-t border-gray-100 pt-6">
+        {isProfileTabs ? (
+          <div className="mt-8 flex justify-end border-t border-gray-50 pt-6">
             <button
               type="button"
               onClick={() => {
@@ -1581,12 +1652,15 @@ export function WorkspaceBusinessWizard({
                 saveM.mutate(displayStep);
               }}
               disabled={saveM.isPending}
-              className="cursor-pointer rounded-sm bg-brand-red px-8 py-3 text-sm font-bold text-white shadow-md shadow-brand-red/25 transition-all hover:-translate-y-0.5 hover:bg-red-700 hover:shadow-lg disabled:cursor-not-allowed disabled:opacity-60 disabled:transform-none"
+              className="cursor-pointer rounded-2xl bg-brand-red px-10 py-4 text-sm font-bold text-white shadow-[0_8px_20px_rgba(229,57,53,0.3)] transition-all duration-300 hover:-translate-y-1 hover:bg-red-700 hover:shadow-[0_12px_25px_rgba(229,57,53,0.4)] disabled:cursor-not-allowed disabled:opacity-60 disabled:transform-none"
             >
               {saveM.isPending ? "Saving…" : "Save changes"}
             </button>
           </div>
-        ) : (
+        ) : null}
+        </div>
+
+        {!isProfileTabs ? (
           <div className="mt-12 flex items-center justify-between border-t border-gray-100 pt-6">
             <button
               type="button"
@@ -1675,7 +1749,7 @@ export function WorkspaceBusinessWizard({
               )}
             </button>
           </div>
-        )}
+        ) : null}
       </div>
     </div>
   );

@@ -86,12 +86,14 @@ export function SearchableSingleSelect({
   const shellBorder = errored ? "border-brand-red" : "border-[#E5E7EB]";
   const focusBorder = "focus-within:border-brand-red";
 
+  const shellSurface = `flex min-h-[52px] cursor-text items-center gap-2 rounded-sm border bg-white px-3 py-2 transition-colors outline-none ring-0 ring-offset-0 ${shellBorder} ${focusBorder}`;
+
   const showCompactLabel = Boolean(selectedOption && !open && query === "");
 
   return (
     <div ref={rootRef} className={`relative ${className}`}>
       <div
-        className={`flex min-h-[52px] cursor-text items-center gap-2 rounded-sm border bg-white px-3 py-2 transition-colors outline-none ring-0 ring-offset-0 ${shellBorder} ${focusBorder}`}
+        className={shellSurface}
         onMouseDown={(e) => {
           const t = e.target as HTMLElement;
           if (t.closest("[data-ss-input]") || t.closest("[data-ss-summary]")) return;

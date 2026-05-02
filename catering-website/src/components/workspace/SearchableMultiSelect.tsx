@@ -95,11 +95,13 @@ export function SearchableMultiSelect({
   const shellBorder = errored ? "border-brand-red" : "border-[#E5E7EB]";
   const focusBorder = "focus-within:border-brand-red";
 
+  const shellSurface = `flex min-h-[52px] cursor-text flex-wrap items-center gap-1.5 rounded-sm border bg-white px-3 py-2 transition-colors outline-none ring-0 ring-offset-0 ${shellBorder} ${focusBorder}`;
+
   return (
     <div ref={rootRef} className={`relative ${className}`}>
       <div
         ref={anchorRef}
-        className={`flex min-h-[52px] cursor-text flex-wrap items-center gap-1.5 rounded-sm border bg-white px-3 py-2 transition-colors outline-none ring-0 ring-offset-0 ${shellBorder} ${focusBorder}`}
+        className={shellSurface}
         onMouseDown={(e) => {
           if (e.target === rootRef.current || (e.target as HTMLElement).closest("[data-ms-input]")) {
             inputRef.current?.focus();
