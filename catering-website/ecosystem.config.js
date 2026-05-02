@@ -1,5 +1,5 @@
 const port = Number(
-  process.env.PORT || process.env.FRONTEND_PORT || 3000,
+  process.env.PORT || process.env.FRONTEND_PORT || 7001,
 );
 
 if (!Number.isFinite(port) || port <= 0) {
@@ -9,7 +9,7 @@ if (!Number.isFinite(port) || port <= 0) {
 }
 
 module.exports = {
-  apps: [
+  apps: [ 
     {
       name: "app_catering_frontend",
       cwd: __dirname,
