@@ -1,6 +1,7 @@
 "use client";
 
 import { ChefHat, Envelope, FacebookLogo, InstagramLogo, MapPin, Phone, TwitterLogo } from "@phosphor-icons/react";
+import { publicSiteConfig } from "@/lib/site-config";
 import Link from "next/link";
 
 export function SiteFooter() {
@@ -127,18 +128,20 @@ export function SiteFooter() {
               </li>
               <li className="flex items-center gap-3">
                 <Phone className="text-xl text-brand-red" aria-hidden />
-                <span>+91 0123456789</span>
+                <span>{publicSiteConfig.supportPhoneDisplay}</span>
               </li>
               <li className="flex items-center gap-3">
                 <Envelope className="text-xl text-brand-red" aria-hidden />
-                <span>hello@bharatcaterers.in</span>
+                <span>{publicSiteConfig.contactEmail}</span>
               </li>
             </ul>
           </div>
         </div>
 
         <div className="flex flex-col items-center justify-between gap-4 border-t border-white/10 pt-8 text-sm text-gray-500 md:flex-row">
-          <p>&copy; {new Date().getFullYear()} Bharat Caterers. All rights reserved.</p>
+          <p>
+            &copy; {new Date().getFullYear()} {publicSiteConfig.siteName}. All rights reserved.
+          </p>
           <div className="flex gap-6">
             <a href="#" className="transition hover:text-white">
               Privacy Policy

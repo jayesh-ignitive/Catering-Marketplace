@@ -1,5 +1,5 @@
 const port = Number(
-  process.env.PORT || process.env.FRONTEND_PORT || 7001,
+  process.env.PORT || process.env.FRONTEND_PORT || 7002,
 );
 
 if (!Number.isFinite(port) || port <= 0) {

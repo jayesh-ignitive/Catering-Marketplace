@@ -1,15 +1,13 @@
 import type { Metadata } from "next";
-
-const siteUrl = process.env.NEXT_PUBLIC_SITE_URL ?? "https://bharatcaterers.com";
+import { publicSiteConfig } from "@/lib/site-config";
 
 export const seoConfig = {
-  siteName: "Bharat Caterers",
-  defaultTitle: "Bharat Caterers - India's Trusted Catering Directory",
-  titleTemplate: "%s | Bharat Caterers",
-  description:
-    "Find the best catering service providers near you. India's trusted catering directory with 10,000+ happy customers.",
-  baseUrl: siteUrl,
-  defaultOgImage: "/favicon.svg",
+  siteName: publicSiteConfig.siteName,
+  defaultTitle: `${publicSiteConfig.siteName} - India's Trusted Catering Directory`,
+  titleTemplate: `%s | ${publicSiteConfig.siteName}`,
+  description: publicSiteConfig.defaultSeoDescription,
+  baseUrl: publicSiteConfig.siteUrl,
+  defaultOgImage: publicSiteConfig.defaultOgImage,
 };
 
 export function buildPageMetadata({

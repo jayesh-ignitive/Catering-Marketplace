@@ -10,10 +10,8 @@ import {
   Sparkle,
   Storefront,
 } from "@phosphor-icons/react";
+import { publicSiteConfig } from "@/lib/site-config";
 import Link from "next/link";
-
-const SUPPORT_PHONE_DISPLAY = "+91 0123456789";
-const SUPPORT_PHONE_TEL = "+910123456789";
 
 type PlanRow = {
   label: string;
@@ -69,7 +67,7 @@ export default function CateringPackagesPage() {
             serious hosts can find you faster — similar to how leading Indian directories tier their listings (see for
             example{" "}
             <a
-              href="https://www.cateringcorner.in/packages"
+              href={publicSiteConfig.packagesReferenceUrl}
               className="font-semibold text-brand-yellow underline-offset-2 hover:underline"
               target="_blank"
               rel="noopener noreferrer"
@@ -94,7 +92,7 @@ export default function CateringPackagesPage() {
               <p className="mt-2 text-sm leading-relaxed text-gray-700 sm:text-[15px]">
                 Directories like{" "}
                 <a
-                  href="https://www.cateringcorner.in/packages"
+                  href={publicSiteConfig.packagesReferenceUrl}
                   className="font-semibold text-brand-red underline-offset-2 hover:underline"
                   target="_blank"
                   rel="noopener noreferrer"
@@ -339,11 +337,11 @@ export default function CateringPackagesPage() {
           </div>
           <div className="flex flex-col gap-4 sm:items-end sm:justify-center">
             <a
-              href={`tel:${SUPPORT_PHONE_TEL}`}
+              href={`tel:${publicSiteConfig.supportPhoneTel}`}
               className="inline-flex w-full items-center justify-center gap-2 rounded-2xl border border-gray-200 bg-white px-5 py-3.5 text-sm font-bold text-brand-dark shadow-sm transition hover:border-brand-red/30 sm:w-auto"
             >
               <Phone className="text-brand-red" weight="duotone" aria-hidden />
-              Call {SUPPORT_PHONE_DISPLAY}
+              Call {publicSiteConfig.supportPhoneDisplay}
             </a>
             <Link
               href="/contact"
@@ -359,7 +357,7 @@ export default function CateringPackagesPage() {
           Reference: tiered “Bronze / Silver / Gold” listing packaging and annual pricing is a common pattern on Indian
           catering directories — e.g.{" "}
           <a
-            href="https://www.cateringcorner.in/packages"
+            href={publicSiteConfig.packagesReferenceUrl}
             className="font-semibold text-brand-red underline-offset-2 hover:underline"
             target="_blank"
             rel="noopener noreferrer"

@@ -12,6 +12,7 @@ import {
   Phone,
   User,
 } from "@phosphor-icons/react";
+import { publicSiteConfig } from "@/lib/site-config";
 import Link from "next/link";
 import { useId, useState } from "react";
 import { toast } from "react-toastify";
@@ -125,7 +126,7 @@ export default function ContactPage() {
             </div>
             <div className="flex items-center gap-3 rounded-2xl border border-white/15 bg-white/10 px-4 py-3 text-sm text-white/90 backdrop-blur-sm">
               <PaperPlaneTilt className="text-xl text-brand-yellow" weight="duotone" aria-hidden />
-              <span className="font-semibold">hello@bharatcaterers.in</span>
+              <span className="font-semibold">{publicSiteConfig.contactEmail}</span>
             </div>
           </div>
         </div>

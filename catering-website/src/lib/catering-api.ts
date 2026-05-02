@@ -1,13 +1,7 @@
-const defaultBase = "http://localhost:4000";
+import { publicSiteConfig } from "@/lib/site-config";
 
 export function getCateringApiBase(): string {
-  if (
-    typeof process.env.NEXT_PUBLIC_CATERING_API_URL === "string" &&
-    process.env.NEXT_PUBLIC_CATERING_API_URL.length > 0
-  ) {
-    return process.env.NEXT_PUBLIC_CATERING_API_URL.replace(/\/$/, "");
-  }
-  return defaultBase;
+  return publicSiteConfig.cateringApiUrl.replace(/\/$/, "");
 }
 
 export type City = { id: string; name: string; slug: string };
