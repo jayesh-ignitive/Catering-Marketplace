@@ -49,16 +49,22 @@ export default function WorkspaceOverviewPage() {
 
       <div className="mt-8 flex flex-wrap gap-3">
         <Link
-          href="/workspace/onboarding"
+          href="/workspace/profile"
           className="rounded-xl bg-gradient-to-r from-[var(--primary)] to-[var(--orange-deep)] px-5 py-2.5 text-sm font-bold text-white shadow-md shadow-[var(--primary)]/25 transition hover:opacity-[0.96]"
         >
-          Edit business info
+          Manage listing
+        </Link>
+        <Link
+          href="/workspace/onboarding"
+          className="rounded-xl border border-stone-200 bg-white px-5 py-2.5 text-sm font-semibold text-stone-800 shadow-sm transition hover:border-[var(--primary)]/30"
+        >
+          Full onboarding
         </Link>
         <Link
           href="/workspace/gallery"
           className="rounded-xl border border-stone-200 bg-white px-5 py-2.5 text-sm font-semibold text-stone-800 shadow-sm transition hover:border-[var(--primary)]/30"
         >
-          Manage gallery
+          Gallery page
         </Link>
       </div>
     </div>

@@ -2,6 +2,7 @@ import type { Icon } from "@phosphor-icons/react";
 import {
   House,
   ImageSquare,
+  ListDashes,
   Storefront,
 } from "@phosphor-icons/react";
 
@@ -14,6 +15,7 @@ export type WorkspaceThemeNavItem = {
 
 export const WORKSPACE_THEME_NAV: WorkspaceThemeNavItem[] = [
   { href: "/workspace", label: "Dashboard", icon: House },
+  { href: "/workspace/profile", label: "Listing", icon: ListDashes },
   { href: "/workspace/onboarding", label: "Onboarding", icon: Storefront },
   { href: "/workspace/gallery", label: "Gallery", icon: ImageSquare },
 ];

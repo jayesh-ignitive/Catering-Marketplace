@@ -1,6 +1,7 @@
 "use client";
 
 import { useQuery } from "@tanstack/react-query";
+import { Suspense } from "react";
 import { useAuth } from "@/context/AuthContext";
 import { WorkspaceBusinessWizard } from "@/components/workspace/caterer-profile/WorkspaceBusinessWizard";
 import {
@@ -11,7 +12,7 @@ import {
   fetchWorkspaceCatererProfile,
 } from "@/lib/catering-api";
 
-export default function WorkspaceOnboardingPage() {
+function CatererProfileEditorContent() {
   const { token, user } = useAuth();
 
   const enabled = Boolean(token);
@@ -37,10 +38,22 @@ export default function WorkspaceOnboardingPage() {
   const profile = profileQ.data;
 
   return (
-    <div className="w-full">
+    <div className="mx-auto max-w-5xl">
+      <div className="mb-8">
+        <p className="text-xs font-bold uppercase tracking-wider text-[var(--foreground-muted)]">
+          Listing
+        </p>
+        <h1 className="mt-2 text-2xl font-extrabold tracking-tight text-[var(--foreground)]">
+          Manage your listing
+        </h1>
+        <p className="mt-2 text-sm text-[var(--foreground-muted)]">
+          Update business details, services, and gallery — changes save per tab.
+        </p>
+      </div>
+
       {enabled && profile && citiesQ.data && categoriesQ.data && offeringsQ.data ? (
         <WorkspaceBusinessWizard
-          key={`${profile.cityId ?? "none"}-${profile.published}-${profile.completion.isComplete}`}
+          key={`${profile.cityId ?? "none"}-${profile.published}`}
           token={token!}
           profile={profile}
           cities={citiesQ.data}
@@ -49,14 +62,30 @@ export default function WorkspaceOnboardingPage() {
           keywordBrowseCatalog={keywordCatalogQ.data ?? []}
           accountUser={user}
           uiVariant="onboarding"
-          layout="wizard"
+          layout="tabs"
         />
       ) : (
-        <div className="mt-12 flex h-64 flex-col items-center justify-center rounded-sm border border-gray-200 bg-white shadow-sm">
-          <div className="h-10 w-10 animate-spin rounded-full border-4 border-gray-200 border-t-brand-red" />
-          <p className="mt-4 text-sm font-semibold uppercase tracking-widest text-gray-400">Loading wizard…</p>
+        <div className="flex h-64 flex-col items-center justify-center rounded-xl border border-stone-200 bg-white shadow-sm">
+          <div className="h-10 w-10 animate-spin rounded-full border-4 border-stone-200 border-t-brand-red" />
+          <p className="mt-4 text-sm font-semibold uppercase tracking-widest text-stone-400">
+            Loading editor…
+          </p>
         </div>
       )}
     </div>
+  );
+}
+
+export default function CatererProfilePage() {
+  return (
+    <Suspense
+      fallback={
+        <div className="flex h-64 items-center justify-center text-sm text-[var(--foreground-muted)]">
+          Loading…
+        </div>
+      }
+    >
+      <CatererProfileEditorContent />
+    </Suspense>
   );
 }

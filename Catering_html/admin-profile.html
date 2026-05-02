@@ -1,0 +1,459 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Manage Listing - Bharat Caterers</title>
+    <!-- Google Fonts -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=Outfit:wght@400;600;700;800&display=swap" rel="stylesheet">
+    
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script>
+        tailwind.config = {
+            theme: {
+                extend: {
+                    colors: {
+                        brand: {
+                            red: '#E53935',
+                            redLight: '#FFEBEE',
+                            yellow: '#FFC107',
+                            green: '#4CAF50',
+                            dark: '#1C1C1C',
+                            gray: '#F8F9FA',
+                            text: '#8A92A6',
+                            textDark: '#232D42'
+                        }
+                    },
+                    fontFamily: {
+                        sans: ['Inter', 'sans-serif'],
+                        heading: ['Outfit', 'sans-serif'],
+                    },
+                    boxShadow: {
+                        'soft': '0 10px 30px rgba(0,0,0,0.04)',
+                        'card': '0 2px 12px rgba(0,0,0,0.06)',
+                        'card-hover': '0 20px 40px rgba(0,0,0,0.1)',
+                    }
+                }
+            }
+        }
+    </script>
+    <link rel="stylesheet" href="style.css">
+    <link rel="stylesheet" href="admin.css">
+    <!-- Phosphor Icons -->
+    <script src="https://unpkg.com/@phosphor-icons/web"></script>
+    
+    <style>
+        .no-scrollbar::-webkit-scrollbar { display: none; }
+        .no-scrollbar { -ms-overflow-style: none; scrollbar-width: none; }
+        
+        .tab-content { display: none; }
+        .tab-content.active { display: block; animation: fadeIn 0.4s ease-out; }
+        
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(10px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+
+        .input-group:focus-within label { color: #E53935; }
+        .input-group:focus-within input, .input-group:focus-within textarea, .input-group:focus-within select { 
+            border-color: #E53935; 
+            box-shadow: 0 0 0 4px rgba(229, 57, 53, 0.1); 
+        }
+
+        .drop-zone {
+            border: 2px dashed #E2E8F0;
+            transition: all 0.3s ease;
+        }
+        .drop-zone:hover, .drop-zone.drag-over {
+            border-color: #E53935;
+            background-color: #FFEBEE;
+        }
+    </style>
+</head>
+<body class="bg-brand-gray text-brand-text font-sans flex h-screen overflow-hidden">
+
+    <!-- Mobile Sidebar Overlay -->
+    <div id="sidebarOverlay" onclick="toggleSidebar()" class="fixed inset-0 bg-black/50 z-40 hidden md:hidden transition-opacity"></div>
+
+    <!-- Left Sidebar -->
+    <aside id="sidebar" class="w-64 bg-white border-r border-gray-100 flex flex-col justify-between shrink-0 transition-all duration-300 absolute md:relative z-50 h-screen -translate-x-full md:translate-x-0 shadow-soft">
+        <div>
+            <!-- Logo -->
+            <div class="h-20 flex items-center px-6 border-b border-gray-50">
+                <a href="/" class="flex items-center gap-2">
+                    <i class="ph-fill ph-chef-hat text-3xl text-[#d4af37] shrink-0"></i>
+                    <div class="flex flex-col relative logo-text pl-1">
+                        <span class="font-logo text-3xl text-brand-dark leading-none tracking-tight translate-y-1">Bharat</span>
+                        <span class="bg-brand-red text-white text-[8px] uppercase tracking-[0.3em] font-bold px-1 py-0.5 rounded-sm -rotate-2 -mt-1 shadow-sm relative z-10 w-fit">Catering</span>
+                    </div>
+                </a>
+            </div>
+
+            <!-- Navigation -->
+            <nav class="p-4 space-y-1 overflow-y-auto no-scrollbar max-h-[calc(100vh-160px)]">
+                <div class="menu-header text-xs font-bold text-gray-400 uppercase tracking-wider mb-2 mt-4 px-3 transition-all duration-300">Home</div>
+                
+                <a href="admin.html" class="nav-link flex items-center gap-3 px-3 py-3 rounded-xl text-brand-text hover:bg-brand-redLight hover:text-brand-red hover:translate-x-1 group transition-all duration-300">
+                    <i class="ph ph-squares-four text-xl shrink-0 group-hover:fill-brand-red group-hover:scale-110 transition-transform"></i>
+                    <span class="nav-text font-medium text-sm">Dashboard</span>
+                </a>
+
+                <a href="admin-profile.html" class="nav-link flex items-center gap-3 px-3 py-3 rounded-xl nav-link-active group transition-all duration-300">
+                    <i class="ph-fill ph-list-checks text-xl shrink-0 group-hover:scale-110 transition-all"></i>
+                    <span class="nav-text font-medium text-sm">Listing</span>
+                </a>
+
+                <a href="#" class="nav-link flex items-center justify-between px-3 py-3 rounded-xl text-brand-text hover:bg-brand-redLight hover:text-brand-red hover:translate-x-1 group transition-all duration-300">
+                    <div class="flex items-center gap-3">
+                        <i class="ph ph-shopping-bag text-xl shrink-0 group-hover:fill-brand-red group-hover:scale-110 transition-all"></i>
+                        <span class="nav-text font-medium text-sm">Orders</span>
+                    </div>
+                    <span class="nav-badge bg-brand-redLight text-brand-red text-xs font-bold px-2 py-0.5 rounded-full group-hover:bg-brand-red group-hover:text-white transition-colors">2</span>
+                </a>
+
+                <a href="#" class="nav-link flex items-center gap-3 px-3 py-3 rounded-xl text-brand-text hover:bg-brand-redLight hover:text-brand-red hover:translate-x-1 group transition-all duration-300">
+                    <i class="ph ph-users text-xl shrink-0 group-hover:fill-brand-red group-hover:scale-110 transition-all"></i>
+                    <span class="nav-text font-medium text-sm">Customer</span>
+                </a>
+                
+                <a href="#" class="nav-link flex items-center gap-3 px-3 py-3 rounded-xl text-brand-text hover:bg-brand-redLight hover:text-brand-red hover:translate-x-1 group transition-all duration-300">
+                    <i class="ph ph-chart-line-up text-xl shrink-0 group-hover:fill-brand-red group-hover:scale-110 transition-all"></i>
+                    <span class="nav-text font-medium text-sm">Analytics</span>
+                </a>
+
+                <div class="menu-header text-xs font-bold text-gray-400 uppercase tracking-wider mb-2 mt-6 px-3 transition-all duration-300">Food Menu</div>
+
+                <a href="#" class="nav-link flex items-center justify-between px-3 py-3 rounded-xl text-brand-text hover:bg-brand-redLight hover:text-brand-red hover:translate-x-1 group transition-all duration-300">
+                    <div class="flex items-center gap-3">
+                        <i class="ph ph-bowl-food text-xl shrink-0 group-hover:fill-brand-red group-hover:scale-110 transition-all"></i>
+                        <span class="nav-text font-medium text-sm">Menu List</span>
+                    </div>
+                    <i class="nav-caret ph ph-caret-right text-sm"></i>
+                </a>
+            </nav>
+        </div>
+
+        <!-- Footer Profile -->
+        <div class="p-4 border-t border-gray-50">
+            <div class="flex items-center gap-3 p-2 hover:bg-brand-gray rounded-xl transition-colors cursor-pointer group">
+                <img src="https://images.unsplash.com/photo-1535713875002-d1d0cf377fde?auto=format&fit=crop&w=100&q=80" class="w-10 h-10 rounded-lg object-cover" alt="Admin">
+                <div class="nav-text truncate">
+                    <p class="text-sm font-bold text-brand-textDark leading-none mb-1">Jayesh Rathod</p>
+                    <p class="text-[10px] text-brand-text">Ignitive Caterer</p>
+                </div>
+            </div>
+        </div>
+    </aside>
+
+    <!-- Main Content Area -->
+    <main class="flex-1 flex flex-col h-screen overflow-hidden">
+        
+        <!-- Header -->
+        <header class="h-20 bg-white/80 backdrop-blur-md border-b border-gray-100 flex items-center justify-between px-8 shrink-0 z-10 sticky top-0">
+            <div class="flex items-center gap-4">
+                <button onclick="toggleSidebar()" class="text-brand-text hover:text-brand-red transition-colors">
+                    <i class="ph ph-list text-2xl"></i>
+                </button>
+                <div class="flex flex-col">
+                    <p class="text-[10px] uppercase tracking-widest font-bold text-brand-red">Workspace Panel</p>
+                    <h1 class="text-xl font-heading font-bold text-brand-textDark">Listing</h1>
+                </div>
+            </div>
+
+            <div class="flex items-center gap-4">
+                <button class="relative w-10 h-10 rounded-full bg-brand-gray flex items-center justify-center text-brand-text hover:text-brand-red hover:bg-brand-redLight transition-all">
+                    <i class="ph ph-bell text-xl"></i>
+                    <span class="absolute top-2.5 right-2.5 w-2 h-2 bg-brand-red rounded-full border-2 border-white"></span>
+                </button>
+                <div class="h-8 w-px bg-gray-200 mx-2"></div>
+                <div class="flex items-center gap-3 cursor-pointer group">
+                    <div class="w-10 h-10 rounded-full bg-brand-red text-white flex items-center justify-center font-bold text-sm">JR</div>
+                </div>
+            </div>
+        </header>
+
+        <!-- Listing Content -->
+        <div class="flex-1 overflow-y-auto no-scrollbar p-6 md:p-10">
+            
+            <div class="max-w-4xl mx-auto">
+                <!-- Page Header -->
+                <div class="mb-10">
+                    <p class="text-xs uppercase tracking-widest font-bold text-brand-text mb-1">Listing Management</p>
+                    <h2 class="text-3xl font-heading font-bold text-brand-textDark mb-2">Manage your listing</h2>
+                    <p class="text-brand-text text-sm">Update business details, services, and gallery — changes save per tab.</p>
+                </div>
+
+                <!-- Tabs Navigation -->
+                <div class="bg-white p-1.5 rounded-2xl shadow-soft flex gap-2 mb-10 sticky top-0 z-20">
+                    <button onclick="switchTab('business')" data-tab="business" class="tab-btn flex-1 py-3 px-4 rounded-xl text-sm font-bold transition-all duration-300 bg-brand-red text-white shadow-md">
+                        Business
+                    </button>
+                    <button onclick="switchTab('services')" data-tab="services" class="tab-btn flex-1 py-3 px-4 rounded-xl text-sm font-bold transition-all duration-300 text-brand-text hover:bg-brand-gray">
+                        Services & Keywords
+                    </button>
+                    <button onclick="switchTab('gallery')" data-tab="gallery" class="tab-btn flex-1 py-3 px-4 rounded-xl text-sm font-bold transition-all duration-300 text-brand-text hover:bg-brand-gray">
+                        Gallery
+                    </button>
+                </div>
+
+                <!-- Tab Contents -->
+                <div class="space-y-8 pb-20">
+                    
+                    <!-- Business Tab -->
+                    <div id="business-tab" class="tab-content active">
+                        <div class="bg-white rounded-3xl p-8 shadow-soft border border-gray-50">
+                            <h3 class="text-xl font-heading font-bold text-brand-textDark mb-6 flex items-center gap-3">
+                                <span class="w-8 h-8 bg-brand-redLight text-brand-red rounded-lg flex items-center justify-center text-lg"><i class="ph-fill ph-briefcase"></i></span>
+                                Business Information
+                            </h3>
+                            
+                            <form class="space-y-6">
+                                <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+                                    <div class="input-group">
+                                        <label class="block text-xs font-bold text-gray-500 uppercase tracking-wider mb-2">Business name <span class="text-brand-red">*</span></label>
+                                        <input type="text" value="Ignitive Caterer" class="w-full bg-brand-gray border border-transparent focus:bg-white rounded-xl py-4 px-5 text-brand-textDark outline-none transition-all duration-300 font-medium">
+                                    </div>
+                                    <div class="input-group">
+                                        <label class="block text-xs font-bold text-gray-500 uppercase tracking-wider mb-2">Contact person <span class="text-brand-red">*</span></label>
+                                        <input type="text" value="Jayesh Rathod" class="w-full bg-brand-gray border border-transparent focus:bg-white rounded-xl py-4 px-5 text-brand-textDark outline-none transition-all duration-300 font-medium">
+                                    </div>
+                                </div>
+
+                                <div class="input-group">
+                                    <label class="block text-xs font-bold text-gray-500 uppercase tracking-wider mb-2">Street / area <span class="text-brand-text font-normal">(optional)</span></label>
+                                    <input type="text" value="C-102, Vishwas city 10, Gota, Near Chanakya Apartment" class="w-full bg-brand-gray border border-transparent focus:bg-white rounded-xl py-4 px-5 text-brand-textDark outline-none transition-all duration-300 font-medium">
+                                </div>
+
+                                <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+                                    <div class="input-group">
+                                        <label class="block text-xs font-bold text-gray-500 uppercase tracking-wider mb-2">City <span class="text-brand-red">*</span></label>
+                                        <div class="relative">
+                                            <i class="ph ph-magnifying-glass absolute left-5 top-1/2 -translate-y-1/2 text-gray-400"></i>
+                                            <select class="w-full bg-brand-gray border border-transparent focus:bg-white rounded-xl py-4 pl-12 pr-5 text-brand-textDark outline-none transition-all duration-300 font-medium appearance-none">
+                                                <option selected>Ahmedabad</option>
+                                                <option>Mumbai</option>
+                                                <option>Delhi</option>
+                                            </select>
+                                            <i class="ph ph-caret-down absolute right-5 top-1/2 -translate-y-1/2 text-gray-400 pointer-events-none"></i>
+                                        </div>
+                                    </div>
+                                    <div class="input-group">
+                                        <label class="block text-xs font-bold text-gray-500 uppercase tracking-wider mb-2">Pincode <span class="text-brand-red">*</span></label>
+                                        <input type="text" value="382481" class="w-full bg-brand-gray border border-transparent focus:bg-white rounded-xl py-4 px-5 text-brand-textDark outline-none transition-all duration-300 font-medium">
+                                        <p class="text-[10px] text-gray-400 mt-1 ml-1">6 digit postal code</p>
+                                    </div>
+                                </div>
+
+                                <div class="input-group">
+                                    <label class="block text-xs font-bold text-gray-500 uppercase tracking-wider mb-2">Tagline</label>
+                                    <input type="text" value="Catering by Jayesh Rathod" class="w-full bg-brand-gray border border-transparent focus:bg-white rounded-xl py-4 px-5 text-brand-textDark outline-none transition-all duration-300 font-medium">
+                                </div>
+
+                                <div class="input-group">
+                                    <label class="block text-xs font-bold text-gray-500 uppercase tracking-wider mb-2">About <span class="text-brand-red">*</span></label>
+                                    <textarea rows="4" class="w-full bg-brand-gray border border-transparent focus:bg-white rounded-xl py-4 px-5 text-brand-textDark outline-none transition-all duration-300 font-medium resize-none">We provide premium catering services for weddings, corporate events, and private parties. With over 10 years of experience, we ensure the best food quality and service.</textarea>
+                                </div>
+
+                                <div class="flex justify-end pt-4">
+                                    <button type="submit" class="bg-brand-red text-white py-4 px-10 rounded-2xl font-bold shadow-[0_8px_20px_rgba(229,57,53,0.3)] hover:-translate-y-1 hover:shadow-[0_12px_25px_rgba(229,57,53,0.4)] transition-all duration-300">
+                                        Save changes
+                                    </button>
+                                </div>
+                            </form>
+                        </div>
+                    </div>
+
+                    <!-- Services Tab -->
+                    <div id="services-tab" class="tab-content">
+                        <div class="bg-white rounded-3xl p-8 shadow-soft border border-gray-50">
+                            <h3 class="text-xl font-heading font-bold text-brand-textDark mb-6 flex items-center gap-3">
+                                <span class="w-8 h-8 bg-brand-redLight text-brand-red rounded-lg flex items-center justify-center text-lg"><i class="ph-fill ph-fork-knife"></i></span>
+                                Services & Keywords
+                            </h3>
+                            
+                            <div class="space-y-8">
+                                <div>
+                                    <label class="block text-xs font-bold text-gray-500 uppercase tracking-wider mb-4">Catering Specialties</label>
+                                    <div class="grid grid-cols-2 md:grid-cols-3 gap-4">
+                                        <label class="cursor-pointer group">
+                                            <input type="checkbox" checked class="sr-only peer">
+                                            <div class="border-2 border-gray-100 rounded-2xl p-4 transition-all duration-300 peer-checked:border-brand-red peer-checked:bg-red-50 group-hover:border-brand-red/30">
+                                                <div class="flex items-center gap-3">
+                                                    <div class="w-10 h-10 bg-white rounded-xl shadow-sm flex items-center justify-center text-brand-red">
+                                                        <i class="ph-fill ph-heart text-xl"></i>
+                                                    </div>
+                                                    <span class="text-sm font-bold text-brand-textDark">Wedding</span>
+                                                </div>
+                                            </div>
+                                        </label>
+                                        <!-- More specialties... -->
+                                        <label class="cursor-pointer group">
+                                            <input type="checkbox" checked class="sr-only peer">
+                                            <div class="border-2 border-gray-100 rounded-2xl p-4 transition-all duration-300 peer-checked:border-brand-red peer-checked:bg-red-50 group-hover:border-brand-red/30">
+                                                <div class="flex items-center gap-3">
+                                                    <div class="w-10 h-10 bg-white rounded-xl shadow-sm flex items-center justify-center text-brand-red">
+                                                        <i class="ph-fill ph-buildings text-xl"></i>
+                                                    </div>
+                                                    <span class="text-sm font-bold text-brand-textDark">Corporate</span>
+                                                </div>
+                                            </div>
+                                        </label>
+                                        <label class="cursor-pointer group">
+                                            <input type="checkbox" class="sr-only peer">
+                                            <div class="border-2 border-gray-100 rounded-2xl p-4 transition-all duration-300 peer-checked:border-brand-red peer-checked:bg-red-50 group-hover:border-brand-red/30">
+                                                <div class="flex items-center gap-3">
+                                                    <div class="w-10 h-10 bg-white rounded-xl shadow-sm flex items-center justify-center text-brand-red">
+                                                        <i class="ph-fill ph-cake text-xl"></i>
+                                                    </div>
+                                                    <span class="text-sm font-bold text-brand-textDark">Birthday</span>
+                                                </div>
+                                            </div>
+                                        </label>
+                                    </div>
+                                </div>
+
+                                <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+                                    <div class="input-group">
+                                        <label class="block text-xs font-bold text-gray-500 uppercase tracking-wider mb-2">Guest Capacity Range</label>
+                                        <div class="flex items-center gap-3">
+                                            <input type="number" placeholder="Min" class="w-full bg-brand-gray border border-transparent focus:bg-white rounded-xl py-4 px-5 text-brand-textDark outline-none transition-all duration-300 font-medium">
+                                            <span class="text-gray-400 font-bold">to</span>
+                                            <input type="number" placeholder="Max" class="w-full bg-brand-gray border border-transparent focus:bg-white rounded-xl py-4 px-5 text-brand-textDark outline-none transition-all duration-300 font-medium">
+                                        </div>
+                                    </div>
+                                    <div class="input-group">
+                                        <label class="block text-xs font-bold text-gray-500 uppercase tracking-wider mb-2">Starting Price (₹)</label>
+                                        <input type="number" value="500" class="w-full bg-brand-gray border border-transparent focus:bg-white rounded-xl py-4 px-5 text-brand-textDark outline-none transition-all duration-300 font-medium">
+                                    </div>
+                                </div>
+
+                                <div class="flex justify-end pt-4">
+                                    <button class="bg-brand-red text-white py-4 px-10 rounded-2xl font-bold shadow-[0_8px_20px_rgba(229,57,53,0.3)] hover:-translate-y-1 hover:shadow-[0_12px_25px_rgba(229,57,53,0.4)] transition-all duration-300">
+                                        Save changes
+                                    </button>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Gallery Tab -->
+                    <div id="gallery-tab" class="tab-content">
+                        <div class="bg-white rounded-3xl p-8 shadow-soft border border-gray-50">
+                            <h3 class="text-xl font-heading font-bold text-brand-textDark mb-2 flex items-center gap-3">
+                                <span class="w-8 h-8 bg-brand-redLight text-brand-red rounded-lg flex items-center justify-center text-lg"><i class="ph-fill ph-image"></i></span>
+                                Business Gallery
+                            </h3>
+                            <p class="text-brand-text text-sm mb-8">Upload photos of your food, setup, and previous events.</p>
+                            
+                            <div class="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 gap-4 mb-8">
+                                <!-- Photo Placeholder 1 -->
+                                <div class="relative aspect-square rounded-2xl overflow-hidden group border border-gray-100">
+                                    <img src="https://images.unsplash.com/photo-1555244162-803834f70033?auto=format&fit=crop&w=300&q=80" class="w-full h-full object-cover transition-transform duration-500 group-hover:scale-110" alt="Gallery">
+                                    <div class="absolute inset-0 bg-black/40 opacity-0 group-hover:opacity-100 transition-opacity flex items-center justify-center">
+                                        <button class="w-10 h-10 bg-white text-brand-red rounded-full flex items-center justify-center hover:scale-110 transition-transform shadow-lg">
+                                            <i class="ph-bold ph-trash"></i>
+                                        </button>
+                                    </div>
+                                </div>
+                                <!-- Photo Placeholder 2 -->
+                                <div class="relative aspect-square rounded-2xl overflow-hidden group border border-gray-100">
+                                    <img src="https://images.unsplash.com/photo-1555939594-58d7cb561ad1?auto=format&fit=crop&w=300&q=80" class="w-full h-full object-cover transition-transform duration-500 group-hover:scale-110" alt="Gallery">
+                                    <div class="absolute inset-0 bg-black/40 opacity-0 group-hover:opacity-100 transition-opacity flex items-center justify-center">
+                                        <button class="w-10 h-10 bg-white text-brand-red rounded-full flex items-center justify-center hover:scale-110 transition-transform shadow-lg">
+                                            <i class="ph-bold ph-trash"></i>
+                                        </button>
+                                    </div>
+                                </div>
+                                <!-- Upload Button -->
+                                <label class="aspect-square rounded-2xl bg-brand-gray border-2 border-dashed border-gray-200 flex flex-col items-center justify-center cursor-pointer hover:bg-brand-redLight hover:border-brand-red transition-all group">
+                                    <input type="file" class="hidden">
+                                    <div class="w-12 h-12 bg-white rounded-full flex items-center justify-center text-brand-red mb-2 shadow-sm group-hover:scale-110 transition-transform">
+                                        <i class="ph-bold ph-plus text-xl"></i>
+                                    </div>
+                                    <span class="text-xs font-bold text-brand-text">Add Photo</span>
+                                </label>
+                            </div>
+
+                            <div class="flex justify-end pt-4">
+                                <button class="bg-brand-red text-white py-4 px-10 rounded-2xl font-bold shadow-[0_8px_20px_rgba(229,57,53,0.3)] hover:-translate-y-1 hover:shadow-[0_12px_25px_rgba(229,57,53,0.4)] transition-all duration-300">
+                                    Save Gallery
+                                </button>
+                            </div>
+                        </div>
+                    </div>
+
+                </div>
+            </div>
+        </div>
+    </main>
+
+    <script>
+        const sidebar = document.getElementById('sidebar');
+        const overlay = document.getElementById('sidebarOverlay');
+        let isCollapsed = false;
+
+        function toggleSidebar() {
+            if (window.innerWidth < 768) {
+                sidebar.classList.toggle('-translate-x-full');
+                overlay.classList.toggle('hidden');
+            } else {
+                isCollapsed = !isCollapsed;
+                applyCollapsedState(isCollapsed);
+            }
+        }
+
+        function applyCollapsedState(collapsed) {
+            const elementsToToggle = document.querySelectorAll('.nav-text, .promo-box, .logo-text, .nav-badge, .nav-caret, .menu-header');
+            const navLinks = document.querySelectorAll('.nav-link');
+
+            if (collapsed) {
+                sidebar.classList.remove('w-64');
+                sidebar.classList.add('w-20');
+                elementsToToggle.forEach(el => el.classList.add('hidden'));
+                navLinks.forEach(link => {
+                    link.classList.add('justify-center');
+                    link.classList.remove('px-3');
+                });
+            } else {
+                sidebar.classList.remove('w-20');
+                sidebar.classList.add('w-64');
+                elementsToToggle.forEach(el => el.classList.remove('hidden'));
+                navLinks.forEach(link => {
+                    link.classList.remove('justify-center');
+                    link.classList.add('px-3');
+                });
+            }
+        }
+
+        function switchTab(tabId) {
+            // Hide all contents
+            document.querySelectorAll('.tab-content').forEach(content => content.classList.remove('active'));
+            // Remove active classes from buttons
+            document.querySelectorAll('.tab-btn').forEach(btn => {
+                btn.classList.remove('bg-brand-red', 'text-white', 'shadow-md');
+                btn.classList.add('text-brand-text', 'hover:bg-brand-gray');
+            });
+
+            // Show target content
+            document.getElementById(`${tabId}-tab`).classList.add('active');
+            // Add active class to button
+            const activeBtn = document.querySelector(`[data-tab="${tabId}"]`);
+            activeBtn.classList.add('bg-brand-red', 'text-white', 'shadow-md');
+            activeBtn.classList.remove('text-brand-text', 'hover:bg-brand-gray');
+        }
+
+        // Handle window resize for sidebar
+        window.addEventListener('resize', () => {
+            if (window.innerWidth >= 768) {
+                sidebar.classList.remove('-translate-x-full');
+                overlay.classList.add('hidden');
+            } else {
+                sidebar.classList.add('-translate-x-full');
+                if (!overlay.classList.contains('hidden')) overlay.classList.add('hidden');
+            }
+        });
+    </script>
+</body>
+</html>
