@@ -3,6 +3,7 @@
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { toast } from "react-toastify";
+import { useRouter } from "next/navigation";
 import { useAuth } from "@/context/AuthContext";
 import { patchAccountProfile, type AuthUser } from "@/lib/auth-api";
 import {
@@ -85,7 +86,15 @@ function StepIntro({
   );
 }
 
-function OnboardingStyleStepper({ step }: { step: WizardStepIndex }) {
+function OnboardingStyleStepper({
+  step,
+  onSelectCompletedStep,
+  navigationDisabled,
+}: {
+  step: WizardStepIndex;
+  onSelectCompletedStep?: (target: WizardStepIndex) => void;
+  navigationDisabled?: boolean;
+}) {
   const n = WIZARD_STEPS.length;
   const pct = n <= 1 ? 0 : (step / (n - 1)) * 100;
   return (
@@ -103,30 +112,51 @@ function OnboardingStyleStepper({ step }: { step: WizardStepIndex }) {
         {WIZARD_STEPS.map((item, idx) => {
           const done = idx < step;
           const active = idx === step;
+          const canGoTo = done && onSelectCompletedStep && !navigationDisabled;
+          const circle = (
+            <span
+              className={`flex h-10 w-10 items-center justify-center rounded-full border-2 text-sm font-bold shadow-sm transition-colors duration-300 ${
+                done
+                  ? "border-[#4CAF50] bg-[#4CAF50] text-white"
+                  : active
+                    ? "border-brand-red bg-brand-red text-white"
+                    : "border-gray-200 bg-white text-gray-400"
+              }`}
+            >
+              {done ? (
+                <Check weight="bold" className="h-5 w-5" aria-hidden />
+              ) : (
+                <span>{idx + 1}</span>
+              )}
+            </span>
+          );
+          const label = (
+            <span
+              className={`max-w-[5rem] text-center text-[11px] leading-tight font-semibold sm:max-w-none sm:text-xs ${
+                active ? "font-bold text-[#1c1c1c]" : done ? "font-bold text-[#4CAF50]" : "text-gray-400"
+              }`}
+            >
+              {item.onboardingShortLabel}
+            </span>
+          );
           return (
             <li key={item.label} className="flex flex-col items-center gap-2">
-              <span
-                className={`flex h-10 w-10 items-center justify-center rounded-full border-2 text-sm font-bold shadow-sm transition-colors duration-300 ${
-                  done
-                    ? "border-[#4CAF50] bg-[#4CAF50] text-white"
-                    : active
-                      ? "border-brand-red bg-brand-red text-white"
-                      : "border-gray-200 bg-white text-gray-400"
-                }`}
-              >
-                {done ? (
-                  <Check weight="bold" className="h-5 w-5" aria-hidden />
-                ) : (
-                  <span>{idx + 1}</span>
-                )}
-              </span>
-              <span
-                className={`max-w-[5rem] text-center text-[11px] leading-tight font-semibold sm:max-w-none sm:text-xs ${
-                  active ? "font-bold text-[#1c1c1c]" : done ? "font-bold text-[#4CAF50]" : "text-gray-400"
-                }`}
-              >
-                {item.onboardingShortLabel}
-              </span>
+              {canGoTo ? (
+                <button
+                  type="button"
+                  onClick={() => onSelectCompletedStep(idx as WizardStepIndex)}
+                  className="group flex max-w-[5.5rem] cursor-pointer flex-col items-center gap-2 rounded-lg p-1 -m-1 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand-red focus-visible:ring-offset-2"
+                  aria-label={`Go to ${item.onboardingShortLabel}`}
+                >
+                  {circle}
+                  {label}
+                </button>
+              ) : (
+                <>
+                  {circle}
+                  {label}
+                </>
+              )}
             </li>
           );
         })}
@@ -286,7 +316,7 @@ function ChoiceChip({
       type="button"
       onClick={onClick}
       aria-pressed={selected}
-      className={`flex w-full flex-col gap-0.5 rounded-sm border px-4 py-3 text-left transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand-red focus-visible:ring-offset-1 sm:w-auto sm:min-w-[11rem] ${
+      className={`flex w-full cursor-pointer flex-col gap-0.5 rounded-sm border px-4 py-3 text-left transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand-red focus-visible:ring-offset-1 sm:w-auto sm:min-w-[11rem] ${
         selected
           ? "border-brand-red bg-red-50 text-brand-red"
           : "border-[#E5E7EB] bg-white text-[#374151] hover:border-brand-red/60"
@@ -313,7 +343,7 @@ function ToggleChip({
       type="button"
       onClick={onClick}
       aria-pressed={selected}
-      className={`rounded-sm border px-3.5 py-2 text-left text-sm font-medium transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand-red focus-visible:ring-offset-1 ${
+      className={`cursor-pointer rounded-sm border px-3.5 py-2 text-left text-sm font-medium transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand-red focus-visible:ring-offset-1 ${
         selected
           ? "border-brand-red bg-red-50 text-brand-red"
           : "border-[#E5E7EB] bg-white text-[#374151] hover:border-brand-red/60"
@@ -355,6 +385,7 @@ function WorkspaceBusinessWizard({
   accountUser: AuthUser | null;
   uiVariant?: "default" | "onboarding";
 }) {
+  const router = useRouter();
   const qc = useQueryClient();
   const { refreshUser } = useAuth();
   const [step, setStep] = useState<WizardStepIndex>(firstIncompleteStep(profile));
@@ -715,11 +746,9 @@ function WorkspaceBusinessWizard({
 
   const handleBannerFileUpload = async (file: File) => {
     if (!file.type.startsWith("image/")) {
-      toast.error("Please upload an image file.");
       return;
     }
     if (file.size > MAX_GALLERY_UPLOAD_BYTES) {
-      toast.error(`Image too large (max ~${Math.round(MAX_GALLERY_UPLOAD_BYTES / (1024 * 1024))} MB).`);
       return;
     }
     try {
@@ -735,14 +764,12 @@ function WorkspaceBusinessWizard({
       if (!files?.length) return;
       const list = Array.from(files).filter((f) => f.type.startsWith("image/"));
       if (!list.length) {
-        toast.error("Please choose image files only.");
         return;
       }
 
       const accepted: string[] = [];
       for (const file of list) {
         if (file.size > MAX_GALLERY_UPLOAD_BYTES) {
-          toast.error(`${file.name} is too large (max ~${Math.round(MAX_GALLERY_UPLOAD_BYTES / (1024 * 1024))} MB per photo).`);
           continue;
         }
         try {
@@ -757,13 +784,9 @@ function WorkspaceBusinessWizard({
       setGalleryUrls((prev) => {
         const remaining = WORKSPACE_GALLERY_MAX - prev.length;
         if (remaining <= 0) {
-          toast.error(`You can add up to ${WORKSPACE_GALLERY_MAX} gallery photos.`);
           return prev;
         }
         const slice = accepted.slice(0, remaining);
-        if (accepted.length > remaining) {
-          toast.info(`Only the first ${remaining} photo(s) fit (max ${WORKSPACE_GALLERY_MAX}).`);
-        }
         clearFieldError("gallery");
         return [...prev, ...slice];
       });
@@ -787,7 +810,14 @@ function WorkspaceBusinessWizard({
       {/* Stepper */}
       {uiVariant === "onboarding" ? (
         <nav aria-label="Progress" className="mb-2">
-          <OnboardingStyleStepper step={step} />
+          <OnboardingStyleStepper
+            step={step}
+            navigationDisabled={saveM.isPending}
+            onSelectCompletedStep={(target) => {
+              setFieldErrors({});
+              setStep(target);
+            }}
+          />
         </nav>
       ) : (
         <div className="border-b border-gray-200 bg-gray-50 px-6 py-8 sm:px-12 sm:py-10">
@@ -816,7 +846,7 @@ function WorkspaceBusinessWizard({
                       type="button"
                       disabled={!done}
                       onClick={() => setStep(idx as WizardStepIndex)}
-                      className="group relative z-10 flex flex-col items-center disabled:cursor-default"
+                      className="group relative z-10 flex cursor-pointer flex-col items-center disabled:cursor-not-allowed"
                     >
                       <span
                         className={`flex h-12 w-12 items-center justify-center rounded-2xl border-2 transition-all duration-300 ${
@@ -824,7 +854,7 @@ function WorkspaceBusinessWizard({
                             ? "scale-110 border-brand-red bg-white text-brand-red shadow-lg shadow-brand-red/20"
                             : done
                               ? "border-brand-red bg-brand-red text-white"
-                              : "border-stone-200 bg-white text-stone-400 hover:border-stone-300"
+                              : "border-stone-200 bg-white text-stone-400"
                         }`}
                       >
                         <Icon weight={active || done ? "fill" : "regular"} className="h-6 w-6" />
@@ -1794,8 +1824,8 @@ function WorkspaceBusinessWizard({
             disabled={step === 0 || saveM.isPending}
             className={
               uiVariant === "onboarding"
-                ? "rounded-sm px-6 py-3 text-sm font-bold text-gray-500 transition-colors hover:bg-gray-100 hover:text-[#1c1c1c] disabled:cursor-not-allowed disabled:opacity-40"
-                : "rounded-sm border border-gray-300 bg-white px-6 py-3 text-sm font-bold text-gray-600 shadow-sm transition-colors hover:bg-gray-50 hover:text-[#1c1c1c] disabled:cursor-not-allowed disabled:opacity-50"
+                ? "cursor-pointer rounded-sm px-6 py-3 text-sm font-bold text-gray-500 transition-colors hover:bg-gray-100 hover:text-[#1c1c1c] disabled:cursor-not-allowed disabled:opacity-40"
+                : "cursor-pointer rounded-sm border border-gray-300 bg-white px-6 py-3 text-sm font-bold text-gray-600 shadow-sm transition-colors hover:bg-gray-50 hover:text-[#1c1c1c] disabled:cursor-not-allowed disabled:opacity-50"
             }
           >
             {uiVariant === "onboarding" ? "Back" : "Previous Step"}
@@ -1809,13 +1839,6 @@ function WorkspaceBusinessWizard({
                   if (Object.keys(errs).length > 0) {
                     setFieldErrors(errs);
                     setStep(si as WizardStepIndex);
-                    toast.error(
-                      si === 0
-                        ? "Complete your business details before submitting."
-                        : si === 1
-                          ? "Complete guest capacity, experience, pricing, categories, services, and keywords before submitting."
-                          : "Add valid gallery photos before submitting."
-                    );
                     window.setTimeout(() => {
                       document.querySelector("[data-invalid-field]")?.scrollIntoView({
                         behavior: "smooth",
@@ -1830,7 +1853,6 @@ function WorkspaceBusinessWizard({
                 const errs = validateStepFields(step);
                 if (Object.keys(errs).length > 0) {
                   setFieldErrors(errs);
-                  toast.error("Please fix the highlighted fields.");
                   window.setTimeout(() => {
                     document.querySelector("[data-invalid-field]")?.scrollIntoView({
                       behavior: "smooth",
@@ -1842,32 +1864,29 @@ function WorkspaceBusinessWizard({
                 setFieldErrors({});
               }
               saveM.mutate(step, {
-                onSuccess: (res) => {
+                onSuccess: () => {
                   if (step === 3) {
-                    toast.success(
-                      res.published
-                        ? "Your listing is live on the marketplace."
-                        : "Saved."
-                    );
-                  } else {
-                    toast.success("Step saved.");
-                    setStep((s) => Math.min(3, s + 1) as WizardStepIndex);
+                    router.replace("/workspace");
+                    return;
                   }
+                  setStep((s) => Math.min(3, s + 1) as WizardStepIndex);
                 },
               });
             }}
             disabled={saveM.isPending}
-            className={`group ml-auto flex items-center gap-2 rounded-sm px-8 py-3 text-sm font-bold text-white shadow-md transition-all hover:-translate-y-0.5 hover:shadow-lg disabled:cursor-not-allowed disabled:opacity-60 disabled:transform-none ${
+            className={`group ml-auto flex cursor-pointer items-center gap-2 rounded-sm px-8 py-3 text-sm font-bold text-white shadow-md transition-all hover:-translate-y-0.5 hover:shadow-lg disabled:cursor-not-allowed disabled:opacity-60 disabled:transform-none ${
               step === 3 && uiVariant === "onboarding"
                 ? "bg-[#4CAF50] hover:bg-emerald-600"
                 : "bg-brand-red shadow-brand-red/25 hover:bg-red-700 hover:shadow-brand-red/30"
             }`}
           >
             {saveM.isPending
-              ? "Saving..."
+              ? step === 3 && uiVariant === "onboarding"
+                ? "Publishing..."
+                : "Saving..."
               : step === 3
                 ? uiVariant === "onboarding"
-                  ? "Submit profile"
+                  ? "Publish"
                   : "Publish Profile"
                 : uiVariant === "onboarding"
                   ? "Next step"
@@ -1912,25 +1931,9 @@ export default function WorkspaceBusinessPage() {
     queryFn: () => fetchWorkspaceCatererProfile(token!),
   });
   const profile = profileQ.data;
-  const onboardingUi = Boolean(profile && !profile.completion.isComplete);
 
   return (
-    <div className={onboardingUi ? "w-full" : "mx-auto max-w-5xl py-8"}>
-      {!onboardingUi ? (
-        <div className="mb-10 text-center">
-          <span className="mb-4 inline-flex items-center gap-2 rounded-full bg-brand-red/10 px-4 py-1.5 text-xs font-bold uppercase tracking-widest text-brand-red">
-            <Storefront weight="fill" className="h-4 w-4" />
-            Business profile
-          </span>
-          <h1 className="mb-4 text-4xl font-black tracking-tight text-stone-900 md:text-5xl">
-            Manage your business listing
-          </h1>
-          <p className="mx-auto max-w-2xl text-lg text-stone-500">
-            Update your marketplace profile, services, and gallery whenever you need.
-          </p>
-        </div>
-      ) : null}
-
+    <div className="w-full">
       {enabled && profile && citiesQ.data && categoriesQ.data && offeringsQ.data ? (
         <WorkspaceBusinessWizard
           key={`${profile.cityId ?? "none"}-${profile.published}-${profile.completion.isComplete}`}
@@ -1941,7 +1944,7 @@ export default function WorkspaceBusinessPage() {
           offerings={offeringsQ.data}
           keywordBrowseCatalog={keywordCatalogQ.data ?? []}
           accountUser={user}
-          uiVariant={onboardingUi ? "onboarding" : "default"}
+          uiVariant="onboarding"
         />
       ) : (
         <div className="mt-12 flex h-64 flex-col items-center justify-center rounded-sm border border-gray-200 bg-white shadow-sm">

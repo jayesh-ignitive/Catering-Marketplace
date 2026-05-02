@@ -14,17 +14,17 @@ const AVA_2 =
 const AVA_3 =
   "https://images.unsplash.com/photo-1494790108377-be9c29b29330?auto=format&fit=crop&w=100&q=80";
 
-export const obLabel = "mb-1 block text-sm font-semibold text-gray-700";
+/** Match workspace `/workspace/onboarding` wizard controls (onboarding inputs). */
+export const obLabel = "mb-1.5 block text-sm font-medium text-[#374151]";
 
 export function obInputClass(hasError: boolean): string {
-  return [
-    "w-full rounded-lg border px-4 py-3 text-sm text-brand-dark transition placeholder:text-gray-400 outline-none focus:border-brand-red focus:ring-1 focus:ring-brand-red",
-    hasError ? "border-red-500 bg-red-50/50 focus:border-red-500 focus:ring-red-500" : "border-gray-300",
-  ].join(" ");
+  const base =
+    "block w-full rounded-sm border bg-white px-4 py-3.5 text-sm text-[#111827] outline-none ring-0 ring-offset-0 transition-colors placeholder:text-[#9CA3AF] focus:border-brand-red focus:outline-none focus:ring-0";
+  return hasError ? `${base} !border-brand-red` : `${base} border-[#E5E7EB]`;
 }
 
 export const obPrimaryBtn =
-  "inline-flex w-full items-center justify-center gap-2 rounded-lg bg-brand-red px-8 py-3 text-sm font-bold text-white shadow-md transition hover:bg-red-700 hover:shadow-lg disabled:cursor-not-allowed disabled:opacity-55 disabled:hover:shadow-md";
+  "inline-flex w-full items-center justify-center gap-2 rounded-sm bg-brand-red px-8 py-3 text-sm font-bold text-white shadow-md shadow-brand-red/25 transition-all hover:-translate-y-0.5 hover:bg-red-700 hover:shadow-lg hover:shadow-brand-red/30 disabled:cursor-not-allowed disabled:opacity-60 disabled:transform-none disabled:hover:shadow-md disabled:hover:shadow-brand-red/25";
 
 export type PartnerOnboardingAuthShellProps = {
   title: string;
@@ -112,8 +112,8 @@ export function PartnerOnboardingAuthShell({ title, subtitle, children }: Partne
 
         <div className="mx-auto flex w-full max-w-2xl flex-col px-6 py-8 sm:p-10 lg:p-12 xl:p-16">
           <div className="mb-8">
-            <h2 className="mb-2 font-heading text-3xl font-bold text-brand-dark">{title}</h2>
-            {subtitle ? <div className="text-gray-500">{subtitle}</div> : null}
+            <h2 className="mb-2 font-heading text-3xl font-bold tracking-tight text-[#374151]">{title}</h2>
+            {subtitle ? <div className="text-sm leading-relaxed text-[#6B7280]">{subtitle}</div> : null}
           </div>
           {children}
         </div>

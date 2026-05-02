@@ -125,8 +125,8 @@ export default function RegisterPage() {
 
   const phoneErr = Boolean(errors.phoneCountryCode || errors.phoneNumber);
   const phoneShell = phoneErr
-    ? "rounded-lg border border-red-500 bg-red-50/50 ring-red-500 focus-within:border-red-500 focus-within:ring-1 focus-within:ring-red-500"
-    : "rounded-lg border border-gray-300 focus-within:border-brand-red focus-within:ring-1 focus-within:ring-brand-red";
+    ? "rounded-sm border !border-brand-red outline-none ring-0 ring-offset-0 transition-colors focus-within:border-brand-red focus-within:outline-none focus-within:ring-0"
+    : "rounded-sm border border-[#E5E7EB] outline-none ring-0 ring-offset-0 transition-colors focus-within:border-brand-red focus-within:outline-none focus-within:ring-0";
 
   return (
     <PartnerOnboardingAuthShell
@@ -141,7 +141,7 @@ export default function RegisterPage() {
         </p>
       }
     >
-      <form noValidate onSubmit={onSubmit} className="space-y-5">
+      <form noValidate onSubmit={onSubmit} className="space-y-6">
         <div>
           <label htmlFor="reg-business" className={obLabel}>
             Business name *
@@ -164,7 +164,7 @@ export default function RegisterPage() {
           <FormFieldError id="reg-business-error" message={errors.businessName} />
         </div>
 
-        <div className="grid grid-cols-1 gap-5 md:grid-cols-2">
+        <div className="grid grid-cols-1 gap-x-8 gap-y-6 md:grid-cols-2">
           <div>
             <label htmlFor="reg-name" className={obLabel}>
               Contact person *
@@ -190,8 +190,8 @@ export default function RegisterPage() {
             <label htmlFor="reg-phone" className={obLabel}>
               Mobile number *
             </label>
-            <div className={`flex min-w-0 items-stretch overflow-hidden bg-white transition ${phoneShell}`}>
-              <div className="flex shrink-0 items-center gap-2 border-r border-gray-200 px-3 py-3 sm:px-4">
+            <div className={`flex min-w-0 items-stretch overflow-hidden bg-white ${phoneShell}`}>
+              <div className="flex shrink-0 items-center gap-2 border-r border-[#E5E7EB] px-3 py-3 sm:px-4">
                 <span className="text-[1.25rem] leading-none" title={selectedCountry.name} aria-hidden>
                   {flagEmoji(selectedCountry.iso2)}
                 </span>
@@ -205,7 +205,7 @@ export default function RegisterPage() {
                       setCountryIso(e.target.value);
                       clearPhoneErrors();
                     }}
-                    className="max-w-[5.5rem] cursor-pointer appearance-none border-0 bg-transparent py-0 pr-4 pl-0 text-sm font-semibold tabular-nums text-brand-dark outline-none ring-0 focus:ring-0 sm:max-w-[6.5rem]"
+                    className="max-w-[5.5rem] cursor-pointer appearance-none border-0 bg-transparent py-0 pr-4 pl-0 text-sm font-medium tabular-nums text-[#111827] outline-none ring-0 focus:ring-0 sm:max-w-[6.5rem]"
                   >
                     {PHONE_COUNTRY_OPTIONS.map((c) => (
                       <option key={c.iso2} value={c.iso2} title={c.name}>
@@ -233,7 +233,7 @@ export default function RegisterPage() {
                 onChange={(e) => onPhoneNationalChange(e.target.value)}
                 aria-invalid={phoneErr}
                 aria-describedby="reg-phone-error"
-                className="min-w-0 flex-1 border-0 bg-transparent px-3 py-3 text-sm text-brand-dark outline-none ring-0 placeholder:text-gray-400 focus:ring-0 sm:px-4"
+                className="min-w-0 flex-1 border-0 bg-transparent px-3 py-3.5 text-sm text-[#111827] outline-none ring-0 placeholder:text-[#9CA3AF] focus:ring-0 sm:px-4"
               />
             </div>
             <FormFieldError id="reg-phone-error" message={errors.phoneCountryCode || errors.phoneNumber} />

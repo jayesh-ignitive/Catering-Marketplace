@@ -97,7 +97,7 @@ export default function LoginPage() {
         </p>
       }
     >
-      <form noValidate onSubmit={onSubmit} className="space-y-5">
+      <form noValidate onSubmit={onSubmit} className="space-y-6">
         <div>
           <label htmlFor={emailId} className={obLabel}>
             Work email *
@@ -142,7 +142,7 @@ export default function LoginPage() {
             />
             <button
               type="button"
-              className="absolute right-3 top-1/2 flex h-9 w-9 -translate-y-1/2 cursor-pointer items-center justify-center rounded-md text-gray-500 transition hover:bg-gray-100 hover:text-brand-dark"
+              className="absolute right-2 top-1/2 flex h-10 w-10 -translate-y-1/2 cursor-pointer items-center justify-center rounded-sm text-[#9CA3AF] transition-colors hover:bg-gray-100 hover:text-[#374151] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand-red focus-visible:ring-offset-1"
               aria-label={showPassword ? "Hide password" : "Show password"}
               onClick={() => setShowPassword((v) => !v)}
             >
@@ -168,7 +168,7 @@ export default function LoginPage() {
         </button>
       </form>
 
-      <p className="mt-8 text-center text-sm text-gray-600">
+      <p className="mt-8 text-center text-sm text-[#6B7280]">
         <Link href="/verify-otp" className="font-semibold text-brand-red hover:underline">
           Have a verification code?
         </Link>

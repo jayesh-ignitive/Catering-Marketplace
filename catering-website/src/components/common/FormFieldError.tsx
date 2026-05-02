@@ -7,9 +7,9 @@ type FormFieldErrorProps = {
 
 export function FormFieldError({ id, message, variant = "light" }: FormFieldErrorProps) {
   if (!message) return null;
-  const color = variant === "dark" ? "text-red-400" : "text-red-600";
+  const color = variant === "dark" ? "text-red-400" : "text-brand-red";
   return (
-    <p id={id} className={`mt-1.5 text-sm font-medium ${color}`} role="alert">
+    <p id={id} className={`mt-1 text-xs font-medium ${color}`} role="alert">
       {message}
     </p>
   );

@@ -12,6 +12,12 @@ const nextConfig: NextConfig = {
   },
   async redirects() {
     return [
+      { source: "/workspace/business", destination: "/workspace/onboarding", permanent: true },
+      {
+        source: "/workspace/business/onboarding",
+        destination: "/workspace/onboarding",
+        permanent: true,
+      },
       { source: "/account", destination: "/workspace", permanent: false },
       { source: "/admin", destination: "/", permanent: false },
       { source: "/admin/login", destination: "/login", permanent: false },

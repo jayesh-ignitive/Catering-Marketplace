@@ -49,7 +49,7 @@ export default function WorkspaceOverviewPage() {
 
       <div className="mt-8 flex flex-wrap gap-3">
         <Link
-          href="/workspace/business"
+          href="/workspace/onboarding"
           className="rounded-xl bg-gradient-to-r from-[var(--primary)] to-[var(--orange-deep)] px-5 py-2.5 text-sm font-bold text-white shadow-md shadow-[var(--primary)]/25 transition hover:opacity-[0.96]"
         >
           Edit business info

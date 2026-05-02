@@ -32,7 +32,7 @@ export default function CatererWorkspaceShellLayout({ children }: { children: Re
   useEffect(() => {
     if (!profileQ.isSuccess || !profileQ.data) return;
     if (!profileQ.data.completion.isComplete) {
-      router.replace("/workspace/business");
+      router.replace("/workspace/onboarding");
     }
   }, [profileQ.isSuccess, profileQ.data, router]);
 

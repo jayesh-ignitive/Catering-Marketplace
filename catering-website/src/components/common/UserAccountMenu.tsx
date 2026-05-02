@@ -7,7 +7,7 @@ import { useEffect, useRef, useState } from "react";
 
 export function profileHref(user: AuthUser) {
   if (user.role === "admin") return "/";
-  return "/workspace/business";
+  return "/workspace/onboarding";
 }
 
 function UserAvatarButton({
