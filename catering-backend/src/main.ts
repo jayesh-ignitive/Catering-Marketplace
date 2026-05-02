@@ -23,12 +23,18 @@ async function bootstrap() {
     }),
   );
 
-  const corsOrigins = process.env.CORS_ORIGIN?.split(',').map((s) => s.trim()) ?? [
-    'http://localhost:3000',
-    'http://127.0.0.1:3000',
-    'http://localhost:3001',
-    'http://127.0.0.1:3001',
-  ];
+  const fromEnv = process.env.CORS_ORIGIN?.split(',')
+    .map((s) => s.trim())
+    .filter(Boolean);
+  const corsOrigins =
+    fromEnv && fromEnv.length > 0
+      ? fromEnv
+      : [
+          'http://localhost:3000',
+          'http://127.0.0.1:3000',
+          'http://localhost:3001',
+          'http://127.0.0.1:3001',
+        ];
   app.enableCors({ origin: corsOrigins, credentials: true });
 
   const port = Number(process.env.PORT) || 4000;
