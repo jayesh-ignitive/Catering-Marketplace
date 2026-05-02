@@ -1,7 +1,8 @@
 "use client";
 
-import { ChefHat, SignOut } from "@phosphor-icons/react";
+import { SignOut } from "@phosphor-icons/react";
 import Link from "next/link";
+import { BrandLogoLink } from "@/components/common/BrandLogoLink";
 import { usePathname, useRouter } from "next/navigation";
 import type { AuthUser } from "@/lib/auth-api";
 import { WORKSPACE_THEME_NAV } from "../theme-nav";
@@ -52,17 +53,12 @@ export function WorkspaceSidebar({
         }`}
       >
         <div className={`h-20 border-b border-stone-100 transition-all duration-300 ${compact ? "px-3" : "px-6"}`}>
-          <Link href="/" className="flex h-full items-center gap-2" onClick={onCloseMobile}>
-            <ChefHat className="text-3xl text-[#d4af37]" weight="fill" aria-hidden />
-            <div className={`${compact ? "hidden" : "flex"} flex-col`}>
-              <span className="font-logo translate-y-1 text-3xl leading-none tracking-tight text-brand-dark">
-                Bharat
-              </span>
-              <span className="-mt-1 w-fit -rotate-2 rounded-sm bg-brand-red px-1.5 py-0.5 text-[8px] font-bold uppercase tracking-[0.3em] text-white shadow-sm">
-                Catering
-              </span>
-            </div>
-          </Link>
+          <BrandLogoLink
+            preset="workspaceSidebar"
+            showWordmark={!compact}
+            className="h-full"
+            onClick={onCloseMobile}
+          />
         </div>
 
         <div className={`flex flex-1 flex-col overflow-y-auto transition-all duration-300 ${compact ? "p-2" : "p-4"}`}>

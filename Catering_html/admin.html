@@ -135,26 +135,25 @@
         
         <!-- Header -->
         <header class="h-20 bg-white/80 backdrop-blur-md border-b border-gray-100 flex items-center justify-between px-8 shrink-0 z-10 sticky top-0">
-            <div class="flex items-center gap-4">
-                <button onclick="toggleSidebar()" class="text-brand-text hover:text-brand-red transition-colors">
+            <div class="flex items-center gap-4 min-w-0">
+                <button onclick="toggleSidebar()" class="text-brand-text hover:text-brand-red transition-colors shrink-0">
                     <i class="ph ph-list text-2xl"></i>
                 </button>
-                <div class="relative hidden md:block w-72">
+                <a href="/" class="flex items-center gap-1.5 shrink-0 hover:opacity-90 transition-opacity" aria-label="Bharat Catering home">
+                    <i class="ph-fill ph-chef-hat text-2xl text-[#d4af37] shrink-0"></i>
+                    <div class="flex flex-col leading-none">
+                        <span class="font-logo text-2xl text-brand-dark tracking-tight translate-y-0.5">Bharat</span>
+                        <span class="bg-brand-red text-white text-[7px] uppercase tracking-[0.28em] font-bold px-1.5 py-px rounded-sm -rotate-2 -mt-0.5 w-fit shadow-sm relative z-10">Catering</span>
+                    </div>
+                </a>
+                <div class="hidden md:block h-8 w-px bg-gray-200 shrink-0" aria-hidden="true"></div>
+                <div class="relative hidden md:block w-72 flex-1 max-w-md">
                     <i class="ph ph-magnifying-glass absolute left-3 top-1/2 -translate-y-1/2 text-gray-400 text-lg"></i>
                     <input type="text" placeholder="Search here..." class="w-full bg-brand-gray border border-transparent focus:border-brand-red focus:bg-white rounded-xl py-2.5 pl-10 pr-4 text-sm outline-none transition-all duration-300">
                 </div>
             </div>
 
             <div class="flex items-center gap-4">
-                <button class="relative w-10 h-10 rounded-full bg-brand-gray flex items-center justify-center text-brand-text hover:text-brand-red hover:bg-brand-redLight transition-all">
-                    <i class="ph ph-bell text-xl"></i>
-                    <span class="absolute top-2 right-2 w-2 h-2 bg-red-500 rounded-full border-2 border-brand-gray"></span>
-                </button>
-                <button class="relative w-10 h-10 rounded-full bg-brand-gray flex items-center justify-center text-brand-text hover:text-brand-red hover:bg-brand-redLight transition-all">
-                    <i class="ph ph-envelope-simple text-xl"></i>
-                    <span class="absolute top-2 right-2 w-2 h-2 bg-brand-red rounded-full border-2 border-brand-gray"></span>
-                </button>
-                <div class="h-8 w-px bg-gray-200 mx-2"></div>
                 <div class="flex items-center gap-3 cursor-pointer group">
                     <div class="text-right hidden sm:block">
                         <p class="text-sm font-bold text-brand-textDark leading-none">Austin Robertson</p>

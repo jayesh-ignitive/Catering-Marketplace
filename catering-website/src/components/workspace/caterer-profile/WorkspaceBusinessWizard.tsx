@@ -44,6 +44,9 @@ import {
   multiSelectClassName,
   textareaClassName,
   WORKSPACE_GALLERY_MAX,
+  workspaceCardTitleClass,
+  workspaceHintTextClass,
+  workspaceLabelTextClass,
 } from "./constants";
 import { ChoiceChip, FieldError, InputLabel, ToggleChip } from "./form-primitives";
 import { OnboardingStyleStepper } from "./OnboardingStyleStepper";
@@ -641,7 +644,9 @@ export function WorkspaceBusinessWizard({
               <span className="ws-listing-section-icon" aria-hidden>
                 <Briefcase weight="fill" className="h-4 w-4" />
               </span>
-              <h3 className="font-heading text-xl font-bold text-[#232D42]">Business Information</h3>
+              <h3 className={`font-heading text-xl font-semibold tracking-tight text-[#374151]`}>
+                Business Information
+              </h3>
             </div>
           ) : null}
           {isProfileTabs && profileTab === "services" ? (
@@ -649,7 +654,9 @@ export function WorkspaceBusinessWizard({
               <span className="ws-listing-section-icon" aria-hidden>
                 <ForkKnife weight="fill" className="h-4 w-4" />
               </span>
-              <h3 className="font-heading text-xl font-bold text-[#232D42]">Services & Keywords</h3>
+              <h3 className={`font-heading text-xl font-semibold tracking-tight text-[#374151]`}>
+                Services & Keywords
+              </h3>
             </div>
           ) : null}
           {isProfileTabs && profileTab === "gallery" ? (
@@ -658,9 +665,11 @@ export function WorkspaceBusinessWizard({
                 <span className="ws-listing-section-icon" aria-hidden>
                   <ImageIcon weight="fill" className="h-4 w-4" />
                 </span>
-                <h3 className="font-heading text-xl font-bold text-[#232D42]">Business Gallery</h3>
+                <h3 className={`font-heading text-xl font-semibold tracking-tight text-[#374151]`}>
+                  Business Gallery
+                </h3>
               </div>
-              <p className="mt-2 text-sm text-[#8A92A6]">
+              <p className={`mt-2 ${workspaceHintTextClass}`}>
                 Upload photos of your food, setup, and previous events.
               </p>
             </div>
@@ -731,7 +740,7 @@ export function WorkspaceBusinessWizard({
               <div className="md:col-span-2">
                 <InputLabel>
                   Street / area{" "}
-                  <span className="text-xs font-normal text-[#6B7280]">(optional)</span>
+                  <span className={`font-normal ${workspaceHintTextClass}`}>(optional)</span>
                 </InputLabel>
                 <input
                   value={streetLine}
@@ -790,7 +799,7 @@ export function WorkspaceBusinessWizard({
                 {fieldErrors.pincode ? (
                   <FieldError id="ws-pincode-err" message={fieldErrors.pincode} />
                 ) : uiVariant === "onboarding" ? (
-                  <p id="ws-pincode-hint" className="mt-1 text-xs text-[#6B7280]">
+                  <p id="ws-pincode-hint" className={`mt-1 ${workspaceHintTextClass}`}>
                     6-digit postal code
                   </p>
                 ) : null}
@@ -963,10 +972,10 @@ export function WorkspaceBusinessWizard({
                     {...(fieldErrors.guestServe ? { "data-invalid-field": "" } : {})}
                   >
                     <div>
-                      <h3 id="ws-q-guests" className="text-lg font-semibold tracking-tight text-[#374151]">
+                      <h3 id="ws-q-guests" className={workspaceLabelTextClass}>
                         How many guests can you serve? <span className="text-brand-red">*</span>
                       </h3>
-                      <p className="mt-1 text-sm text-[#6B7280]">
+                      <p className={`mt-1 ${workspaceHintTextClass}`}>
                         Pick the range that best matches most of your events.
                       </p>
                     </div>
@@ -1057,10 +1066,10 @@ export function WorkspaceBusinessWizard({
                     {...(fieldErrors.experience ? { "data-invalid-field": "" } : {})}
                   >
                     <div>
-                      <h3 id="ws-q-experience" className="text-lg font-semibold tracking-tight text-[#374151]">
+                      <h3 id="ws-q-experience" className={workspaceLabelTextClass}>
                         How experienced are you? <span className="text-brand-red">*</span>
                       </h3>
-                      <p className="mt-1 text-sm text-[#6B7280]">Rough tenure is fine — customers trust honesty.</p>
+                      <p className={`mt-1 ${workspaceHintTextClass}`}>Rough tenure is fine — customers trust honesty.</p>
                     </div>
                     <div className="flex flex-col gap-2 sm:flex-row sm:flex-wrap">
                       {EXPERIENCE_PRESETS.map((p) => (
@@ -1116,10 +1125,10 @@ export function WorkspaceBusinessWizard({
                     {...(fieldErrors.priceTier || fieldErrors.priceFrom ? { "data-invalid-field": "" } : {})}
                   >
                     <div>
-                      <h3 id="ws-q-price-guest" className="text-lg font-semibold tracking-tight text-[#374151]">
+                      <h3 id="ws-q-price-guest" className={workspaceLabelTextClass}>
                         What&apos;s your average price per guest? <span className="text-brand-red">*</span>
                       </h3>
-                      <p className="mt-1 text-sm text-[#6B7280]">
+                      <p className={`mt-1 ${workspaceHintTextClass}`}>
                         Typical starting rate — you can refine details later.
                       </p>
                     </div>
@@ -1203,14 +1212,11 @@ export function WorkspaceBusinessWizard({
                     {...(fieldErrors.categories ? { "data-invalid-field": "" } : {})}
                   >
                     <div>
-                      <h3
-                        id="ws-q-categories"
-                        className="text-lg font-semibold tracking-tight text-[#374151]"
-                      >
+                      <h3 id="ws-q-categories" className={workspaceLabelTextClass}>
                         What types of catering do you specialize in?{" "}
                         <span className="text-brand-red">*</span>
                       </h3>
-                      <p className="mt-1 text-sm text-[#6B7280]">Select all that apply — tap to add or remove.</p>
+                      <p className={`mt-1 ${workspaceHintTextClass}`}>Select all that apply — tap to add or remove.</p>
                     </div>
                     <div className="flex flex-wrap gap-2">
                       {categories.map((c) => {
@@ -1240,10 +1246,10 @@ export function WorkspaceBusinessWizard({
                     {...(fieldErrors.services ? { "data-invalid-field": "" } : {})}
                   >
                     <div>
-                      <h3 id="ws-q-services" className="text-lg font-semibold tracking-tight text-[#374151]">
+                      <h3 id="ws-q-services" className={workspaceLabelTextClass}>
                         Which services do you actually provide? <span className="text-brand-red">*</span>
                       </h3>
-                      <p className="mt-1 text-sm text-[#6B7280]">
+                      <p className={`mt-1 ${workspaceHintTextClass}`}>
                         Search by name, then tap a row to add or remove — like a compact multi-select.
                       </p>
                     </div>
@@ -1270,11 +1276,11 @@ export function WorkspaceBusinessWizard({
                     {...(fieldErrors.keywords ? { "data-invalid-field": "" } : {})}
                   >
                     <div>
-                      <h3 id="ws-q-keywords" className="text-lg font-semibold tracking-tight text-[#374151]">
+                      <h3 id="ws-q-keywords" className={workspaceLabelTextClass}>
                         What should people type to find you in search?{" "}
                         <span className="text-brand-red">*</span>
                       </h3>
-                      <p id="ws-keywords-hint" className="mt-1 text-sm text-[#6B7280]">
+                      <p id="ws-keywords-hint" className={`mt-1 ${workspaceHintTextClass}`}>
                         Search suggestions from other listings, or add your own phrases — Enter or click &quot;Add&quot;.
                         Up to {WORKSPACE_KEYWORD_LIMIT} keywords.
                       </p>
@@ -1305,7 +1311,7 @@ export function WorkspaceBusinessWizard({
                     <InputLabel htmlFor="ws-categories">
                       Categories <span className="text-brand-red">*</span>
                     </InputLabel>
-                    <p className="mb-3 text-xs text-gray-500">
+                    <p className={`mb-3 mt-1 ${workspaceHintTextClass}`}>
                       Hold Ctrl (Windows) or Cmd (Mac) to select multiple categories.
                     </p>
                     <select
@@ -1333,7 +1339,7 @@ export function WorkspaceBusinessWizard({
                     <InputLabel htmlFor="ws-services-search-default">
                       Services offered <span className="text-brand-red">*</span>
                     </InputLabel>
-                    <p className="mb-3 text-xs text-gray-500">
+                    <p className={`mb-3 mt-1 ${workspaceHintTextClass}`}>
                       Search and pick services — multi-select with a clearer layout than a plain list box.
                     </p>
                     <SearchableMultiSelect
@@ -1357,7 +1363,7 @@ export function WorkspaceBusinessWizard({
                     <InputLabel htmlFor="ws-keywords">
                       Keywords <span className="text-brand-red">*</span>
                     </InputLabel>
-                    <p id="ws-keywords-hint-default" className="mb-2 text-xs text-gray-500">
+                    <p id="ws-keywords-hint-default" className={`mb-2 mt-1 ${workspaceHintTextClass}`}>
                       Search suggestions from other listings, or add your own phrases — Enter or click &quot;Add&quot;. Up
                       to 10 keywords only.
                     </p>
@@ -1393,7 +1399,7 @@ export function WorkspaceBusinessWizard({
 
               <section className="space-y-2">
                 <InputLabel>Banner image (optional)</InputLabel>
-                <p className="text-xs text-[#6B7280]">Wide hero shown across the top of your listing.</p>
+                <p className={`mt-1 ${workspaceHintTextClass}`}>Wide hero shown across the top of your listing.</p>
                 <div
                   className={`relative flex min-h-[168px] w-full cursor-pointer flex-col items-center justify-center overflow-hidden ${surfaceRound} border-2 border-dashed p-8 text-center transition-all duration-300 ${
                     bannerDragging
@@ -1444,8 +1450,8 @@ export function WorkspaceBusinessWizard({
                       <div className="mb-3 flex h-12 w-12 items-center justify-center rounded-full bg-red-50 text-brand-red">
                         <UploadSimple className="h-6 w-6" weight="bold" aria-hidden />
                       </div>
-                      <p className="mb-1 text-sm font-bold text-[#1c1c1c]">Banner — click or drag one image</p>
-                      <p className="text-xs text-gray-500">PNG, JPG or GIF — wide ratio works best</p>
+                      <p className={`mb-1 ${workspaceLabelTextClass}`}>Banner — click or drag one image</p>
+                      <p className={workspaceHintTextClass}>PNG, JPG or GIF — wide ratio works best</p>
                     </>
                   )}
                 </div>
@@ -1456,7 +1462,7 @@ export function WorkspaceBusinessWizard({
                   <InputLabel htmlFor="ws-gallery-files-trigger">
                     Gallery photos <span className="text-brand-red">*</span>
                   </InputLabel>
-                  <p id="ws-gallery-hint" className="mt-1 text-xs text-[#6B7280]">
+                  <p id="ws-gallery-hint" className={`mt-1 ${workspaceHintTextClass}`}>
                     Up to {WORKSPACE_GALLERY_MAX} images (~5 MB each). The first tile adds photos (drag, drop, or click); new shots appear in the same grid. Trash removes a photo.
                   </p>
                 </div>
@@ -1518,10 +1524,8 @@ export function WorkspaceBusinessWizard({
                       <div className="mb-1 flex h-9 w-9 shrink-0 items-center justify-center rounded-full bg-red-50 text-brand-red sm:h-10 sm:w-10">
                         <Images className="h-4 w-4 sm:h-5 sm:w-5" weight="bold" aria-hidden />
                       </div>
-                      <p className="text-[11px] font-bold leading-tight text-[#1c1c1c] sm:text-xs">Add photos</p>
-                      <p className="mt-0.5 hidden text-[10px] leading-snug text-gray-500 sm:block sm:text-[11px]">
-                        Drop or click
-                      </p>
+                      <p className={workspaceCardTitleClass}>Add photos</p>
+                      <p className={`mt-0.5 hidden ${workspaceHintTextClass} sm:block`}>Drop or click</p>
                     </div>
                   </li>
                   {galleryUrls.map((url, idx) => (
@@ -1557,11 +1561,11 @@ export function WorkspaceBusinessWizard({
               <StepIntro step={3} uiVariant={uiVariant} />
               <div className={`overflow-hidden ${fieldRadius} border border-gray-200 bg-white shadow-sm`}>
                 <div className="border-b border-gray-200 bg-gray-50 px-6 py-5 sm:px-8">
-                  <h3 className="flex items-center gap-2 text-lg font-bold text-[#1c1c1c]">
+                  <h3 className={`flex items-center gap-2 ${workspaceLabelTextClass}`}>
                     <PaperPlaneRight className="text-brand-red" weight="fill" aria-hidden />
                     Ready to publish
                   </h3>
-                  <p className="mt-1 text-sm text-gray-500">
+                  <p className={`mt-1 ${workspaceHintTextClass}`}>
                     Review the checklist before your listing goes live on the marketplace.
                   </p>
                 </div>
@@ -1574,8 +1578,8 @@ export function WorkspaceBusinessWizard({
                         <XCircle className="mt-0.5 h-6 w-6 shrink-0 text-gray-300" weight="fill" />
                       )}
                       <div>
-                         <p className="text-sm font-semibold text-gray-900">Business details</p>
-                         <p className="mt-1 text-xs text-gray-500">City and about are required.</p>
+                         <p className={workspaceCardTitleClass}>Business details</p>
+                         <p className={`mt-1 ${workspaceHintTextClass}`}>City and about are required.</p>
                       </div>
                     </li>
                     <li className="flex items-start gap-4">
@@ -1585,8 +1589,8 @@ export function WorkspaceBusinessWizard({
                          <XCircle className="mt-0.5 h-6 w-6 shrink-0 text-gray-300" weight="fill" />
                       )}
                       <div>
-                         <p className="text-sm font-semibold text-gray-900">Categories</p>
-                         <p className="mt-1 text-xs text-gray-500">Select at least one category.</p>
+                         <p className={workspaceCardTitleClass}>Categories</p>
+                         <p className={`mt-1 ${workspaceHintTextClass}`}>Select at least one category.</p>
                       </div>
                     </li>
                     <li className="flex items-start gap-4">
@@ -1596,8 +1600,8 @@ export function WorkspaceBusinessWizard({
                          <XCircle className="mt-0.5 h-6 w-6 shrink-0 text-gray-300" weight="fill" />
                       )}
                       <div>
-                         <p className="text-sm font-semibold text-gray-900">Services & keywords</p>
-                         <p className="mt-1 text-xs text-gray-500">Pick services and add search keywords.</p>
+                         <p className={workspaceCardTitleClass}>Services & keywords</p>
+                         <p className={`mt-1 ${workspaceHintTextClass}`}>Pick services and add search keywords.</p>
                       </div>
                     </li>
                     <li className="flex items-start gap-4">
@@ -1607,8 +1611,8 @@ export function WorkspaceBusinessWizard({
                          <XCircle className="mt-0.5 h-6 w-6 shrink-0 text-gray-300" weight="fill" />
                       )}
                       <div>
-                         <p className="text-sm font-semibold text-gray-900">Gallery</p>
-                         <p className="mt-1 text-xs text-gray-500">Add at least one gallery photo.</p>
+                         <p className={workspaceCardTitleClass}>Gallery</p>
+                         <p className={`mt-1 ${workspaceHintTextClass}`}>Add at least one gallery photo.</p>
                       </div>
                     </li>
                   </ul>
@@ -1619,8 +1623,8 @@ export function WorkspaceBusinessWizard({
                         <CheckCircle className="h-6 w-6 text-[#4CAF50]" weight="fill" aria-hidden />
                       </div>
                       <div>
-                        <p className="text-base font-bold text-[#1c1c1c]">Marketplace visibility</p>
-                        <p className="mt-1 text-sm text-gray-600">
+                        <p className={workspaceCardTitleClass}>Marketplace visibility</p>
+                        <p className={`mt-1 ${workspaceHintTextClass}`}>
                           When every item above is complete and you save, your listing goes live for customers.
                         </p>
                       </div>

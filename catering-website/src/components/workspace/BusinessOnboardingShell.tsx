@@ -1,8 +1,7 @@
 "use client";
 
 import Image from "next/image";
-import Link from "next/link";
-import { ChefHat } from "@phosphor-icons/react";
+import { BrandLogoLink } from "@/components/common/BrandLogoLink";
 
 type Props = {
   children: React.ReactNode;
@@ -28,21 +27,7 @@ export function BusinessOnboardingShell({ children }: Props) {
         </div>
 
         <div className="relative z-10">
-          <Link href="/" className="mb-10 inline-flex" aria-label="Bharat Catering home">
-            <div className="relative flex flex-col pl-2">
-              <ChefHat
-                className="absolute -left-2 -top-4 -rotate-[10deg] text-4xl text-[#d4af37] drop-shadow-sm"
-                weight="fill"
-                aria-hidden
-              />
-              <span className="font-logo translate-y-1 text-4xl leading-none tracking-tight text-white drop-shadow-md">
-                Bharat
-              </span>
-              <span className="relative z-10 -mt-1 -rotate-2 w-fit rounded-sm bg-brand-red px-2 py-0.5 text-[9px] font-bold uppercase tracking-[0.3em] text-white shadow-md">
-                Catering
-              </span>
-            </div>
-          </Link>
+          <BrandLogoLink preset="onboardingHero" className="mb-10" />
 
           <h1 className="mb-5 max-w-lg font-black text-4xl leading-tight tracking-tight text-white xl:text-5xl">
             Grow your catering business with us
@@ -93,25 +78,10 @@ export function BusinessOnboardingShell({ children }: Props) {
 
       {/* Right: wizard — mobile logo only (no top header bar) */}
       <div className="relative flex min-h-0 flex-1 flex-col bg-white lg:w-[58%] xl:w-1/2">
-        <Link
-          href="/"
-          className="absolute left-6 top-5 z-10 inline-flex lg:hidden sm:left-10"
-          aria-label="Bharat Catering home"
-        >
-          <div className="relative flex flex-col pl-2">
-            <ChefHat
-              className="absolute -left-1 -top-3 -rotate-[10deg] text-2xl text-[#d4af37]"
-              weight="fill"
-              aria-hidden
-            />
-            <span className="font-logo translate-y-0.5 text-xl leading-none tracking-tight text-[#1c1c1c]">
-              Bharat
-            </span>
-            <span className="relative z-10 -mt-0.5 -rotate-2 w-fit rounded-sm bg-brand-red px-1.5 py-px text-[7px] font-bold uppercase tracking-[0.25em] text-white shadow-sm">
-              Catering
-            </span>
-          </div>
-        </Link>
+        <BrandLogoLink
+          preset="onboardingMobile"
+          className="absolute left-6 top-5 z-10 sm:left-10 lg:hidden"
+        />
 
         <main className="min-h-0 flex-1 overflow-y-auto overscroll-contain">
           <div className="mx-auto w-full max-w-2xl px-6 pt-14 pb-8 sm:px-10 sm:pt-14 sm:pb-10 lg:px-11 lg:pt-10 lg:pb-12 xl:px-16 xl:pt-12 xl:pb-14">

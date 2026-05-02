@@ -1,8 +1,7 @@
 "use client";
 
-import { ChefHat } from "@phosphor-icons/react";
 import Image from "next/image";
-import Link from "next/link";
+import { BrandLogoLink } from "@/components/common/BrandLogoLink";
 
 const PANEL_BG =
   "https://images.unsplash.com/photo-1555244162-803834f70033?auto=format&fit=crop&w=1000&q=80";
@@ -45,15 +44,7 @@ export function PartnerOnboardingAuthShell({ title, subtitle, children }: Partne
         </div>
 
         <div className="relative z-10">
-          <Link href="/" className="mb-12 flex items-center gap-2">
-            <div className="flex h-10 w-10 items-center justify-center rounded bg-brand-red text-white shadow-lg">
-              <ChefHat className="text-2xl" weight="bold" aria-hidden />
-            </div>
-            <div className="flex flex-col">
-              <span className="font-heading text-2xl font-bold leading-none tracking-tight">BHARAT</span>
-              <span className="text-[10px] font-semibold uppercase tracking-widest text-brand-red">Caterers</span>
-            </div>
-          </Link>
+          <BrandLogoLink preset="onboardingHero" className="mb-12" />
 
           <h1 className="mb-6 font-heading text-4xl font-bold leading-tight xl:text-5xl">
             Grow Your Catering Business With Us
@@ -103,11 +94,8 @@ export function PartnerOnboardingAuthShell({ title, subtitle, children }: Partne
       </div>
 
       <div className="flex w-full min-w-0 flex-1 flex-col bg-white lg:w-7/12 xl:w-1/2">
-        <div className="flex items-center gap-2 border-b border-gray-100 p-6 lg:hidden">
-          <div className="flex h-8 w-8 items-center justify-center rounded bg-brand-red text-white shadow-md">
-            <ChefHat className="text-xl" weight="bold" aria-hidden />
-          </div>
-          <span className="font-heading text-xl font-bold tracking-tight text-brand-dark">Bharat Caterers</span>
+        <div className="flex items-center border-b border-gray-100 p-6 lg:hidden">
+          <BrandLogoLink preset="workspaceHeader" />
         </div>
 
         <div className="mx-auto flex w-full max-w-2xl flex-col px-6 py-8 sm:p-10 lg:p-12 xl:p-16">

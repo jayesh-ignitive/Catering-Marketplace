@@ -1,7 +1,8 @@
 "use client";
 
-import { Bell, EnvelopeSimple, List, UserCircle, SignOut, SquaresFour, ChatText, User, X } from "@phosphor-icons/react";
+import { List, UserCircle, SignOut } from "@phosphor-icons/react";
 import type { AuthUser } from "@/lib/auth-api";
+import { BrandLogoLink } from "@/components/common/BrandLogoLink";
 import { useState, useRef, useEffect } from "react";
 import { useAuth } from "@/context/AuthContext";
 
@@ -40,16 +41,18 @@ export function WorkspaceHeader({ user, onToggleSidebar }: WorkspaceHeaderProps)
 
   return (
     <header className="sticky top-0 z-20 flex h-20 shrink-0 items-center justify-between border-b border-stone-200/80 bg-white/95 px-4 backdrop-blur md:px-8 shadow-sm shadow-stone-200/20">
-      <div className="flex items-center gap-3 md:gap-4">
+      <div className="flex min-w-0 items-center gap-3 md:gap-4">
         <button
           type="button"
           onClick={onToggleSidebar}
-          className="grid h-10 w-10 place-items-center rounded-xl bg-stone-100 text-stone-600 transition hover:bg-brand-red/10 hover:text-brand-red"
+          className="grid h-10 w-10 shrink-0 place-items-center rounded-xl bg-stone-100 text-stone-600 transition hover:bg-brand-red/10 hover:text-brand-red"
           aria-label="Toggle workspace navigation"
         >
           <List size={22} weight="bold" aria-hidden />
         </button>
-        <div className="hidden sm:block">
+        <BrandLogoLink preset="workspaceHeader" className="min-w-0" />
+        <div className="hidden h-9 w-px shrink-0 bg-stone-200 sm:block" aria-hidden />
+        <div className="hidden min-w-0 sm:block">
           <p className="text-[10px] font-bold uppercase tracking-widest text-brand-red/80">
             Workspace Panel
           </p>
@@ -60,27 +63,6 @@ export function WorkspaceHeader({ user, onToggleSidebar }: WorkspaceHeaderProps)
       </div>
 
       <div className="flex items-center gap-3 sm:gap-5">
-        <div className="flex items-center gap-1.5 sm:gap-2">
-          <button
-            type="button"
-            className="relative grid h-10 w-10 place-items-center rounded-full bg-stone-50 text-stone-500 transition hover:bg-brand-red/10 hover:text-brand-red border border-stone-100"
-            aria-label="Messages"
-          >
-            <EnvelopeSimple size={20} weight="fill" aria-hidden />
-            <span className="absolute right-2.5 top-2.5 h-2 w-2 rounded-full bg-brand-red ring-2 ring-white" />
-          </button>
-          <button
-            type="button"
-            className="relative grid h-10 w-10 place-items-center rounded-full bg-stone-50 text-stone-500 transition hover:bg-brand-red/10 hover:text-brand-red border border-stone-100"
-            aria-label="Notifications"
-          >
-            <Bell size={20} weight="fill" aria-hidden />
-            <span className="absolute right-2.5 top-2.5 h-2 w-2 rounded-full bg-brand-red ring-2 ring-white" />
-          </button>
-        </div>
-
-        <div className="h-8 w-px bg-stone-200 hidden sm:block"></div>
-
         <div className="relative" ref={menuRef}>
           <button 
             type="button" 

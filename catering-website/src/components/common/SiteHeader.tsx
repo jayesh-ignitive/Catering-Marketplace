@@ -4,7 +4,6 @@ import {
   Buildings,
   Cake,
   CaretDown,
-  ChefHat,
   BowlFood,
   List,
   MagnifyingGlass,
@@ -14,6 +13,7 @@ import {
 } from "@phosphor-icons/react";
 import Link from "next/link";
 import { useAuth } from "@/context/AuthContext";
+import { BrandLogoLink } from "@/components/common/BrandLogoLink";
 import { profileHref, UserAccountMenu } from "@/components/common/UserAccountMenu";
 import { useState } from "react";
 
@@ -39,21 +39,7 @@ export function SiteHeader() {
 
       <header className="sticky top-0 z-50 bg-white shadow-sm">
         <div className="mx-auto flex max-w-7xl items-center justify-between px-6 py-4">
-          <Link href="/" className="flex items-center gap-2" onClick={() => setOpen(false)}>
-            <div className="relative flex flex-col pl-2">
-              <ChefHat
-                className="absolute -left-2 -top-4 -rotate-[10deg] text-3xl text-[#d4af37]"
-                weight="fill"
-                aria-hidden
-              />
-              <span className="font-logo translate-y-1 text-4xl leading-none tracking-tight text-brand-dark">
-                Bharat
-              </span>
-              <span className="relative z-10 -mt-1 -rotate-2 rounded-sm bg-brand-red px-2 py-0.5 text-[9px] font-bold uppercase tracking-[0.3em] text-white shadow-sm">
-                Catering
-              </span>
-            </div>
-          </Link>
+          <BrandLogoLink preset="siteHeader" onClick={() => setOpen(false)} />
 
           <nav className="hidden items-center md:flex">
             <div className="group relative flex cursor-pointer flex-col border-l border-gray-200 px-6">

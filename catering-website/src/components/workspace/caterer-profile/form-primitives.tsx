@@ -1,6 +1,8 @@
+import { workspaceLabelTextClass } from "./constants";
+
 export function InputLabel({ children, htmlFor }: { children: React.ReactNode; htmlFor?: string }) {
   return (
-    <label htmlFor={htmlFor} className="mb-1.5 block text-sm font-medium text-[#374151]">
+    <label htmlFor={htmlFor} className={`mb-1.5 block ${workspaceLabelTextClass}`}>
       {children}
     </label>
   );
