@@ -50,7 +50,8 @@ export function WorkspaceHeader({ user, onToggleSidebar }: WorkspaceHeaderProps)
         >
           <List size={22} weight="bold" aria-hidden />
         </button>
-        <BrandLogoLink preset="workspaceHeader" className="min-w-0" />
+        {/** Sidebar already shows the brand from `md`; avoid duplicate logos beside the top bar. */}
+        <BrandLogoLink preset="workspaceHeader" className="min-w-0 shrink-0 md:hidden" />
         <div className="hidden h-9 w-px shrink-0 bg-stone-200 sm:block" aria-hidden />
         <div className="hidden min-w-0 sm:block">
           <p className="text-[10px] font-bold uppercase tracking-widest text-brand-red/80">

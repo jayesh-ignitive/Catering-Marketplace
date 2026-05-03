@@ -1,5 +1,6 @@
 import { Module } from '@nestjs/common';
 import { TypeOrmModule } from '@nestjs/typeorm';
+import { StorageModule } from '../storage/storage.module';
 import { TenantProvisioningModule } from '../tenant-provisioning/tenant-provisioning.module';
 import { User } from '../user/user.entity';
 import { Tenant } from '../tenant/tenant.entity';
@@ -22,6 +23,7 @@ import { MarketplaceService } from './marketplace.service';
 
 @Module({
   imports: [
+    StorageModule,
     TenantProvisioningModule,
     TypeOrmModule.forFeature([
       CatererMarketplaceListing,

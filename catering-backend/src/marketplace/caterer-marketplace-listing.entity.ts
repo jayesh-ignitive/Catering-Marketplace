@@ -67,7 +67,7 @@ export class CatererMarketplaceListing {
   @Column({ type: 'text', nullable: true })
   about!: string | null;
 
-  /** Hosted URL, `/uploads/…`, or inline `data:image/…` — can exceed 512 chars. */
+  /** Relative key e.g. `images/banner/uuid.jpg`, or legacy full URL / `data:image/…`. */
   @Column({ name: 'hero_image_url', type: 'longtext', nullable: true })
   heroImageUrl!: string | null;
 

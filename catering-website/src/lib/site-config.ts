@@ -20,10 +20,6 @@ export const publicSiteConfig = {
     "+91 0123456789",
   ),
   supportPhoneTel: trimOrFallback(process.env.NEXT_PUBLIC_SUPPORT_PHONE_TEL, "+910123456789"),
-  packagesReferenceUrl: trimOrFallback(
-    process.env.NEXT_PUBLIC_PACKAGES_REFERENCE_URL,
-    "https://www.cateringcorner.in/packages",
-  ),
   /** Path or absolute URL for default Open Graph / Twitter image */
   defaultOgImage: trimOrFallback(process.env.NEXT_PUBLIC_OG_IMAGE_PATH, "/favicon.svg"),
 } as const;

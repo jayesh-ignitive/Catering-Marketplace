@@ -2,7 +2,7 @@ import { BadRequestException, ForbiddenException, Inject, Injectable } from '@ne
 import type { Express } from 'express';
 import type { User } from '../user/user.entity';
 import { UserRole } from '../user/user-role.enum';
-import { IMAGE_STORAGE, type ImageStoragePort } from '../storage/image-storage.port';
+import { IMAGE_STORAGE, type ImageStoragePort, type ImageUploadKind } from '../storage/image-storage.port';
 
 const ALLOWED_MIMES = new Set(['image/jpeg', 'image/png', 'image/webp', 'image/gif']);
 
@@ -10,7 +10,11 @@ const ALLOWED_MIMES = new Set(['image/jpeg', 'image/png', 'image/webp', 'image/g
 export class UploadService {
   constructor(@Inject(IMAGE_STORAGE) private readonly imageStorage: ImageStoragePort) {}
 
-  async uploadAuthenticatedImage(file: Express.Multer.File | undefined, user: User): Promise<{ url: string; key: string }> {
+  async uploadAuthenticatedImage(
+    file: Express.Multer.File | undefined,
+    user: User,
+    kind: ImageUploadKind,
+  ): Promise<{ url: string; key: string }> {
     if (user.role !== UserRole.CATERER && user.role !== UserRole.ADMIN) {
       throw new ForbiddenException('Only caterer or admin accounts may upload images');
     }
@@ -28,6 +32,7 @@ export class UploadService {
         buffer: file.buffer,
         mimeType: mime,
         originalFilename: file.originalname,
+        kind,
       });
       return { url: saved.url, key: saved.key };
     } catch (e) {

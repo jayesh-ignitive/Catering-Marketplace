@@ -1,8 +1,9 @@
+import { Transform } from 'class-transformer';
 import {
   ArrayMaxSize,
   ArrayNotEmpty,
   IsArray,
-  IsOptional,
+  IsNotEmpty,
   IsString,
   MaxLength,
   Validate,
@@ -10,7 +11,7 @@ import {
 import { GalleryImageUrlOrDataConstraint } from './gallery-image-url.validator';
 import { HeroUrlOrDataImageConstraint } from './workspace-profile-hero-url.validator';
 
-/** Wizard step 2 — gallery (hosted URLs or `data:image/` uploads) + optional banner. */
+/** Wizard step 2 — gallery (hosted URLs or `data:image/` uploads) + required banner. */
 export class WorkspaceProfileStep2Dto {
   @IsArray()
   @ArrayNotEmpty()
@@ -20,8 +21,10 @@ export class WorkspaceProfileStep2Dto {
   @MaxLength(4 * 1024 * 1024, { each: true })
   galleryImageUrls!: string[];
 
-  @IsOptional()
+  @Transform(({ value }) => (typeof value === 'string' ? value.trim() : value))
+  @IsString()
+  @IsNotEmpty({ message: 'heroImageUrl is required' })
   @Validate(HeroUrlOrDataImageConstraint)
   @MaxLength(4 * 1024 * 1024)
-  heroImageUrl?: string;
+  heroImageUrl!: string;
 }

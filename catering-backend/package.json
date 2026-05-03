@@ -20,12 +20,16 @@
     "test:e2e": "jest --config ./test/jest-e2e.json",
     "db:create": "node scripts/create-database.cjs",
     "seed:admin": "node scripts/seed-admin.cjs",
+    "migrate:images-r2": "node scripts/migrate-images-to-r2.cjs",
+    "migrate:images-r2:dry": "node scripts/migrate-images-to-r2.cjs --dry-run",
+    "stats:images": "node scripts/image-total-size.cjs",
     "migration:run": "cross-env TS_NODE_PROJECT=tsconfig.typeorm.json typeorm-ts-node-commonjs migration:run -d src/data-source.ts",
     "migration:revert": "cross-env TS_NODE_PROJECT=tsconfig.typeorm.json typeorm-ts-node-commonjs migration:revert -d src/data-source.ts",
     "migration:show": "cross-env TS_NODE_PROJECT=tsconfig.typeorm.json typeorm-ts-node-commonjs migration:show -d src/data-source.ts",
     "migration:generate": "cross-env TS_NODE_PROJECT=tsconfig.typeorm.json typeorm-ts-node-commonjs migration:generate -d src/data-source.ts"
   },
   "dependencies": {
+    "@aws-sdk/client-s3": "^3.1041.0",
     "@nestjs/common": "^11.0.1",
     "@nestjs/config": "^4.0.3",
     "@nestjs/core": "^11.0.1",

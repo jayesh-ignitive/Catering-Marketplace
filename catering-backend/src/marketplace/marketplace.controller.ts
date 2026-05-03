@@ -94,7 +94,7 @@ export class MarketplaceController {
     return this.marketplace.patchWorkspaceProfileStep1ForUser(req.user.id, body);
   }
 
-  /** Wizard step 2 — gallery image URLs + optional banner update. */
+  /** Wizard step 2 — gallery image URLs + required banner. */
   @Patch('caterer/profile/step/2')
   @UseGuards(JwtAuthGuard)
   patchWorkspaceProfileStep2(@Req() req: Request & { user: User }, @Body() body: WorkspaceProfileStep2Dto) {

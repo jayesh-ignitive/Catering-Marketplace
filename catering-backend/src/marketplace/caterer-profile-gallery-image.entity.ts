@@ -22,7 +22,7 @@ export class CatererProfileGalleryImage {
   @JoinColumn({ name: 'caterer_profile_id' })
   profile!: CatererMarketplaceListing;
 
-  /** Hosted URLs or inline `data:image/…` from workspace uploads (can exceed 512 chars). */
+  /** Relative key e.g. `images/gallery/uuid.jpg`, or legacy full URL / `data:image/…`. */
   @Column({ type: 'longtext' })
   url!: string;
 

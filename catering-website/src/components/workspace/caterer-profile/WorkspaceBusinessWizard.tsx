@@ -59,6 +59,7 @@ import {
   inferExperiencePresetFromYears,
   inferGuestPresetFromNumbers,
   inferPricePresetFromProfile,
+  isValidBannerSource,
   isValidGallerySource,
   parsePriceBand,
   parseStreetParts,
@@ -370,6 +371,12 @@ export function WorkspaceBusinessWizard({
           e.keywords = `Use at most ${WORKSPACE_KEYWORD_LIMIT} keywords.`;
         }
       } else if (s === 2) {
+        const heroTrim = heroImageUrl.trim();
+        if (!heroTrim) {
+          e.banner = "Add a banner image for your listing.";
+        } else if (!isValidBannerSource(heroImageUrl)) {
+          e.banner = "Use an https URL or upload an image (PNG, JPG, GIF, WebP).";
+        }
         if (galleryImageUrls.length === 0) {
           e.gallery = "Add at least one gallery photo.";
         } else if (galleryImageUrls.length > WORKSPACE_GALLERY_MAX) {
@@ -393,6 +400,7 @@ export function WorkspaceBusinessWizard({
       cityId,
       contactFullName,
       galleryImageUrls,
+      heroImageUrl,
       keywords,
       pincodeDigits,
       priceFrom,
@@ -484,8 +492,9 @@ export function WorkspaceBusinessWizard({
       return;
     }
     try {
-      const { url } = await uploadCateringImage(token, file);
+      const { url } = await uploadCateringImage(token, file, "banner");
       setHeroImageUrl(url);
+      clearFieldError("banner");
     } catch (e) {
       toast.error(e instanceof Error ? e.message : "Could not upload banner.");
     }
@@ -505,7 +514,7 @@ export function WorkspaceBusinessWizard({
           continue;
         }
         try {
-          const { url } = await uploadCateringImage(token, file);
+          const { url } = await uploadCateringImage(token, file, "gallery");
           accepted.push(url);
         } catch (e) {
           toast.error(e instanceof Error ? e.message : `Could not upload ${file.name}.`);
@@ -1397,15 +1406,29 @@ export function WorkspaceBusinessWizard({
             <div className="md:col-span-2 space-y-8">
               <StepIntro step={2} uiVariant={uiVariant} />
 
-              <section className="space-y-2">
-                <InputLabel>Banner image (optional)</InputLabel>
-                <p className={`mt-1 ${workspaceHintTextClass}`}>Wide hero shown across the top of your listing.</p>
+              <section
+                className="space-y-2"
+                {...(fieldErrors.banner ? { "data-invalid-field": "" } : {})}
+              >
+                <InputLabel>
+                  Banner image <span className="text-brand-red">*</span>
+                </InputLabel>
+                <p
+                  id="ws-banner-hint"
+                  className={`mt-1 ${workspaceHintTextClass}`}
+                >
+                  Wide hero shown across the top of your listing.
+                </p>
                 <div
-                  className={`relative flex min-h-[168px] w-full cursor-pointer flex-col items-center justify-center overflow-hidden ${surfaceRound} border-2 border-dashed p-8 text-center transition-all duration-300 ${
+                  className={`relative flex min-h-[168px] w-full cursor-pointer flex-col items-center justify-center overflow-hidden ${surfaceRound} border-2 border-dashed p-8 text-center transition-all duration-300 ${fieldClassErrored("", Boolean(fieldErrors.banner))} ${
                     bannerDragging
                       ? "border-brand-red bg-red-50"
                       : "border-[#E5E7EB] bg-[#F9FAFB] hover:border-brand-red hover:bg-red-50/30"
                   }`}
+                  aria-invalid={Boolean(fieldErrors.banner)}
+                  aria-describedby={
+                    fieldErrors.banner ? "ws-banner-err ws-banner-hint" : "ws-banner-hint"
+                  }
                   onDragOver={(e) => {
                     e.preventDefault();
                     setBannerDragging(true);
@@ -1455,6 +1478,7 @@ export function WorkspaceBusinessWizard({
                     </>
                   )}
                 </div>
+                <FieldError id="ws-banner-err" message={fieldErrors.banner} />
               </section>
 
               <section className="space-y-3" {...(fieldErrors.gallery ? { "data-invalid-field": "" } : {})}>
@@ -1605,14 +1629,16 @@ export function WorkspaceBusinessWizard({
                       </div>
                     </li>
                     <li className="flex items-start gap-4">
-                      {galleryImageUrls.length > 0 ? (
+                      {galleryImageUrls.length > 0 && isValidBannerSource(heroImageUrl) ? (
                          <CheckCircle className="h-6 w-6 text-emerald-500 shrink-0 mt-0.5" weight="fill" />
                       ) : (
                          <XCircle className="mt-0.5 h-6 w-6 shrink-0 text-gray-300" weight="fill" />
                       )}
                       <div>
-                         <p className={workspaceCardTitleClass}>Gallery</p>
-                         <p className={`mt-1 ${workspaceHintTextClass}`}>Add at least one gallery photo.</p>
+                         <p className={workspaceCardTitleClass}>Banner & gallery</p>
+                         <p className={`mt-1 ${workspaceHintTextClass}`}>
+                           Upload a banner image and add at least one gallery photo.
+                         </p>
                       </div>
                     </li>
                   </ul>

@@ -275,14 +275,16 @@ function formatUploadImageError(data: unknown, status: number): string {
   return `Could not upload image (${status})`;
 }
 
-/** Multipart field name `file`. Returns public URL under API `/uploads/…` (requires caterer or admin JWT). */
+/** Multipart field name `file`. Query `kind=banner|gallery` selects `images/banner/` vs `images/gallery/`. Returns `{ url, key }` (`key` is the DB value). */
 export async function uploadCateringImage(
   accessToken: string,
-  file: File
+  file: File,
+  kind: "banner" | "gallery"
 ): Promise<{ url: string; key: string }> {
   const fd = new FormData();
   fd.append("file", file);
-  const res = await fetch(`${getCateringApiBase()}/api/upload/image`, {
+  const q = new URLSearchParams({ kind });
+  const res = await fetch(`${getCateringApiBase()}/api/upload/image?${q.toString()}`, {
     method: "POST",
     headers: { Authorization: `Bearer ${accessToken}` },
     body: fd,
@@ -335,7 +337,7 @@ export type PatchWorkspaceProfileStep1Body = {
 
 export type PatchWorkspaceProfileStep2Body = {
   galleryImageUrls: string[];
-  heroImageUrl?: string;
+  heroImageUrl: string;
 };
 
 export async function patchWorkspaceCatererProfileStep(
@@ -383,7 +385,7 @@ export async function updateWorkspaceCatererProfile(
     streetAddress?: string;
     tagline?: string;
     about: string;
-    heroImageUrl?: string;
+    heroImageUrl: string;
     priceBand?: "budget" | "mid" | "premium" | "custom";
     priceFrom?: number;
     yearsInBusiness?: number;

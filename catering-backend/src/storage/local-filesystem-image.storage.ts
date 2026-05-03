@@ -30,13 +30,11 @@ export class LocalFilesystemImageStorage implements ImageStoragePort {
       this.config.get<string>('UPLOAD_PUBLIC_BASE_URL') ?? 'http://localhost:4000';
     const publicBase = rawPublic.replace(/\/$/, '');
 
-    const now = new Date();
-    const year = String(now.getUTCFullYear());
-    const month = String(now.getUTCMonth() + 1).padStart(2, '0');
+    const subdir = input.kind === 'banner' ? 'banner' : 'gallery';
     const id = randomUUID();
-    const key = `images/${year}/${month}/${id}.${ext}`;
-    const dir = join(diskRoot, 'images', year, month);
-    const filePath = join(dir, `${id}.${ext}`);
+    const key = `images/${subdir}/${id}.${ext}`;
+    const dir = join(diskRoot, 'images', subdir);
+    const filePath = join(diskRoot, key);
 
     await mkdir(dir, { recursive: true });
     await writeFile(filePath, input.buffer);

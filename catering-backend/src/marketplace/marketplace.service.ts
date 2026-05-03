@@ -9,6 +9,7 @@ import {
 import { InjectRepository } from '@nestjs/typeorm';
 import { randomBytes, randomUUID } from 'crypto';
 import { In, Repository, SelectQueryBuilder } from 'typeorm';
+import { ImagePublicUrlService } from '../storage/image-public-url.service';
 import { TenantProvisioningService } from '../tenant-provisioning/tenant-provisioning.service';
 import { mysqlDbNameFromTenantSlug, slugify, subdomainLabelFrom } from '../tenant/slug.util';
 import { Tenant } from '../tenant/tenant.entity';
@@ -141,7 +142,32 @@ export class MarketplaceService {
     @InjectRepository(CatererProfileGalleryImage)
     private readonly galleryImages: Repository<CatererProfileGalleryImage>,
     private readonly provisioning: TenantProvisioningService,
+    private readonly imageUrls: ImagePublicUrlService,
   ) {}
+
+  private persistHeroRef(raw: string | null | undefined): string | null {
+    const n = this.normalizeString(raw);
+    if (!n) return null;
+    return this.imageUrls.stripToStorageKey(n);
+  }
+
+  private persistGalleryRefs(urls: string[]): string[] {
+    const out: string[] = [];
+    for (const u of urls) {
+      const t = u.trim();
+      if (!t) continue;
+      const k = this.imageUrls.stripToStorageKey(t);
+      if (k) out.push(k);
+    }
+    return [...new Set(out)];
+  }
+
+  /** Public/marketplace responses — browser-ready URLs. */
+  private resolvedGalleryDisplayUrls(m: CatererMarketplaceListing): string[] {
+    return this.sortedGalleryUrls(m)
+      .map((u) => this.imageUrls.resolveToPublicUrl(u))
+      .filter((x): x is string => x != null && x.length > 0);
+  }
 
   private normalizeString(v: string | null | undefined): string | null {
     if (v == null) return null;
@@ -170,6 +196,7 @@ export class MarketplaceService {
     if (profile.serviceOfferingIds.length < 1) missingFields.push('services');
     if (profile.keywords.length < 1) missingFields.push('keywords');
     if (profile.galleryImageUrls.length < 1) missingFields.push('gallery');
+    if (!profile.heroImageUrl?.trim()) missingFields.push('banner');
     return { isComplete: missingFields.length === 0, missingFields };
   }
 
@@ -197,7 +224,7 @@ export class MarketplaceService {
       streetAddress: profile.streetAddress,
       tagline: profile.tagline,
       about: profile.about,
-      heroImageUrl: profile.heroImageUrl,
+      heroImageUrl: this.imageUrls.resolveToPublicUrl(profile.heroImageUrl),
       priceBand: profile.priceBand,
       priceFrom: this.decimalToNumberOrNull(profile.priceFrom),
       yearsInBusiness: profile.yearsInBusiness,
@@ -208,7 +235,7 @@ export class MarketplaceService {
         .sort((a, b) => a.sortOrder - b.sortOrder)
         .map((x) => x.serviceOfferingId),
       keywords: this.orderedKeywordRefs(profile).map((x) => x.label),
-      galleryImageUrls: this.sortedGalleryUrls(profile),
+      galleryImageUrls: this.resolvedGalleryDisplayUrls(profile),
       published: profile.published,
       completion: { isComplete: false, missingFields: [] },
     };
@@ -393,7 +420,7 @@ export class MarketplaceService {
       tagline: m.tagline,
       avgRating: Number(m.avgRating),
       reviewCount: m.reviewCount,
-      heroImageUrl: m.heroImageUrl,
+      heroImageUrl: this.imageUrls.resolveToPublicUrl(m.heroImageUrl),
       yearsInBusiness: m.yearsInBusiness,
       capacityGuestMin: m.capacityGuestMin,
       capacityGuestMax: m.capacityGuestMax,
@@ -575,7 +602,7 @@ export class MarketplaceService {
     return {
       ...base,
       about: profile.about,
-      galleryImages: this.sortedGalleryUrls(profile),
+      galleryImages: this.resolvedGalleryDisplayUrls(profile),
       servicesOffered: this.orderedServiceOfferingNames(profile),
       subdomain: tenant.subdomain,
       reviews: preview.map((r) => this.toReviewView(r)),
@@ -703,7 +730,7 @@ export class MarketplaceService {
       profile.tagline = this.normalizeString(dto.tagline);
     }
     if (dto.heroImageUrl !== undefined) {
-      profile.heroImageUrl = this.normalizeString(dto.heroImageUrl);
+      profile.heroImageUrl = this.persistHeroRef(dto.heroImageUrl);
     }
     if (dto.priceBand !== undefined) {
       profile.priceBand = dto.priceBand ?? null;
@@ -781,10 +808,8 @@ export class MarketplaceService {
     const tenantId = await this.resolveTenantIdForWorkspaceUser(userId);
     const profile = await this.loadWorkspaceListingOrThrow(tenantId);
     await this.syncProfileGallery(profile, dto.galleryImageUrls);
-    if (dto.heroImageUrl !== undefined) {
-      /** Avoid `save(profile)` while `galleryItems` may still be attached from the pre-sync load. */
-      await this.listings.update({ id: profile.id }, { heroImageUrl: this.normalizeString(dto.heroImageUrl) });
-    }
+    /** Avoid `save(profile)` while `galleryItems` may still be attached from the pre-sync load. */
+    await this.listings.update({ id: profile.id }, { heroImageUrl: this.persistHeroRef(dto.heroImageUrl) });
     await this.refreshPublishedFlag(tenantId);
     return this.getWorkspaceProfile(tenantId);
   }
@@ -946,7 +971,7 @@ export class MarketplaceService {
     profile: CatererMarketplaceListing,
     galleryUrlsRaw: string[],
   ): Promise<void> {
-    const galleryUrls = [...new Set(galleryUrlsRaw.map((x) => x.trim()).filter(Boolean))];
+    const galleryUrls = this.persistGalleryRefs(galleryUrlsRaw);
     await this.galleryImages.manager.transaction(async (manager) => {
       await manager.delete(CatererProfileGalleryImage, { catererProfileId: profile.id });
       if (galleryUrls.length === 0) {
@@ -985,7 +1010,7 @@ export class MarketplaceService {
     profile.streetAddress = this.normalizeString(dto.streetAddress);
     profile.tagline = this.normalizeString(dto.tagline);
     profile.about = this.normalizeString(dto.about);
-    profile.heroImageUrl = this.normalizeString(dto.heroImageUrl);
+    profile.heroImageUrl = this.persistHeroRef(dto.heroImageUrl);
     profile.priceBand = dto.priceBand ?? null;
     profile.priceFrom = dto.priceFrom != null ? Number(dto.priceFrom).toFixed(2) : null;
     profile.yearsInBusiness = dto.yearsInBusiness ?? null;

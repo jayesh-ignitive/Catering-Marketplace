@@ -1,9 +1,11 @@
+import { Transform } from 'class-transformer';
 import {
   ArrayMaxSize,
   ArrayNotEmpty,
   IsArray,
   IsIn,
   IsInt,
+  IsNotEmpty,
   IsOptional,
   IsString,
   Max,
@@ -38,10 +40,12 @@ export class UpsertCatererWorkspaceProfileDto {
   @MaxLength(5000)
   about!: string;
 
-  @IsOptional()
+  @Transform(({ value }) => (typeof value === 'string' ? value.trim() : value))
+  @IsString()
+  @IsNotEmpty({ message: 'heroImageUrl is required' })
   @Validate(HeroUrlOrDataImageConstraint)
   @MaxLength(4 * 1024 * 1024)
-  heroImageUrl?: string;
+  heroImageUrl!: string;
 
   @IsOptional()
   @IsIn(PRICE_BANDS)

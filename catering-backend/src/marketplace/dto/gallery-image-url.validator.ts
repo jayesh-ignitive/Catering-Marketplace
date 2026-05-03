@@ -13,6 +13,13 @@ export class GalleryImageUrlOrDataConstraint implements ValidatorConstraintInter
     if (v.startsWith('data:image/')) {
       return v.length <= 3 * 1024 * 1024;
     }
+    if (v.startsWith('images/gallery/')) {
+      return v.length <= 2048 && !/\s/.test(v) && /\.(jpe?g|png|webp|gif)$/i.test(v);
+    }
+    /** Legacy relative keys e.g. images/2026/05/uuid.jpg */
+    if (v.startsWith('images/')) {
+      return v.length <= 2048 && !/\s/.test(v);
+    }
     try {
       const u = new URL(v);
       return u.protocol === 'http:' || u.protocol === 'https:';
@@ -22,6 +29,6 @@ export class GalleryImageUrlOrDataConstraint implements ValidatorConstraintInter
   }
 
   defaultMessage(): string {
-    return 'each gallery image must be a valid http(s) URL or a data:image string';
+    return 'each gallery image must be a storage key under images/gallery/, a valid http(s) URL, or a data:image string';
   }
 }

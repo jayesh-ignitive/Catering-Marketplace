@@ -6,7 +6,7 @@ export function firstIncompleteStep(profile: CatererWorkspaceProfile): WizardSte
   const missing = new Set(profile.completion.missingFields);
   if (missing.has("city") || missing.has("about")) return 0;
   if (missing.has("category") || missing.has("services") || missing.has("keywords")) return 1;
-  if (missing.has("gallery")) return 2;
+  if (missing.has("gallery") || missing.has("banner")) return 2;
   return 3;
 }
 
@@ -14,11 +14,35 @@ export function fieldClassErrored(base: string, errored: boolean) {
   return `${base} ${errored ? "!border-brand-red" : ""}`;
 }
 
+/** Align with backend `HeroUrlOrDataImageConstraint` (banner / hero). */
+export function isValidBannerSource(s: string): boolean {
+  const t = s.trim();
+  if (!t) return false;
+  if (t.startsWith("data:image/")) {
+    return t.length <= 3 * 1024 * 1024;
+  }
+  if (t.startsWith("images/banner/")) {
+    return t.length <= 2048 && !/\s/.test(t) && /\.(jpe?g|png|webp|gif)$/i.test(t);
+  }
+  if (t.startsWith("images/")) {
+    return t.length <= 2048 && !/\s/.test(t);
+  }
+  try {
+    const u = new URL(t);
+    return u.protocol === "http:" || u.protocol === "https:";
+  } catch {
+    return false;
+  }
+}
+
 export function isValidGallerySource(s: string): boolean {
   const t = s.trim();
   if (!t) return false;
   if (t.startsWith("data:image/")) {
     return t.length <= 4 * 1024 * 1024;
+  }
+  if (t.startsWith("images/gallery/") || t.startsWith("images/")) {
+    return t.length <= 2048 && !/\s/.test(t) && /\.(jpe?g|png|webp|gif)$/i.test(t);
   }
   try {
     const u = new URL(t);

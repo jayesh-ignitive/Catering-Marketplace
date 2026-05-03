@@ -64,17 +64,7 @@ export default function CateringPackagesPage() {
           <p className="mx-auto mt-5 max-w-2xl text-lg leading-relaxed text-white/75">
             On a busy marketplace, a basic profile is rarely enough. These plans stack{" "}
             <strong className="font-semibold text-white">visibility, trust signals, and enquiry features</strong> so
-            serious hosts can find you faster — similar to how leading Indian directories tier their listings (see for
-            example{" "}
-            <a
-              href={publicSiteConfig.packagesReferenceUrl}
-              className="font-semibold text-brand-yellow underline-offset-2 hover:underline"
-              target="_blank"
-              rel="noopener noreferrer"
-            >
-              Catering Corner&apos;s packaging model
-            </a>
-            ).
+            serious hosts can find you faster on Bharat Catering.
           </p>
         </div>
       </section>
@@ -90,22 +80,14 @@ export default function CateringPackagesPage() {
                 Which tier is usually the best value?
               </h2>
               <p className="mt-2 text-sm leading-relaxed text-gray-700 sm:text-[15px]">
-                Directories like{" "}
-                <a
-                  href={publicSiteConfig.packagesReferenceUrl}
-                  className="font-semibold text-brand-red underline-offset-2 hover:underline"
-                  target="_blank"
-                  rel="noopener noreferrer"
-                >
-                  Catering Corner
-                </a>{" "}
-                typically use a <strong className="font-semibold text-brand-dark">three-step ladder</strong> (entry /
-                growth / premium): entry covers “be findable,” growth adds homepage or social exposure and stronger
-                enquiry treatment, premium adds SEO-friendly backlinks and PR-style placement. For most regional
-                kitchens, <strong className="font-semibold text-brand-dark">the middle tier</strong> tends to be the
-                sweet spot between cost and lead quality; choose <strong className="font-semibold text-brand-dark">premier</strong>{" "}
-                when you are scaling multi-city or competing for high-ticket weddings and corporate RFPs. Final mix
-                should match your margin and enquiry volume — we are happy to advise.
+                Our <strong className="font-semibold text-brand-dark">three-step ladder</strong> (Essential / Growth /
+                Premier) follows a familiar pattern: entry covers “be findable,” Growth adds homepage or social exposure
+                and stronger enquiry treatment, Premier adds SEO-friendly backlinks and PR-style placement. For most
+                regional kitchens, <strong className="font-semibold text-brand-dark">Growth</strong> tends to be the sweet
+                spot between cost and lead quality; choose{" "}
+                <strong className="font-semibold text-brand-dark">Premier</strong> when you are scaling multi-city or
+                competing for high-ticket weddings and corporate RFPs. Final mix should match your margin and enquiry
+                volume — we are happy to advise.
               </p>
             </div>
           </div>
@@ -354,18 +336,8 @@ export default function CateringPackagesPage() {
         </section>
 
         <p className="mx-auto mt-12 max-w-2xl text-center text-xs leading-relaxed text-gray-500">
-          Reference: tiered “Bronze / Silver / Gold” listing packaging and annual pricing is a common pattern on Indian
-          catering directories — e.g.{" "}
-          <a
-            href={publicSiteConfig.packagesReferenceUrl}
-            className="font-semibold text-brand-red underline-offset-2 hover:underline"
-            target="_blank"
-            rel="noopener noreferrer"
-          >
-            Catering Corner — Pricing &amp; Catering Packages
-          </a>
-          . Bharat Catering plans above are our own product framing; fees and inclusions are confirmed at contract
-          time.
+          Annual fees and feature limits above are <strong className="font-medium text-gray-600">indicative</strong>.
+          Final pricing and inclusions are confirmed with our team at contract time.
         </p>
       </div>
     </div>

@@ -1,8 +1,11 @@
+export type ImageUploadKind = 'banner' | 'gallery';
+
 /** Contract for saving uploaded images; swap implementation for S3, Cloudflare R2, etc. */
 export interface SaveImageInput {
   buffer: Buffer;
   mimeType: string;
   originalFilename?: string;
+  kind: ImageUploadKind;
 }
 
 export interface SaveImageResult {
