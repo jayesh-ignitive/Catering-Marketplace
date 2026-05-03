@@ -3,6 +3,7 @@
 import { List, UserCircle, SignOut } from "@phosphor-icons/react";
 import type { AuthUser } from "@/lib/auth-api";
 import { BrandLogoLink } from "@/components/common/BrandLogoLink";
+import Image from "next/image";
 import { useState, useRef, useEffect } from "react";
 import { useAuth } from "@/context/AuthContext";
 
@@ -71,11 +72,14 @@ export function WorkspaceHeader({ user, onToggleSidebar }: WorkspaceHeaderProps)
             className={`group flex items-center justify-center rounded-md p-1 transition-colors focus-visible:outline focus-visible:ring-2 focus-visible:ring-brand-red/20 ${menuOpen ? 'bg-stone-100' : 'hover:bg-stone-100'}`}
           >
             <div className="relative">
-              <div className="h-9 w-9 overflow-hidden rounded-md border border-stone-200 shadow-sm transition-transform group-hover:scale-105">
-                <img
+              <div className="relative h-9 w-9 overflow-hidden rounded-md border border-stone-200 shadow-sm transition-transform group-hover:scale-105">
+                <Image
                   src={avatarUrl}
                   alt={user.fullName}
-                  className="h-full w-full object-cover"
+                  fill
+                  sizes="36px"
+                  className="object-cover"
+                  unoptimized
                 />
               </div>
               <div className="absolute -bottom-1 -right-1 h-2.5 w-2.5 rounded-full bg-green-500 ring-2 ring-white" title="Online"></div>

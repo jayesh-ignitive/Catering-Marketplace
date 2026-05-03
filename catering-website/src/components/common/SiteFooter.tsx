@@ -1,6 +1,7 @@
 "use client";
 
-import { ChefHat, Envelope, FacebookLogo, InstagramLogo, MapPin, Phone, TwitterLogo } from "@phosphor-icons/react";
+import { BrandLogoLink } from "@/components/common/BrandLogoLink";
+import { Envelope, FacebookLogo, InstagramLogo, MapPin, Phone, TwitterLogo } from "@phosphor-icons/react";
 import { publicSiteConfig } from "@/lib/site-config";
 import Link from "next/link";
 
@@ -10,15 +11,7 @@ export function SiteFooter() {
       <div className="mx-auto max-w-7xl px-6">
         <div className="mb-16 grid grid-cols-1 gap-12 md:grid-cols-2 lg:grid-cols-4">
           <div>
-            <Link href="/" className="mb-6 flex items-center gap-2">
-              <div className="flex h-10 w-10 items-center justify-center rounded-full bg-brand-red text-white">
-                <ChefHat className="text-2xl" aria-hidden />
-              </div>
-              <div className="flex flex-col text-white">
-                <span className="font-heading text-xl font-bold leading-none tracking-tight">BHARAT</span>
-                <span className="text-[10px] font-semibold uppercase tracking-widest text-brand-red">Caterers</span>
-              </div>
-            </Link>
+            <BrandLogoLink preset="siteFooter" className="mb-6" />
             <p className="mb-6 text-sm leading-relaxed">
               India&apos;s trusted directory for finding top-rated catering services. We bring the best flavors to
               your special occasions.
@@ -79,6 +72,16 @@ export function SiteFooter() {
               <li>
                 <Link href="/contact" className="transition hover:text-brand-yellow">
                   Contact Us
+                </Link>
+              </li>
+              <li>
+                <Link href="/privacy" className="transition hover:text-brand-yellow">
+                  Privacy Policy
+                </Link>
+              </li>
+              <li>
+                <Link href="/terms" className="transition hover:text-brand-yellow">
+                  Terms &amp; Conditions
                 </Link>
               </li>
             </ul>
@@ -142,13 +145,13 @@ export function SiteFooter() {
           <p>
             &copy; {new Date().getFullYear()} {publicSiteConfig.siteName}. All rights reserved.
           </p>
-          <div className="flex gap-6">
-            <a href="#" className="transition hover:text-white">
+          <div className="flex flex-wrap justify-center gap-6">
+            <Link href="/privacy" className="transition hover:text-white">
               Privacy Policy
-            </a>
-            <a href="#" className="transition hover:text-white">
-              Terms of Service
-            </a>
+            </Link>
+            <Link href="/terms" className="transition hover:text-white">
+              Terms &amp; Conditions
+            </Link>
           </div>
         </div>
       </div>

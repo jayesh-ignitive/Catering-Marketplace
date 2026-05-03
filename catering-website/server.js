@@ -3,6 +3,7 @@
  * are set. For the browser, `NEXT_PUBLIC_*` values are baked in at `next build`
  * — run build on the server (or CI) with the same `.env` / env vars you use in production.
  */
+/* eslint-disable @typescript-eslint/no-require-imports -- plain Node entry; CommonJS require */
 const path = require("path");
 require("dotenv").config({ path: path.join(__dirname, ".env") });
 

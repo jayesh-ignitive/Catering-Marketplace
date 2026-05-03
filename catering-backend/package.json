@@ -23,6 +23,7 @@
     "migrate:images-r2": "node scripts/migrate-images-to-r2.cjs",
     "migrate:images-r2:dry": "node scripts/migrate-images-to-r2.cjs --dry-run",
     "stats:images": "node scripts/image-total-size.cjs",
+    "ai-smoke": "node scripts/ai-smoke-check.mjs",
     "migration:run": "cross-env TS_NODE_PROJECT=tsconfig.typeorm.json typeorm-ts-node-commonjs migration:run -d src/data-source.ts",
     "migration:revert": "cross-env TS_NODE_PROJECT=tsconfig.typeorm.json typeorm-ts-node-commonjs migration:revert -d src/data-source.ts",
     "migration:show": "cross-env TS_NODE_PROJECT=tsconfig.typeorm.json typeorm-ts-node-commonjs migration:show -d src/data-source.ts",

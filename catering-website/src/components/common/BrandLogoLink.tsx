@@ -5,6 +5,7 @@ import { ChefHat } from "@phosphor-icons/react";
 
 export type BrandLogoPreset =
   | "siteHeader"
+  | "siteFooter"
   | "workspaceSidebar"
   | "workspaceHeader"
   | "onboardingHero"
@@ -27,7 +28,7 @@ export function BrandLogoLink({
   onClick,
 }: BrandLogoLinkProps) {
   const linkBase =
-    preset === "siteHeader"
+    preset === "siteHeader" || preset === "siteFooter"
       ? "flex items-center gap-2"
       : preset === "workspaceSidebar"
         ? "flex h-full items-center gap-2"
@@ -40,7 +41,10 @@ export function BrandLogoLink({
   const mergedLink = [linkBase, className].filter(Boolean).join(" ");
 
   const inner =
-    preset === "siteHeader" || preset === "onboardingHero" || preset === "onboardingMobile" ? (
+    preset === "siteHeader" ||
+    preset === "siteFooter" ||
+    preset === "onboardingHero" ||
+    preset === "onboardingMobile" ? (
       <div
         className={
           preset === "onboardingMobile" ? "relative flex flex-col pl-1.5" : "relative flex flex-col pl-2"
@@ -48,7 +52,7 @@ export function BrandLogoLink({
       >
         <ChefHat
           className={
-            preset === "siteHeader"
+            preset === "siteHeader" || preset === "siteFooter"
               ? "absolute -left-2 -top-4 -rotate-[10deg] text-3xl text-[#d4af37]"
               : preset === "onboardingHero"
                 ? "absolute -left-2 -top-4 -rotate-[10deg] text-4xl text-[#d4af37] drop-shadow-sm"
@@ -61,6 +65,8 @@ export function BrandLogoLink({
           className={
             preset === "siteHeader"
               ? "font-logo translate-y-1 text-4xl leading-none tracking-tight text-brand-dark"
+              : preset === "siteFooter"
+                ? "font-logo translate-y-1 text-3xl leading-none tracking-tight text-white drop-shadow-sm"
               : preset === "onboardingHero"
                 ? "font-logo translate-y-1 text-4xl leading-none tracking-tight text-white drop-shadow-md"
                 : "font-logo translate-y-0.5 text-xl leading-none tracking-tight text-[#1c1c1c]"
@@ -72,6 +78,8 @@ export function BrandLogoLink({
           className={
             preset === "siteHeader"
               ? "relative z-10 -mt-1 -rotate-2 rounded-sm bg-brand-red px-2 py-0.5 text-[9px] font-bold uppercase tracking-[0.3em] text-white shadow-sm"
+              : preset === "siteFooter"
+                ? "relative z-10 -mt-1 -rotate-2 w-fit rounded-sm bg-brand-red px-2 py-0.5 text-[9px] font-bold uppercase tracking-[0.3em] text-white shadow-sm"
               : preset === "onboardingHero"
                 ? "relative z-10 -mt-1 -rotate-2 w-fit rounded-sm bg-brand-red px-2 py-0.5 text-[9px] font-bold uppercase tracking-[0.3em] text-white shadow-md"
                 : "relative z-10 -mt-0.5 -rotate-2 w-fit rounded-sm bg-brand-red px-1.5 py-px text-[7px] font-bold uppercase tracking-[0.25em] text-white shadow-sm"
