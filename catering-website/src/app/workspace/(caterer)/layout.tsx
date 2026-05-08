@@ -25,7 +25,7 @@ export default function CatererWorkspaceShellLayout({ children }: { children: Re
       return;
     }
     if (user.role === "admin") {
-      router.replace("/");
+      router.replace("/admin");
     }
   }, [ready, user, router]);
 

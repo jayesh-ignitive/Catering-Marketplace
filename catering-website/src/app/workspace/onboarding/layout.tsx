@@ -24,7 +24,7 @@ export default function WorkspaceOnboardingLayout({ children }: { children: Reac
       return;
     }
     if (user.role === "admin") {
-      router.replace("/");
+      router.replace("/admin");
     }
   }, [ready, user, router]);
 

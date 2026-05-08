@@ -6,7 +6,7 @@ import Link from "next/link";
 import { useEffect, useRef, useState } from "react";
 
 export function profileHref(user: AuthUser) {
-  if (user.role === "admin") return "/";
+  if (user.role === "admin") return "/admin";
   return "/workspace/profile";
 }
 

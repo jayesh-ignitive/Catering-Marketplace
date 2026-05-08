@@ -24,25 +24,8 @@ const nextConfig: NextConfig = {
         permanent: true,
       },
       { source: "/account", destination: "/workspace", permanent: false },
-      { source: "/admin", destination: "/", permanent: false },
+      /** Legacy bookmark: old admin UI lived under /admin/login; platform admin app is now /admin (see app/admin). */
       { source: "/admin/login", destination: "/login", permanent: false },
-      { source: "/admin/dashboard", destination: "/", permanent: false },
-      { source: "/admin/dashboard/staff", destination: "/", permanent: false },
-      {
-        source: "/admin/dashboard/staff/:id/edit",
-        destination: "/",
-        permanent: false,
-      },
-      {
-        source: "/admin/dashboard/caterers",
-        destination: "/",
-        permanent: false,
-      },
-      {
-        source: "/admin/dashboard/verification",
-        destination: "/",
-        permanent: false,
-      },
     ];
   },
 };

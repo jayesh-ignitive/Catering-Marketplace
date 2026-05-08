@@ -5,7 +5,7 @@ import Link from "next/link";
 import { BrandLogoLink } from "@/components/common/BrandLogoLink";
 import { usePathname, useRouter } from "next/navigation";
 import type { AuthUser } from "@/lib/auth-api";
-import { WORKSPACE_THEME_NAV } from "../theme-nav";
+import { getWorkspaceThemeNav } from "../theme-nav";
 
 type WorkspaceSidebarProps = {
   user: AuthUser;
@@ -32,6 +32,7 @@ export function WorkspaceSidebar({
   const router = useRouter();
   const displayBusiness = user.tenant?.name ?? user.businessName ?? "My business";
   const compact = collapsed && !hoverExpanded;
+  const navItems = getWorkspaceThemeNav();
 
   return (
     <>
@@ -70,7 +71,7 @@ export function WorkspaceSidebar({
             Workspace
           </p>
           <nav className="space-y-1">
-            {WORKSPACE_THEME_NAV.map((item) => {
+            {navItems.map((item) => {
               const active =
                 item.href === "/workspace"
                   ? pathname === "/workspace"

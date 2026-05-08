@@ -8,6 +8,11 @@ export type WorkspaceThemeNavItem = {
   badge?: string;
 };
 
-export const WORKSPACE_THEME_NAV: WorkspaceThemeNavItem[] = [
+/** Caterer workspace navigation only — admins use `components/admin/admin-nav`. */
+const CATERER_WORKSPACE_THEME_NAV: WorkspaceThemeNavItem[] = [
   { href: "/workspace/profile", label: "Profile", icon: ListDashes },
 ];
+
+export function getWorkspaceThemeNav(): WorkspaceThemeNavItem[] {
+  return CATERER_WORKSPACE_THEME_NAV;
+}
