@@ -17,8 +17,14 @@ export class MailService {
   /**
    * Logs verification link for legacy token flow (if still issued).
    */
-  async sendCatererVerificationEmail(to: string, fullName: string, rawToken: string): Promise<void> {
-    const base = this.config.getOrThrow<string>('APP_PUBLIC_URL').replace(/\/$/, '');
+  async sendCatererVerificationEmail(
+    to: string,
+    fullName: string,
+    rawToken: string,
+  ): Promise<void> {
+    const base = this.config
+      .getOrThrow<string>('APP_PUBLIC_URL')
+      .replace(/\/$/, '');
     const url = `${base}/verify-email?token=${encodeURIComponent(rawToken)}`;
     this.logger.log(`Verification link for ${to} (${fullName}): ${url}`);
   }
@@ -31,7 +37,8 @@ export class MailService {
 
   private buildOtpEmailHtml(ctx: CatererOtpEmailContext): string {
     const workspace = this.workspaceHost(ctx.subdomain);
-    const appUrl = this.config.get<string>('APP_PUBLIC_URL')?.replace(/\/$/, '') || '';
+    const appUrl =
+      this.config.get<string>('APP_PUBLIC_URL')?.replace(/\/$/, '') || '';
     const safeName = escapeHtml(ctx.fullName);
     const safeBusiness = escapeHtml(ctx.businessName);
     const otp = escapeHtml(ctx.otpPlain);
@@ -69,7 +76,10 @@ export class MailService {
   }
 
   /** OTP email (HTML + plain text). Replace logger with SMTP/SES in production. */
-  async sendCatererOtpEmail(to: string, ctx: CatererOtpEmailContext): Promise<void> {
+  async sendCatererOtpEmail(
+    to: string,
+    ctx: CatererOtpEmailContext,
+  ): Promise<void> {
     const workspace = this.workspaceHost(ctx.subdomain);
     const html = this.buildOtpEmailHtml(ctx);
     const text = [
@@ -85,7 +95,9 @@ export class MailService {
 
     this.logger.log(`--- OTP email → ${to} ---`);
     this.logger.log(text);
-    this.logger.debug(`HTML length ${html.length} chars (template ready for SMTP)`);
+    this.logger.debug(
+      `HTML length ${html.length} chars (template ready for SMTP)`,
+    );
   }
 }
 

@@ -44,7 +44,8 @@ export class CatalogService {
       id: 'c1',
       name: 'Marriage & Wedding Catering',
       slug: 'marriage-wedding-catering',
-      shortDescription: 'Full-service wedding menus, live counters, and buffet setups.',
+      shortDescription:
+        'Full-service wedding menus, live counters, and buffet setups.',
     },
     {
       id: 'c2',
@@ -160,7 +161,10 @@ export class CatalogService {
     };
   }
 
-  search(cityId?: string, categoryId?: string): {
+  search(
+    cityId?: string,
+    categoryId?: string,
+  ): {
     caterers: CatererListing[];
     city?: City;
     category?: ServiceCategory;
@@ -177,7 +181,9 @@ export class CatalogService {
     }
 
     const city = c ? this.cities.find((x) => x.id === c) : undefined;
-    const category = cat ? this.categories.find((x) => x.id === cat) : undefined;
+    const category = cat
+      ? this.categories.find((x) => x.id === cat)
+      : undefined;
 
     return { caterers, city, category };
   }

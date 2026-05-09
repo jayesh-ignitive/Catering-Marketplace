@@ -1,4 +1,8 @@
-import { ValidationArguments, ValidatorConstraint, ValidatorConstraintInterface } from 'class-validator';
+import {
+  ValidationArguments,
+  ValidatorConstraint,
+  ValidatorConstraintInterface,
+} from 'class-validator';
 
 /**
  * Align with catering-website workspace wizard: https URLs or browser banner uploads (`data:image/…`).
@@ -15,7 +19,9 @@ export class HeroUrlOrDataImageConstraint implements ValidatorConstraintInterfac
       return v.length <= 3 * 1024 * 1024;
     }
     if (v.startsWith('images/banner/')) {
-      return v.length <= 2048 && !/\s/.test(v) && /\.(jpe?g|png|webp|gif)$/i.test(v);
+      return (
+        v.length <= 2048 && !/\s/.test(v) && /\.(jpe?g|png|webp|gif)$/i.test(v)
+      );
     }
     /** Legacy keys (date folders) or any relative `images/…` path stored in DB */
     if (v.startsWith('images/')) {

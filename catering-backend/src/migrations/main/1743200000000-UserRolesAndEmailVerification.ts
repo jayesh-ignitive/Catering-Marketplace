@@ -26,10 +26,18 @@ export class UserRolesAndEmailVerification1743200000000 implements MigrationInte
   }
 
   public async down(queryRunner: QueryRunner): Promise<void> {
-    await queryRunner.query(`DROP INDEX \`UQ_users_email_verification_token\` ON \`users\``);
-    await queryRunner.query(`ALTER TABLE \`users\` DROP COLUMN \`email_verification_expires_at\``);
-    await queryRunner.query(`ALTER TABLE \`users\` DROP COLUMN \`email_verification_token\``);
-    await queryRunner.query(`ALTER TABLE \`users\` DROP COLUMN \`email_verified_at\``);
+    await queryRunner.query(
+      `DROP INDEX \`UQ_users_email_verification_token\` ON \`users\``,
+    );
+    await queryRunner.query(
+      `ALTER TABLE \`users\` DROP COLUMN \`email_verification_expires_at\``,
+    );
+    await queryRunner.query(
+      `ALTER TABLE \`users\` DROP COLUMN \`email_verification_token\``,
+    );
+    await queryRunner.query(
+      `ALTER TABLE \`users\` DROP COLUMN \`email_verified_at\``,
+    );
     await queryRunner.query(`ALTER TABLE \`users\` DROP COLUMN \`role\``);
   }
 }

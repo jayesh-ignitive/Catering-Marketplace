@@ -2,7 +2,10 @@ import 'reflect-metadata';
 import { config } from 'dotenv';
 import { DataSource } from 'typeorm';
 import { BlogPost } from './catalog/blog-post.entity';
+import { MenuCategoryTranslation } from './catalog/menu-category-translation.entity';
+import { MenuCategory } from './catalog/menu-category.entity';
 import { ContactSubmission } from './contact/contact-submission.entity';
+import { Language } from './localization/language.entity';
 import { CatererMarketplaceListing } from './marketplace/caterer-marketplace-listing.entity';
 import { CatererProfileCategory } from './marketplace/caterer-profile-category.entity';
 import { CatererProfileCuisine } from './marketplace/caterer-profile-cuisine.entity';
@@ -33,7 +36,10 @@ const AppDataSource = new DataSource({
   logging: process.env.TYPEORM_LOGGING === 'true',
   entities: [
     BlogPost,
+    MenuCategory,
+    MenuCategoryTranslation,
     ContactSubmission,
+    Language,
     User,
     Tenant,
     CatererMarketplaceListing,

@@ -1,5 +1,10 @@
 import { randomUUID } from 'crypto';
-import { MigrationInterface, QueryRunner, TableForeignKey, TableIndex } from 'typeorm';
+import {
+  MigrationInterface,
+  QueryRunner,
+  TableForeignKey,
+  TableIndex,
+} from 'typeorm';
 
 /**
  * Replaces JSON `cuisines` / `services_offered` on `caterer_profiles` with
@@ -55,7 +60,10 @@ export class CuisinesAndServiceOfferingsTables1743420000000 implements Migration
 
     await queryRunner.createIndex(
       'caterer_profile_cuisines',
-      new TableIndex({ name: 'IDX_cpcuisines_profile', columnNames: ['caterer_profile_id'] }),
+      new TableIndex({
+        name: 'IDX_cpcuisines_profile',
+        columnNames: ['caterer_profile_id'],
+      }),
     );
     await queryRunner.createIndex(
       'caterer_profile_service_offerings',
@@ -77,12 +85,13 @@ export class CuisinesAndServiceOfferingsTables1743420000000 implements Migration
       if (hit) {
         return hit;
       }
-      const rows = (await queryRunner.query(`SELECT \`id\` FROM \`cuisines\` WHERE \`name\` = ?`, [
-        name,
-      ])) as { id: string }[];
+      const rows = (await queryRunner.query(
+        `SELECT \`id\` FROM \`cuisines\` WHERE \`name\` = ?`,
+        [name],
+      )) as { id: string }[];
       if (rows.length) {
-        cuisineIds.set(name, rows[0]!.id);
-        return rows[0]!.id;
+        cuisineIds.set(name, rows[0].id);
+        return rows[0].id;
       }
       const id = randomUUID();
       await queryRunner.query(
@@ -107,8 +116,8 @@ export class CuisinesAndServiceOfferingsTables1743420000000 implements Migration
         [name],
       )) as { id: string }[];
       if (rows.length) {
-        serviceIds.set(name, rows[0]!.id);
-        return rows[0]!.id;
+        serviceIds.set(name, rows[0].id);
+        return rows[0].id;
       }
       const id = randomUUID();
       await queryRunner.query(
@@ -186,11 +195,18 @@ export class CuisinesAndServiceOfferingsTables1743420000000 implements Migration
         onDelete: 'CASCADE',
       }),
     ]) {
-      await queryRunner.createForeignKey('caterer_profile_service_offerings', fk);
+      await queryRunner.createForeignKey(
+        'caterer_profile_service_offerings',
+        fk,
+      );
     }
 
-    await queryRunner.query(`ALTER TABLE \`caterer_profiles\` DROP COLUMN \`cuisines\``);
-    await queryRunner.query(`ALTER TABLE \`caterer_profiles\` DROP COLUMN \`services_offered\``);
+    await queryRunner.query(
+      `ALTER TABLE \`caterer_profiles\` DROP COLUMN \`cuisines\``,
+    );
+    await queryRunner.query(
+      `ALTER TABLE \`caterer_profiles\` DROP COLUMN \`services_offered\``,
+    );
   }
 
   private parseJsonStringArray(raw: unknown): string[] {
@@ -217,17 +233,26 @@ export class CuisinesAndServiceOfferingsTables1743420000000 implements Migration
     if (await queryRunner.hasColumn('caterer_profiles', 'cuisines')) {
       return;
     }
-    await queryRunner.query(`ALTER TABLE \`caterer_profiles\` ADD \`cuisines\` json NULL`);
-    await queryRunner.query(`ALTER TABLE \`caterer_profiles\` ADD \`services_offered\` json NULL`);
+    await queryRunner.query(
+      `ALTER TABLE \`caterer_profiles\` ADD \`cuisines\` json NULL`,
+    );
+    await queryRunner.query(
+      `ALTER TABLE \`caterer_profiles\` ADD \`services_offered\` json NULL`,
+    );
 
     const rows = (await queryRunner.query(
       `SELECT \`caterer_profile_id\`, \`cuisine_id\`, \`sort_order\` FROM \`caterer_profile_cuisines\` ORDER BY \`caterer_profile_id\`, \`sort_order\``,
-    )) as { caterer_profile_id: string; cuisine_id: string; sort_order: number }[];
+    )) as {
+      caterer_profile_id: string;
+      cuisine_id: string;
+      sort_order: number;
+    }[];
     const cMap = new Map<string, string[]>();
     for (const r of rows) {
-      const [n] = (await queryRunner.query(`SELECT \`name\` FROM \`cuisines\` WHERE \`id\` = ?`, [
-        r.cuisine_id,
-      ])) as { name: string }[];
+      const [n] = (await queryRunner.query(
+        `SELECT \`name\` FROM \`cuisines\` WHERE \`id\` = ?`,
+        [r.cuisine_id],
+      )) as { name: string }[];
       if (!n) {
         continue;
       }
@@ -236,15 +261,19 @@ export class CuisinesAndServiceOfferingsTables1743420000000 implements Migration
       cMap.set(r.caterer_profile_id, list);
     }
     for (const [pid, names] of cMap) {
-      await queryRunner.query(`UPDATE \`caterer_profiles\` SET \`cuisines\` = ? WHERE \`id\` = ?`, [
-        JSON.stringify(names),
-        pid,
-      ]);
+      await queryRunner.query(
+        `UPDATE \`caterer_profiles\` SET \`cuisines\` = ? WHERE \`id\` = ?`,
+        [JSON.stringify(names), pid],
+      );
     }
 
     const srows = (await queryRunner.query(
       `SELECT \`caterer_profile_id\`, \`service_offering_id\`, \`sort_order\` FROM \`caterer_profile_service_offerings\` ORDER BY \`caterer_profile_id\`, \`sort_order\``,
-    )) as { caterer_profile_id: string; service_offering_id: string; sort_order: number }[];
+    )) as {
+      caterer_profile_id: string;
+      service_offering_id: string;
+      sort_order: number;
+    }[];
     const sMap = new Map<string, string[]>();
     for (const r of srows) {
       const [n] = (await queryRunner.query(

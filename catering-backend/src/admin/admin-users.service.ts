@@ -5,7 +5,10 @@ import { CatererMarketplaceListing } from '../marketplace/caterer-marketplace-li
 import { buildMarketplaceProfileSlug } from '../marketplace/marketplace-slug.util';
 import type { Tenant } from '../tenant/tenant.entity';
 import { User } from '../user/user.entity';
-import type { AdminUserSortField, ListAdminUsersQueryDto } from './dto/list-admin-users-query.dto';
+import type {
+  AdminUserSortField,
+  ListAdminUsersQueryDto,
+} from './dto/list-admin-users-query.dto';
 
 export type AdminTenantSnapshot = {
   id: string;
@@ -142,9 +145,12 @@ export class AdminUsersService {
       .orderBy(orderExpr[sortBy], sortDir);
 
     if (q) {
-      qb.andWhere('(LOWER(u.email) LIKE :like OR LOWER(u.fullName) LIKE :like)', {
-        like: `%${q.toLowerCase()}%`,
-      });
+      qb.andWhere(
+        '(LOWER(u.email) LIKE :like OR LOWER(u.fullName) LIKE :like)',
+        {
+          like: `%${q.toLowerCase()}%`,
+        },
+      );
     }
 
     const [rows, total] = await qb
@@ -183,7 +189,11 @@ export class AdminUsersService {
           profileSlug: buildMarketplaceProfileSlug(tenantSlug),
           published: listing.published,
           tagline: listing.tagline,
-          aboutPreview: about ? (about.length > 400 ? `${about.slice(0, 400)}…` : about) : null,
+          aboutPreview: about
+            ? about.length > 400
+              ? `${about.slice(0, 400)}…`
+              : about
+            : null,
           heroImageUrl: listing.heroImageUrl,
           avgRating: listing.avgRating,
           reviewCount: listing.reviewCount,
@@ -200,7 +210,9 @@ export class AdminUsersService {
       emailVerifiedAt: toIso(user.emailVerifiedAt),
       emailVerificationExpiresAt: toIso(user.emailVerificationExpiresAt),
       hasEmailVerificationLink: Boolean(user.emailVerificationToken),
-      hasPendingEmailOtp: Boolean(user.emailVerificationOtpHash && user.emailVerificationExpiresAt),
+      hasPendingEmailOtp: Boolean(
+        user.emailVerificationOtpHash && user.emailVerificationExpiresAt,
+      ),
       updatedAt: toIso(user.updatedAt)!,
       tenant: tenantSnapshot(user.tenant),
       ownedTenant: tenantSnapshot(user.ownedTenant),

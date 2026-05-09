@@ -1,5 +1,11 @@
 import { randomUUID } from 'crypto';
-import { MigrationInterface, QueryRunner, Table, TableForeignKey, TableIndex } from 'typeorm';
+import {
+  MigrationInterface,
+  QueryRunner,
+  Table,
+  TableForeignKey,
+  TableIndex,
+} from 'typeorm';
 
 export class CatererReviews1743350000000 implements MigrationInterface {
   name = 'CatererReviews1743350000000';
@@ -12,12 +18,32 @@ export class CatererReviews1743350000000 implements MigrationInterface {
           name: 'caterer_reviews',
           columns: [
             { name: 'id', type: 'char', length: '36', isPrimary: true },
-            { name: 'tenant_id', type: 'char', length: '36', isNullable: false },
-            { name: 'author_name', type: 'varchar', length: '120', isNullable: false },
-            { name: 'rating', type: 'tinyint', unsigned: true, isNullable: false },
+            {
+              name: 'tenant_id',
+              type: 'char',
+              length: '36',
+              isNullable: false,
+            },
+            {
+              name: 'author_name',
+              type: 'varchar',
+              length: '120',
+              isNullable: false,
+            },
+            {
+              name: 'rating',
+              type: 'tinyint',
+              unsigned: true,
+              isNullable: false,
+            },
             { name: 'title', type: 'varchar', length: '200', isNullable: true },
             { name: 'comment', type: 'text', isNullable: false },
-            { name: 'created_at', type: 'datetime', precision: 6, default: 'CURRENT_TIMESTAMP(6)' },
+            {
+              name: 'created_at',
+              type: 'datetime',
+              precision: 6,
+              default: 'CURRENT_TIMESTAMP(6)',
+            },
             {
               name: 'updated_at',
               type: 'datetime',
@@ -96,7 +122,7 @@ export class CatererReviews1743350000000 implements MigrationInterface {
     ];
 
     for (let ti = 0; ti < tenants.length; ti++) {
-      const tid = tenants[ti]!.id;
+      const tid = tenants[ti].id;
       const n = 2 + (ti % 2);
       for (let r = 0; r < n; r++) {
         const seed = ti * 10 + r;
@@ -108,10 +134,10 @@ export class CatererReviews1743350000000 implements MigrationInterface {
           [
             randomUUID(),
             tid,
-            authors[seed % authors.length]!,
+            authors[seed % authors.length],
             rating,
-            titles[seed % titles.length]!,
-            bodies[seed % bodies.length]!,
+            titles[seed % titles.length],
+            bodies[seed % bodies.length],
             3 + (seed % 60),
             3 + (seed % 60),
           ],

@@ -36,7 +36,10 @@ export class BlogService {
     };
   }
 
-  async listPublished(page: number, limit: number): Promise<{
+  async listPublished(
+    page: number,
+    limit: number,
+  ): Promise<{
     items: BlogPostSummaryDto[];
     total: number;
     page: number;

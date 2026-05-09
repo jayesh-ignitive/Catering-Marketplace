@@ -13,7 +13,9 @@ export class UuidPrimaryKeysGeoAndCategories1743400000000 implements MigrationIn
     await this.migrateGeoToUuid(queryRunner);
   }
 
-  private async migrateCategoriesToUuid(queryRunner: QueryRunner): Promise<void> {
+  private async migrateCategoriesToUuid(
+    queryRunner: QueryRunner,
+  ): Promise<void> {
     const [{ dt, cml }] = (await queryRunner.query(`
       SELECT DATA_TYPE AS dt, CHARACTER_MAXIMUM_LENGTH AS cml FROM INFORMATION_SCHEMA.COLUMNS
       WHERE TABLE_SCHEMA = DATABASE() AND TABLE_NAME = 'categories' AND COLUMN_NAME = 'id'
@@ -26,28 +28,39 @@ export class UuidPrimaryKeysGeoAndCategories1743400000000 implements MigrationIn
       return;
     }
 
-    if (await queryRunner.hasColumn('caterer_profile_categories', 'category_id_uuid')) {
+    if (
+      await queryRunner.hasColumn(
+        'caterer_profile_categories',
+        'category_id_uuid',
+      )
+    ) {
       await queryRunner.query(
         `ALTER TABLE \`caterer_profile_categories\` DROP COLUMN \`category_id_uuid\``,
       );
     }
     if (await queryRunner.hasColumn('categories', 'id_uuid')) {
-      await queryRunner.query(`ALTER TABLE \`categories\` DROP COLUMN \`id_uuid\``);
+      await queryRunner.query(
+        `ALTER TABLE \`categories\` DROP COLUMN \`id_uuid\``,
+      );
     }
 
     await queryRunner.query(
       `ALTER TABLE \`caterer_profile_categories\` ADD \`category_id_uuid\` char(36) NULL`,
     );
-    await queryRunner.query(`ALTER TABLE \`categories\` ADD \`id_uuid\` char(36) NULL`);
+    await queryRunner.query(
+      `ALTER TABLE \`categories\` ADD \`id_uuid\` char(36) NULL`,
+    );
 
-    const cats = (await queryRunner.query(`SELECT \`id\` FROM \`categories\` ORDER BY \`id\``)) as {
+    const cats = (await queryRunner.query(
+      `SELECT \`id\` FROM \`categories\` ORDER BY \`id\``,
+    )) as {
       id: number;
     }[];
     for (const { id } of cats) {
-      await queryRunner.query(`UPDATE \`categories\` SET \`id_uuid\` = ? WHERE \`id\` = ?`, [
-        randomUUID(),
-        id,
-      ]);
+      await queryRunner.query(
+        `UPDATE \`categories\` SET \`id_uuid\` = ? WHERE \`id\` = ?`,
+        [randomUUID(), id],
+      );
     }
 
     await queryRunner.query(`
@@ -61,8 +74,12 @@ export class UuidPrimaryKeysGeoAndCategories1743400000000 implements MigrationIn
       await queryRunner.dropForeignKey('caterer_profile_categories', fk);
     }
 
-    await queryRunner.query(`ALTER TABLE \`caterer_profile_categories\` DROP PRIMARY KEY`);
-    await queryRunner.query(`ALTER TABLE \`caterer_profile_categories\` DROP COLUMN \`category_id\``);
+    await queryRunner.query(
+      `ALTER TABLE \`caterer_profile_categories\` DROP PRIMARY KEY`,
+    );
+    await queryRunner.query(
+      `ALTER TABLE \`caterer_profile_categories\` DROP COLUMN \`category_id\``,
+    );
     await queryRunner.query(
       `ALTER TABLE \`caterer_profile_categories\` CHANGE \`category_id_uuid\` \`category_id\` char(36) NOT NULL`,
     );
@@ -70,13 +87,17 @@ export class UuidPrimaryKeysGeoAndCategories1743400000000 implements MigrationIn
       `ALTER TABLE \`caterer_profile_categories\` ADD PRIMARY KEY (\`caterer_profile_id\`, \`category_id\`)`,
     );
 
-    await queryRunner.query(`ALTER TABLE \`categories\` MODIFY \`id\` smallint unsigned NOT NULL`);
+    await queryRunner.query(
+      `ALTER TABLE \`categories\` MODIFY \`id\` smallint unsigned NOT NULL`,
+    );
     await queryRunner.query(`ALTER TABLE \`categories\` DROP PRIMARY KEY`);
     await queryRunner.query(`ALTER TABLE \`categories\` DROP COLUMN \`id\``);
     await queryRunner.query(
       `ALTER TABLE \`categories\` CHANGE \`id_uuid\` \`id\` char(36) NOT NULL`,
     );
-    await queryRunner.query(`ALTER TABLE \`categories\` ADD PRIMARY KEY (\`id\`)`);
+    await queryRunner.query(
+      `ALTER TABLE \`categories\` ADD PRIMARY KEY (\`id\`)`,
+    );
 
     await queryRunner.createForeignKey(
       'caterer_profile_categories',
@@ -114,34 +135,42 @@ export class UuidPrimaryKeysGeoAndCategories1743400000000 implements MigrationIn
     }
 
     const cpTbl = await queryRunner.getTable('caterer_profiles');
-    const fkCpCity = cpTbl?.foreignKeys.find((f) => f.name === 'FK_caterer_profiles_city');
+    const fkCpCity = cpTbl?.foreignKeys.find(
+      (f) => f.name === 'FK_caterer_profiles_city',
+    );
     if (fkCpCity) {
       await queryRunner.dropForeignKey('caterer_profiles', fkCpCity);
     }
 
     const citiesTbl = await queryRunner.getTable('cities');
-    const fkCityState = citiesTbl?.foreignKeys.find((f) => f.columnNames.includes('state_id'));
+    const fkCityState = citiesTbl?.foreignKeys.find((f) =>
+      f.columnNames.includes('state_id'),
+    );
     if (fkCityState) {
       await queryRunner.dropForeignKey('cities', fkCityState);
     }
 
     const statesTbl = await queryRunner.getTable('states');
-    const fkStateCountry = statesTbl?.foreignKeys.find((f) => f.columnNames.includes('country_id'));
+    const fkStateCountry = statesTbl?.foreignKeys.find((f) =>
+      f.columnNames.includes('country_id'),
+    );
     if (fkStateCountry) {
       await queryRunner.dropForeignKey('states', fkStateCountry);
     }
 
     if (!(await queryRunner.hasColumn('countries', 'id_uuid'))) {
-      await queryRunner.query(`ALTER TABLE \`countries\` ADD \`id_uuid\` char(36) NULL`);
+      await queryRunner.query(
+        `ALTER TABLE \`countries\` ADD \`id_uuid\` char(36) NULL`,
+      );
     }
     const countriesNeed = (await queryRunner.query(
       `SELECT \`id\` FROM \`countries\` WHERE \`id_uuid\` IS NULL ORDER BY \`id\``,
     )) as { id: number }[];
     for (const { id } of countriesNeed) {
-      await queryRunner.query(`UPDATE \`countries\` SET \`id_uuid\` = ? WHERE \`id\` = ?`, [
-        randomUUID(),
-        id,
-      ]);
+      await queryRunner.query(
+        `UPDATE \`countries\` SET \`id_uuid\` = ? WHERE \`id\` = ?`,
+        [randomUUID(), id],
+      );
     }
     const coTbl = await queryRunner.getTable('countries');
     if (!coTbl?.indices.some((i) => i.name === 'UQ_countries_id_uuid')) {
@@ -151,10 +180,14 @@ export class UuidPrimaryKeysGeoAndCategories1743400000000 implements MigrationIn
     }
 
     if (!(await queryRunner.hasColumn('states', 'country_id_uuid'))) {
-      await queryRunner.query(`ALTER TABLE \`states\` ADD \`country_id_uuid\` char(36) NULL`);
+      await queryRunner.query(
+        `ALTER TABLE \`states\` ADD \`country_id_uuid\` char(36) NULL`,
+      );
     }
     if (!(await queryRunner.hasColumn('states', 'id_uuid'))) {
-      await queryRunner.query(`ALTER TABLE \`states\` ADD \`id_uuid\` char(36) NULL`);
+      await queryRunner.query(
+        `ALTER TABLE \`states\` ADD \`id_uuid\` char(36) NULL`,
+      );
     }
     await queryRunner.query(`
       UPDATE \`states\` st
@@ -166,7 +199,10 @@ export class UuidPrimaryKeysGeoAndCategories1743400000000 implements MigrationIn
       `SELECT \`id\` FROM \`states\` WHERE \`id_uuid\` IS NULL ORDER BY \`id\``,
     )) as { id: number }[];
     for (const { id } of statesNeed) {
-      await queryRunner.query(`UPDATE \`states\` SET \`id_uuid\` = ? WHERE \`id\` = ?`, [randomUUID(), id]);
+      await queryRunner.query(
+        `UPDATE \`states\` SET \`id_uuid\` = ? WHERE \`id\` = ?`,
+        [randomUUID(), id],
+      );
     }
     const stTbl = await queryRunner.getTable('states');
     if (!stTbl?.indices.some((i) => i.name === 'UQ_states_id_uuid')) {
@@ -176,10 +212,14 @@ export class UuidPrimaryKeysGeoAndCategories1743400000000 implements MigrationIn
     }
 
     if (!(await queryRunner.hasColumn('cities', 'state_id_uuid'))) {
-      await queryRunner.query(`ALTER TABLE \`cities\` ADD \`state_id_uuid\` char(36) NULL`);
+      await queryRunner.query(
+        `ALTER TABLE \`cities\` ADD \`state_id_uuid\` char(36) NULL`,
+      );
     }
     if (!(await queryRunner.hasColumn('cities', 'id_uuid'))) {
-      await queryRunner.query(`ALTER TABLE \`cities\` ADD \`id_uuid\` char(36) NULL`);
+      await queryRunner.query(
+        `ALTER TABLE \`cities\` ADD \`id_uuid\` char(36) NULL`,
+      );
     }
     await queryRunner.query(`
       UPDATE \`cities\` ci
@@ -191,7 +231,10 @@ export class UuidPrimaryKeysGeoAndCategories1743400000000 implements MigrationIn
       `SELECT \`id\` FROM \`cities\` WHERE \`id_uuid\` IS NULL ORDER BY \`id\``,
     )) as { id: number }[];
     for (const { id } of citiesNeed) {
-      await queryRunner.query(`UPDATE \`cities\` SET \`id_uuid\` = ? WHERE \`id\` = ?`, [randomUUID(), id]);
+      await queryRunner.query(
+        `UPDATE \`cities\` SET \`id_uuid\` = ? WHERE \`id\` = ?`,
+        [randomUUID(), id],
+      );
     }
     const ciTbl = await queryRunner.getTable('cities');
     if (!ciTbl?.indices.some((i) => i.name === 'UQ_cities_id_uuid')) {
@@ -209,7 +252,9 @@ export class UuidPrimaryKeysGeoAndCategories1743400000000 implements MigrationIn
 
     if (!cityIdAlreadyUuid) {
       if (!(await queryRunner.hasColumn('caterer_profiles', 'city_id_uuid'))) {
-        await queryRunner.query(`ALTER TABLE \`caterer_profiles\` ADD \`city_id_uuid\` char(36) NULL`);
+        await queryRunner.query(
+          `ALTER TABLE \`caterer_profiles\` ADD \`city_id_uuid\` char(36) NULL`,
+        );
       }
       await queryRunner.query(`
         UPDATE \`caterer_profiles\` cp
@@ -217,7 +262,9 @@ export class UuidPrimaryKeysGeoAndCategories1743400000000 implements MigrationIn
         SET cp.\`city_id_uuid\` = ci.\`id_uuid\`
         WHERE cp.\`city_id\` IS NOT NULL
       `);
-      await queryRunner.query(`ALTER TABLE \`caterer_profiles\` DROP COLUMN \`city_id\``);
+      await queryRunner.query(
+        `ALTER TABLE \`caterer_profiles\` DROP COLUMN \`city_id\``,
+      );
       await queryRunner.query(
         `ALTER TABLE \`caterer_profiles\` CHANGE \`city_id_uuid\` \`city_id\` char(36) NULL`,
       );
@@ -236,7 +283,9 @@ export class UuidPrimaryKeysGeoAndCategories1743400000000 implements MigrationIn
       return;
     }
 
-    await queryRunner.query(`ALTER TABLE \`cities\` MODIFY \`id\` int unsigned NOT NULL`);
+    await queryRunner.query(
+      `ALTER TABLE \`cities\` MODIFY \`id\` int unsigned NOT NULL`,
+    );
     await queryRunner.query(`ALTER TABLE \`cities\` DROP PRIMARY KEY`);
     await queryRunner.query(`ALTER TABLE \`cities\` DROP COLUMN \`id\``);
     await queryRunner.query(`ALTER TABLE \`cities\` DROP COLUMN \`state_id\``);
@@ -247,12 +296,18 @@ export class UuidPrimaryKeysGeoAndCategories1743400000000 implements MigrationIn
       `ALTER TABLE \`cities\` CHANGE \`state_id_uuid\` \`state_id\` char(36) NOT NULL`,
     );
     await queryRunner.query(`ALTER TABLE \`cities\` ADD PRIMARY KEY (\`id\`)`);
-    await queryRunner.query(`ALTER TABLE \`cities\` DROP INDEX \`UQ_cities_id_uuid\``);
+    await queryRunner.query(
+      `ALTER TABLE \`cities\` DROP INDEX \`UQ_cities_id_uuid\``,
+    );
 
-    await queryRunner.query(`ALTER TABLE \`states\` MODIFY \`id\` smallint unsigned NOT NULL`);
+    await queryRunner.query(
+      `ALTER TABLE \`states\` MODIFY \`id\` smallint unsigned NOT NULL`,
+    );
     await queryRunner.query(`ALTER TABLE \`states\` DROP PRIMARY KEY`);
     await queryRunner.query(`ALTER TABLE \`states\` DROP COLUMN \`id\``);
-    await queryRunner.query(`ALTER TABLE \`states\` DROP COLUMN \`country_id\``);
+    await queryRunner.query(
+      `ALTER TABLE \`states\` DROP COLUMN \`country_id\``,
+    );
     await queryRunner.query(
       `ALTER TABLE \`states\` CHANGE \`id_uuid\` \`id\` char(36) NOT NULL`,
     );
@@ -260,21 +315,31 @@ export class UuidPrimaryKeysGeoAndCategories1743400000000 implements MigrationIn
       `ALTER TABLE \`states\` CHANGE \`country_id_uuid\` \`country_id\` char(36) NOT NULL`,
     );
     await queryRunner.query(`ALTER TABLE \`states\` ADD PRIMARY KEY (\`id\`)`);
-    await queryRunner.query(`ALTER TABLE \`states\` DROP INDEX \`UQ_states_id_uuid\``);
+    await queryRunner.query(
+      `ALTER TABLE \`states\` DROP INDEX \`UQ_states_id_uuid\``,
+    );
 
-    await queryRunner.query(`ALTER TABLE \`countries\` MODIFY \`id\` smallint unsigned NOT NULL`);
+    await queryRunner.query(
+      `ALTER TABLE \`countries\` MODIFY \`id\` smallint unsigned NOT NULL`,
+    );
     await queryRunner.query(`ALTER TABLE \`countries\` DROP PRIMARY KEY`);
     await queryRunner.query(`ALTER TABLE \`countries\` DROP COLUMN \`id\``);
     await queryRunner.query(
       `ALTER TABLE \`countries\` CHANGE \`id_uuid\` \`id\` char(36) NOT NULL`,
     );
-    await queryRunner.query(`ALTER TABLE \`countries\` ADD PRIMARY KEY (\`id\`)`);
-    await queryRunner.query(`ALTER TABLE \`countries\` DROP INDEX \`UQ_countries_id_uuid\``);
+    await queryRunner.query(
+      `ALTER TABLE \`countries\` ADD PRIMARY KEY (\`id\`)`,
+    );
+    await queryRunner.query(
+      `ALTER TABLE \`countries\` DROP INDEX \`UQ_countries_id_uuid\``,
+    );
 
     await this.ensureGeoForeignKeysAndUniques(queryRunner);
   }
 
-  private async ensureGeoForeignKeysAndUniques(queryRunner: QueryRunner): Promise<void> {
+  private async ensureGeoForeignKeysAndUniques(
+    queryRunner: QueryRunner,
+  ): Promise<void> {
     const st = await queryRunner.getTable('states');
     if (!st?.foreignKeys.some((f) => f.name === 'FK_states_country_uuid')) {
       await queryRunner.createForeignKey(

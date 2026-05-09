@@ -11,7 +11,9 @@ export class GalleryAndHeroImageUrlLongtext1743700000000 implements MigrationInt
     await queryRunner.query(
       `ALTER TABLE \`caterer_profile_gallery_images\` MODIFY \`url\` LONGTEXT NOT NULL`,
     );
-    await queryRunner.query(`ALTER TABLE \`caterer_profiles\` MODIFY \`hero_image_url\` LONGTEXT NULL`);
+    await queryRunner.query(
+      `ALTER TABLE \`caterer_profiles\` MODIFY \`hero_image_url\` LONGTEXT NULL`,
+    );
   }
 
   public async down(queryRunner: QueryRunner): Promise<void> {

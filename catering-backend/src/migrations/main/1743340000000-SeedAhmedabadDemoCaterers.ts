@@ -186,7 +186,12 @@ export class SeedAhmedabadDemoCaterers1743340000000 implements MigrationInterfac
     ];
 
     const serviceSets = [
-      ['Wedding buffets', 'Live chaat counters', 'Welcome drinks', 'Dessert tables'],
+      [
+        'Wedding buffets',
+        'Live chaat counters',
+        'Welcome drinks',
+        'Dessert tables',
+      ],
       ['Corporate lunch boxes', 'High-tea spreads', 'Working lunch menus'],
       ['Birthday party packages', 'Kid-friendly menus', 'Cake coordination'],
       ['Outdoor grill stations', 'Chafing dish service', 'Tent coordination'],
@@ -205,35 +210,42 @@ export class SeedAhmedabadDemoCaterers1743340000000 implements MigrationInterfac
       await queryRunner.query(
         `UPDATE \`platform_sequences\` SET \`next_value\` = LAST_INSERT_ID(\`next_value\` + 1) WHERE \`name\` = 'tenant_listing'`,
       );
-      const [lidRow] = (await queryRunner.query(`SELECT LAST_INSERT_ID() AS lid`)) as { lid: number }[];
+      const [lidRow] = (await queryRunner.query(
+        `SELECT LAST_INSERT_ID() AS lid`,
+      )) as { lid: number }[];
       const listingId = Number(lidRow.lid);
 
       const slug = `${SeedAhmedabadDemoCaterers1743340000000.SLUG_PREFIX}${listingId}`;
       const subdomain = `ahm${listingId}`;
-      const baseName = businessNames[i % businessNames.length]!;
+      const baseName = businessNames[i % businessNames.length];
       const suffix = Math.floor(i / businessNames.length);
       const displayName = suffix > 0 ? `${baseName} (${suffix + 1})` : baseName;
 
-      const cat = categoryIds[i % categoryIds.length]!;
+      const cat = categoryIds[i % categoryIds.length];
       const years = 3 + (i % 18);
-      const capacity = ['30–150 guests', '50–300 guests', '100–500 guests', '150–800 guests'][i % 4];
-      const loc = localities[i % localities.length]!;
-      const loc2 = localities[(i + 3) % localities.length]!;
-      const loc3 = localities[(i + 7) % localities.length]!;
+      const capacity = [
+        '30–150 guests',
+        '50–300 guests',
+        '100–500 guests',
+        '150–800 guests',
+      ][i % 4];
+      const loc = localities[i % localities.length];
+      const loc2 = localities[(i + 3) % localities.length];
+      const loc3 = localities[(i + 7) % localities.length];
       const pb = priceBands[i % priceBands.length];
       const rating = Math.min(5, 3.9 + (i % 12) / 10);
-      const reviews = 15 + (i * 17) % 420;
-      const hero = heroPool[i % heroPool.length]!;
-      const g1 = heroPool[(i + 2) % heroPool.length]!;
-      const g2 = heroPool[(i + 5) % heroPool.length]!;
-      const g3 = heroPool[(i + 8) % heroPool.length]!;
+      const reviews = 15 + ((i * 17) % 420);
+      const hero = heroPool[i % heroPool.length];
+      const g1 = heroPool[(i + 2) % heroPool.length];
+      const g2 = heroPool[(i + 5) % heroPool.length];
+      const g3 = heroPool[(i + 8) % heroPool.length];
 
       const tagline = [
         `Ahmedabad’s trusted kitchen for ${categoryLabels[cat]}.`,
         `Premium veg & Jain-friendly menus · ${loc}.`,
         `Corporate & wedding specialists · serving ${loc2} & ${loc3}.`,
         `Live counters, hygienic prep, on-time service in ${loc}.`,
-      ][i % 4]!;
+      ][i % 4];
 
       const about =
         `${displayName} operates from ${loc}, Ahmedabad, with ${years}+ years of experience in ${categoryLabels[cat]}. ` +
@@ -246,7 +258,13 @@ export class SeedAhmedabadDemoCaterers1743340000000 implements MigrationInterfac
           \`id\`, \`name\`, \`slug\`, \`subdomain\`, \`db_name\`, \`listing_id\`,
           \`provision_status\`, \`profile_published\`, \`profile_options\`, \`created_at\`, \`updated_at\`
         ) VALUES (?, ?, ?, ?, NULL, ?, 'pending', 0, NULL, CURRENT_TIMESTAMP(6), CURRENT_TIMESTAMP(6))`,
-        [tenantId, displayName.slice(0, 120), slug.slice(0, 80), subdomain.slice(0, 63), listingId],
+        [
+          tenantId,
+          displayName.slice(0, 120),
+          slug.slice(0, 80),
+          subdomain.slice(0, 63),
+          listingId,
+        ],
       );
 
       await queryRunner.query(
@@ -290,6 +308,8 @@ export class SeedAhmedabadDemoCaterers1743340000000 implements MigrationInterfac
        WHERE t.\`slug\` LIKE ?`,
       [p],
     );
-    await queryRunner.query(`DELETE FROM \`tenants\` WHERE \`slug\` LIKE ?`, [p]);
+    await queryRunner.query(`DELETE FROM \`tenants\` WHERE \`slug\` LIKE ?`, [
+      p,
+    ]);
   }
 }

@@ -1,5 +1,11 @@
 import type { Icon } from "@phosphor-icons/react";
-import { SquaresFour, Storefront, UsersThree } from "@phosphor-icons/react";
+import {
+  ListBullets,
+  SquaresFour,
+  Storefront,
+  Translate,
+  UsersThree,
+} from "@phosphor-icons/react";
 
 export type AdminNavItem = {
   href: string;
@@ -11,6 +17,8 @@ export const ADMIN_NAV_ITEMS: AdminNavItem[] = [
   { href: "/admin", label: "Dashboard", icon: SquaresFour },
   { href: "/admin/caterers", label: "Caterers", icon: Storefront },
   { href: "/admin/users", label: "Users", icon: UsersThree },
+  { href: "/admin/languages", label: "Languages", icon: Translate },
+  { href: "/admin/menu-categories", label: "Menu Categories", icon: ListBullets },
 ];
 
 /** Active nav item for `/admin`, `/admin/caterers`, `/admin/users`, etc. */

@@ -1,5 +1,13 @@
 import { Transform, Type } from 'class-transformer';
-import { IsIn, IsInt, IsOptional, IsString, Max, MaxLength, Min } from 'class-validator';
+import {
+  IsIn,
+  IsInt,
+  IsOptional,
+  IsString,
+  Max,
+  MaxLength,
+  Min,
+} from 'class-validator';
 
 /** Whitelisted columns for ORDER BY (joined `tenant` when needed). */
 export const ADMIN_USER_SORT_FIELDS = [
@@ -40,7 +48,9 @@ export class ListAdminUsersQueryDto {
   sortBy?: AdminUserSortField;
 
   @IsOptional()
-  @Transform(({ value }) => (typeof value === 'string' ? value.toLowerCase() : value))
+  @Transform(({ value }) =>
+    typeof value === 'string' ? value.toLowerCase() : value,
+  )
   @IsIn(['asc', 'desc'])
   sortDir?: 'asc' | 'desc';
 }

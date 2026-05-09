@@ -26,11 +26,21 @@ export class User {
   fullName!: string;
 
   /** Legal / display business name (caterer workspace). */
-  @Column({ name: 'business_name', type: 'varchar', length: 120, nullable: true })
+  @Column({
+    name: 'business_name',
+    type: 'varchar',
+    length: 120,
+    nullable: true,
+  })
   businessName!: string | null;
 
   /** E.164-style dial prefix only, e.g. +91, +1 */
-  @Column({ name: 'phone_country_code', type: 'varchar', length: 8, nullable: true })
+  @Column({
+    name: 'phone_country_code',
+    type: 'varchar',
+    length: 8,
+    nullable: true,
+  })
   phoneCountryCode!: string | null;
 
   /** National number (digits), without country code. */
@@ -40,7 +50,10 @@ export class User {
   @Column({ type: 'varchar', length: 20, default: UserRole.CATERER })
   role!: UserRole;
 
-  @ManyToOne(() => Tenant, (t) => t.users, { nullable: true, onDelete: 'SET NULL' })
+  @ManyToOne(() => Tenant, (t) => t.users, {
+    nullable: true,
+    onDelete: 'SET NULL',
+  })
   @JoinColumn({ name: 'tenant_id' })
   tenant!: Tenant | null;
 
@@ -48,16 +61,37 @@ export class User {
   @OneToOne(() => Tenant, (t) => t.ownerUser)
   ownedTenant!: Tenant | null;
 
-  @Column({ name: 'email_verified_at', type: 'datetime', precision: 6, nullable: true })
+  @Column({
+    name: 'email_verified_at',
+    type: 'datetime',
+    precision: 6,
+    nullable: true,
+  })
   emailVerifiedAt!: Date | null;
 
-  @Column({ name: 'email_verification_token', type: 'varchar', length: 64, nullable: true, unique: true })
+  @Column({
+    name: 'email_verification_token',
+    type: 'varchar',
+    length: 64,
+    nullable: true,
+    unique: true,
+  })
   emailVerificationToken!: string | null;
 
-  @Column({ name: 'email_verification_expires_at', type: 'datetime', precision: 6, nullable: true })
+  @Column({
+    name: 'email_verification_expires_at',
+    type: 'datetime',
+    precision: 6,
+    nullable: true,
+  })
   emailVerificationExpiresAt!: Date | null;
 
-  @Column({ name: 'email_verification_otp_hash', type: 'varchar', length: 255, nullable: true })
+  @Column({
+    name: 'email_verification_otp_hash',
+    type: 'varchar',
+    length: 255,
+    nullable: true,
+  })
   emailVerificationOtpHash!: string | null;
 
   @CreateDateColumn({ name: 'created_at', type: 'datetime' })

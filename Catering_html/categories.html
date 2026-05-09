@@ -1,0 +1,442 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Manage Categories - Bharat Caterers</title>
+    <!-- Google Fonts -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=Outfit:wght@400;600;700;800&display=swap" rel="stylesheet">
+    
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script>
+        tailwind.config = {
+            theme: {
+                extend: {
+                    colors: {
+                        brand: {
+                            red: '#E53935',
+                            redLight: '#FFEBEE',
+                            yellow: '#FFC107',
+                            green: '#4CAF50',
+                            dark: '#1C1C1C',
+                            gray: '#F8F9FA',
+                            text: '#8A92A6',
+                            textDark: '#232D42'
+                        }
+                    },
+                    fontFamily: {
+                        sans: ['Inter', 'sans-serif'],
+                        heading: ['Outfit', 'sans-serif'],
+                    },
+                    boxShadow: {
+                        'soft': '0 2px 15px -3px rgba(0, 0, 0, 0.07), 0 4px 6px -2px rgba(0, 0, 0, 0.05)',
+                        'card': '0 10px 30px -5px rgba(0, 0, 0, 0.04), 0 20px 25px -5px rgba(0, 0, 0, 0.03)',
+                    }
+                }
+            }
+        }
+    </script>
+    <link rel="stylesheet" href="style.css">
+    <link rel="stylesheet" href="admin.css">
+    <!-- Phosphor Icons -->
+    <script src="https://unpkg.com/@phosphor-icons/web"></script>
+    <style>
+        .no-scrollbar::-webkit-scrollbar { display: none; }
+        .no-scrollbar { -ms-overflow-style: none; scrollbar-width: none; }
+        
+        /* Zebra Striping */
+        tbody tr:nth-child(even) {
+            background-color: #FDFDFD;
+        }
+        tbody tr:hover {
+            background-color: #F8F9FA;
+            transition: all 0.2s;
+        }
+
+        /* Custom Table Styling to match Aprycot */
+        .datatable-header th {
+            text-transform: uppercase;
+            font-size: 0.75rem;
+            letter-spacing: 0.05em;
+            font-weight: 700;
+            color: #232D42;
+            border-bottom: 2px solid #F1F1F1;
+        }
+        
+        .datatable-cell {
+            padding: 1.25rem 1rem;
+            border-bottom: 1px solid #F1F1F1;
+        }
+
+        .status-badge {
+            padding: 0.25rem 0.75rem;
+            border-radius: 9999px;
+            font-size: 0.75rem;
+            font-weight: 600;
+            display: inline-flex;
+            align-items: center;
+            gap: 0.25rem;
+        }
+        
+        .status-active {
+            background-color: #E8F5E9;
+            color: #2E7D32;
+        }
+        
+        .status-deleted {
+            background-color: #FFEBEE;
+            color: #C62828;
+        }
+    </style>
+</head>
+<body class="bg-brand-gray text-brand-text font-sans flex h-screen overflow-hidden">
+
+    <!-- Mobile Sidebar Overlay -->
+    <div id="sidebarOverlay" onclick="toggleSidebar()" class="fixed inset-0 bg-black/50 z-40 hidden md:hidden transition-opacity"></div>
+
+    <!-- Left Sidebar -->
+    <aside id="sidebar" class="w-64 bg-white border-r border-gray-100 flex flex-col justify-between shrink-0 transition-all duration-300 absolute md:relative z-50 h-screen -translate-x-full md:translate-x-0 shadow-soft">
+        <div>
+            <!-- Logo -->
+            <div class="h-20 flex items-center px-6 border-b border-gray-50">
+                <a href="/" class="flex items-center gap-2">
+                    <i class="ph-fill ph-chef-hat text-3xl text-[#d4af37] shrink-0"></i>
+                    <div class="flex flex-col relative logo-text pl-1">
+                        <span class="font-logo text-3xl text-brand-dark leading-none tracking-tight translate-y-1">Bharat</span>
+                        <span class="bg-brand-red text-white text-[8px] uppercase tracking-[0.3em] font-bold px-1 py-0.5 rounded-sm -rotate-2 -mt-1 shadow-sm relative z-10 w-fit">Catering</span>
+                    </div>
+                </a>
+            </div>
+
+            <!-- Navigation -->
+            <nav class="p-4 space-y-1 overflow-y-auto no-scrollbar max-h-[calc(100vh-160px)]">
+                <div class="menu-header text-xs font-bold text-gray-400 uppercase tracking-wider mb-2 mt-4 px-3 transition-all duration-300">Home</div>
+                
+                <a href="admin.html" class="nav-link flex items-center gap-3 px-3 py-3 rounded-xl text-brand-text hover:bg-brand-redLight hover:text-brand-red hover:translate-x-1 group transition-all duration-300">
+                    <i class="ph ph-squares-four text-xl shrink-0 group-hover:scale-110 transition-transform"></i>
+                    <span class="nav-text font-medium text-sm">Dashboard</span>
+                </a>
+
+                <a href="admin-profile.html" class="nav-link flex items-center gap-3 px-3 py-3 rounded-xl text-brand-text hover:bg-brand-redLight hover:text-brand-red hover:translate-x-1 group transition-all duration-300">
+                    <i class="ph ph-list-checks text-xl shrink-0 group-hover:fill-brand-red group-hover:scale-110 transition-all"></i>
+                    <span class="nav-text font-medium text-sm">Listing</span>
+                </a>
+
+                <a href="#" class="nav-link flex items-center justify-between px-3 py-3 rounded-xl text-brand-text hover:bg-brand-redLight hover:text-brand-red hover:translate-x-1 group transition-all duration-300">
+                    <div class="flex items-center gap-3">
+                        <i class="ph ph-shopping-bag text-xl shrink-0 group-hover:fill-brand-red group-hover:scale-110 transition-all"></i>
+                        <span class="nav-text font-medium text-sm">Orders</span>
+                    </div>
+                    <span class="nav-badge bg-brand-redLight text-brand-red text-xs font-bold px-2 py-0.5 rounded-full group-hover:bg-brand-red group-hover:text-white transition-colors">2</span>
+                </a>
+
+                <a href="#" class="nav-link flex items-center gap-3 px-3 py-3 rounded-xl text-brand-text hover:bg-brand-redLight hover:text-brand-red hover:translate-x-1 group transition-all duration-300">
+                    <i class="ph ph-users text-xl shrink-0 group-hover:fill-brand-red group-hover:scale-110 transition-all"></i>
+                    <span class="nav-text font-medium text-sm">Customer</span>
+                </a>
+                
+                <div class="menu-header text-xs font-bold text-gray-400 uppercase tracking-wider mb-2 mt-6 px-3 transition-all duration-300">Food Menu</div>
+
+                <a href="#" class="nav-link flex items-center justify-between px-3 py-3 rounded-xl text-brand-text hover:bg-brand-redLight hover:text-brand-red hover:translate-x-1 group transition-all duration-300">
+                    <div class="flex items-center gap-3">
+                        <i class="ph ph-bowl-food text-xl shrink-0 group-hover:fill-brand-red group-hover:scale-110 transition-all"></i>
+                        <span class="nav-text font-medium text-sm">Menu List</span>
+                    </div>
+                    <i class="nav-caret ph ph-caret-right text-sm"></i>
+                </a>
+
+                <a href="categories.html" class="nav-link flex items-center justify-between px-3 py-3 rounded-xl bg-brand-redLight text-brand-red group transition-all duration-300 shadow-sm">
+                    <div class="flex items-center gap-3">
+                        <i class="ph-fill ph-list-dashes text-xl shrink-0 group-hover:scale-110 transition-all"></i>
+                        <span class="nav-text font-bold text-sm">Categories</span>
+                    </div>
+                    <i class="nav-caret ph ph-caret-right text-sm"></i>
+                </a>
+            </nav>
+        </div>
+    </aside>
+
+    <!-- Main Content Area -->
+    <main class="flex-1 flex flex-col h-screen overflow-hidden">
+        
+        <!-- Header -->
+        <header class="h-20 bg-white/80 backdrop-blur-md border-b border-gray-100 flex items-center justify-between px-8 shrink-0 z-10 sticky top-0">
+            <div class="flex items-center gap-4 min-w-0">
+                <button onclick="toggleSidebar()" class="text-brand-text hover:text-brand-red transition-colors shrink-0">
+                    <i class="ph ph-list text-2xl"></i>
+                </button>
+                <div class="hidden md:block">
+                    <h1 class="font-heading font-bold text-xl text-brand-textDark">Categories Management</h1>
+                    <p class="text-xs text-brand-text">View and manage your food categories</p>
+                </div>
+            </div>
+
+            <div class="flex items-center gap-6">
+                <button class="bg-brand-red text-white px-5 py-2.5 rounded-xl text-sm font-bold shadow-[0_8px_20px_rgba(229,57,53,0.3)] hover:-translate-y-1 transition-all duration-300 flex items-center gap-2">
+                    <i class="ph-bold ph-plus"></i> Add Category
+                </button>
+                <div class="flex items-center gap-3 cursor-pointer group">
+                    <img src="https://images.unsplash.com/photo-1535713875002-d1d0cf377fde?auto=format&fit=crop&w=100&q=80" alt="User" class="w-10 h-10 rounded-full object-cover border-2 border-transparent group-hover:border-brand-red transition-all">
+                </div>
+            </div>
+        </header>
+
+        <!-- Content Section -->
+        <div class="flex-1 overflow-y-auto no-scrollbar p-4 md:p-8">
+            
+            <!-- Breadcrumb -->
+            <div class="flex items-center gap-2 text-xs font-medium mb-6">
+                <a href="admin.html" class="text-brand-text hover:text-brand-red">Dashboard</a>
+                <i class="ph ph-caret-right text-[10px]"></i>
+                <span class="text-brand-textDark">Categories</span>
+            </div>
+
+            <!-- Datatable Card -->
+            <div class="bg-white rounded-3xl shadow-card overflow-hidden border border-gray-50">
+                
+                <!-- Table Controls -->
+                <div class="p-6 flex flex-col md:flex-row items-center justify-between gap-4 border-b border-gray-100">
+                    <div class="flex items-center gap-2">
+                        <span class="text-sm text-brand-text">Show</span>
+                        <select class="bg-brand-gray border border-transparent focus:border-brand-red rounded-lg px-3 py-1.5 text-sm outline-none transition-all">
+                            <option>10</option>
+                            <option>25</option>
+                            <option>50</option>
+                        </select>
+                        <span class="text-sm text-brand-text">entries</span>
+                    </div>
+                    
+                    <div class="relative w-full md:w-72">
+                        <i class="ph ph-magnifying-glass absolute left-3 top-1/2 -translate-y-1/2 text-gray-400 text-lg"></i>
+                        <input type="text" placeholder="Search categories..." class="w-full bg-brand-gray border border-transparent focus:border-brand-red focus:bg-white rounded-xl py-2.5 pl-10 pr-4 text-sm outline-none transition-all duration-300">
+                    </div>
+                </div>
+
+                <!-- Table Content -->
+                <div class="overflow-x-auto">
+                    <table class="w-full text-left">
+                        <thead class="datatable-header">
+                            <tr>
+                                <th class="px-6 py-4">ID</th>
+                                <th class="px-6 py-4">Category</th>
+                                <th class="px-6 py-4">Description</th>
+                                <th class="px-6 py-4">Status</th>
+                                <th class="px-6 py-4">Created Date</th>
+                                <th class="px-6 py-4 text-right">Action</th>
+                            </tr>
+                        </thead>
+                        <tbody class="text-sm text-brand-textDark font-medium">
+                            <!-- Row 1 -->
+                            <tr>
+                                <td class="datatable-cell px-6">#001</td>
+                                <td class="datatable-cell px-6">
+                                    <div class="flex items-center gap-3">
+                                        <div class="w-10 h-10 rounded-xl overflow-hidden bg-brand-redLight flex items-center justify-center shrink-0">
+                                            <img src="https://images.unsplash.com/photo-1589302168068-964664d93dc0?auto=format&fit=crop&w=100&q=80" alt="South Indian" class="w-full h-full object-cover">
+                                        </div>
+                                        <span class="font-bold">South Indian</span>
+                                    </div>
+                                </td>
+                                <td class="datatable-cell px-6 text-brand-text max-w-xs truncate">Authentic dosa, idli and vada varieties with sambar.</td>
+                                <td class="datatable-cell px-6">
+                                    <span class="status-badge status-active">
+                                        <i class="ph-fill ph-circle text-[8px]"></i> Active
+                                    </span>
+                                </td>
+                                <td class="datatable-cell px-6 text-brand-text">12 May, 2024</td>
+                                <td class="datatable-cell px-6 text-right">
+                                    <div class="flex items-center justify-end gap-2">
+                                        <button class="w-8 h-8 rounded-lg bg-blue-50 text-blue-600 flex items-center justify-center hover:bg-blue-600 hover:text-white transition-all shadow-sm" title="Edit">
+                                            <i class="ph ph-pencil-simple text-lg"></i>
+                                        </button>
+                                        <button class="w-8 h-8 rounded-lg bg-red-50 text-brand-red flex items-center justify-center hover:bg-brand-red hover:text-white transition-all shadow-sm" title="Delete">
+                                            <i class="ph ph-trash text-lg"></i>
+                                        </button>
+                                    </div>
+                                </td>
+                            </tr>
+
+                            <!-- Row 2 -->
+                            <tr>
+                                <td class="datatable-cell px-6">#002</td>
+                                <td class="datatable-cell px-6">
+                                    <div class="flex items-center gap-3">
+                                        <div class="w-10 h-10 rounded-xl overflow-hidden bg-brand-redLight flex items-center justify-center shrink-0">
+                                            <img src="https://images.unsplash.com/photo-1585937421612-70a0f2450c8a?auto=format&fit=crop&w=100&q=80" alt="Punjabi" class="w-full h-full object-cover">
+                                        </div>
+                                        <span class="font-bold">Punjabi Thali</span>
+                                    </div>
+                                </td>
+                                <td class="datatable-cell px-6 text-brand-text max-w-xs truncate">Rich North Indian meals with paneer and butter naan.</td>
+                                <td class="datatable-cell px-6">
+                                    <span class="status-badge status-active">
+                                        <i class="ph-fill ph-circle text-[8px]"></i> Active
+                                    </span>
+                                </td>
+                                <td class="datatable-cell px-6 text-brand-text">14 May, 2024</td>
+                                <td class="datatable-cell px-6 text-right">
+                                    <div class="flex items-center justify-end gap-2">
+                                        <button class="w-8 h-8 rounded-lg bg-blue-50 text-blue-600 flex items-center justify-center hover:bg-blue-600 hover:text-white transition-all shadow-sm">
+                                            <i class="ph ph-pencil-simple text-lg"></i>
+                                        </button>
+                                        <button class="w-8 h-8 rounded-lg bg-red-50 text-brand-red flex items-center justify-center hover:bg-brand-red hover:text-white transition-all shadow-sm">
+                                            <i class="ph ph-trash text-lg"></i>
+                                        </button>
+                                    </div>
+                                </td>
+                            </tr>
+
+                            <!-- Row 3 (Soft Deleted) -->
+                            <tr>
+                                <td class="datatable-cell px-6">#003</td>
+                                <td class="datatable-cell px-6 opacity-60">
+                                    <div class="flex items-center gap-3">
+                                        <div class="w-10 h-10 rounded-xl overflow-hidden bg-gray-100 flex items-center justify-center shrink-0 grayscale">
+                                            <img src="https://images.unsplash.com/photo-1526234362653-3b75a0c07438?auto=format&fit=crop&w=100&q=80" alt="Chinese" class="w-full h-full object-cover">
+                                        </div>
+                                        <span class="font-bold line-through">Chinese Starters</span>
+                                    </div>
+                                </td>
+                                <td class="datatable-cell px-6 text-brand-text max-w-xs truncate opacity-60">Spring rolls, manchurian and spicy noodles.</td>
+                                <td class="datatable-cell px-6">
+                                    <span class="status-badge status-deleted">
+                                        <i class="ph-fill ph-x-circle text-[8px]"></i> Deleted
+                                    </span>
+                                </td>
+                                <td class="datatable-cell px-6 text-brand-text opacity-60">15 May, 2024</td>
+                                <td class="datatable-cell px-6 text-right">
+                                    <div class="flex items-center justify-end gap-2">
+                                        <button class="w-8 h-8 rounded-lg bg-green-50 text-brand-green flex items-center justify-center hover:bg-brand-green hover:text-white transition-all shadow-sm" title="Restore">
+                                            <i class="ph ph-arrow-counter-clockwise text-lg"></i>
+                                        </button>
+                                        <button class="w-8 h-8 rounded-lg bg-gray-100 text-gray-600 flex items-center justify-center hover:bg-brand-dark hover:text-white transition-all shadow-sm" title="Permanent Delete">
+                                            <i class="ph ph-prohibit text-lg"></i>
+                                        </button>
+                                    </div>
+                                </td>
+                            </tr>
+
+                            <!-- Row 4 -->
+                            <tr>
+                                <td class="datatable-cell px-6">#004</td>
+                                <td class="datatable-cell px-6">
+                                    <div class="flex items-center gap-3">
+                                        <div class="w-10 h-10 rounded-xl overflow-hidden bg-brand-redLight flex items-center justify-center shrink-0">
+                                            <img src="https://images.unsplash.com/photo-1551024601-bec78aea704b?auto=format&fit=crop&w=100&q=80" alt="Desserts" class="w-full h-full object-cover">
+                                        </div>
+                                        <span class="font-bold">Desserts & Sweets</span>
+                                    </div>
+                                </td>
+                                <td class="datatable-cell px-6 text-brand-text max-w-xs truncate">Gulab jamun, ice cream and traditional sweets.</td>
+                                <td class="datatable-cell px-6">
+                                    <span class="status-badge status-active">
+                                        <i class="ph-fill ph-circle text-[8px]"></i> Active
+                                    </span>
+                                </td>
+                                <td class="datatable-cell px-6 text-brand-text">16 May, 2024</td>
+                                <td class="datatable-cell px-6 text-right">
+                                    <div class="flex items-center justify-end gap-2">
+                                        <button class="w-8 h-8 rounded-lg bg-blue-50 text-blue-600 flex items-center justify-center hover:bg-blue-600 hover:text-white transition-all shadow-sm">
+                                            <i class="ph ph-pencil-simple text-lg"></i>
+                                        </button>
+                                        <button class="w-8 h-8 rounded-lg bg-red-50 text-brand-red flex items-center justify-center hover:bg-brand-red hover:text-white transition-all shadow-sm">
+                                            <i class="ph ph-trash text-lg"></i>
+                                        </button>
+                                    </div>
+                                </td>
+                            </tr>
+
+                            <!-- Row 5 -->
+                            <tr>
+                                <td class="datatable-cell px-6">#005</td>
+                                <td class="datatable-cell px-6">
+                                    <div class="flex items-center gap-3">
+                                        <div class="w-10 h-10 rounded-xl overflow-hidden bg-brand-redLight flex items-center justify-center shrink-0">
+                                            <img src="https://images.unsplash.com/photo-1544145945-f904253d0c71?auto=format&fit=crop&w=100&q=80" alt="Beverages" class="w-full h-full object-cover">
+                                        </div>
+                                        <span class="font-bold">Beverages</span>
+                                    </div>
+                                </td>
+                                <td class="datatable-cell px-6 text-brand-text max-w-xs truncate">Fresh juices, coffee, tea and soft drinks.</td>
+                                <td class="datatable-cell px-6">
+                                    <span class="status-badge status-active">
+                                        <i class="ph-fill ph-circle text-[8px]"></i> Active
+                                    </span>
+                                </td>
+                                <td class="datatable-cell px-6 text-brand-text">18 May, 2024</td>
+                                <td class="datatable-cell px-6 text-right">
+                                    <div class="flex items-center justify-end gap-2">
+                                        <button class="w-8 h-8 rounded-lg bg-blue-50 text-blue-600 flex items-center justify-center hover:bg-blue-600 hover:text-white transition-all shadow-sm">
+                                            <i class="ph ph-pencil-simple text-lg"></i>
+                                        </button>
+                                        <button class="w-8 h-8 rounded-lg bg-red-50 text-brand-red flex items-center justify-center hover:bg-brand-red hover:text-white transition-all shadow-sm">
+                                            <i class="ph ph-trash text-lg"></i>
+                                        </button>
+                                    </div>
+                                </td>
+                            </tr>
+                        </tbody>
+                    </table>
+                </div>
+
+                <!-- Pagination Footer -->
+                <div class="p-6 flex flex-col md:flex-row items-center justify-between gap-4 border-t border-gray-100">
+                    <p class="text-sm text-brand-text">Showing 1 to 5 of 12 entries</p>
+                    <div class="flex items-center gap-1">
+                        <button class="w-9 h-9 rounded-xl border border-gray-200 flex items-center justify-center text-brand-text hover:bg-brand-red hover:text-white hover:border-brand-red transition-all">
+                            <i class="ph ph-caret-left"></i>
+                        </button>
+                        <button class="w-9 h-9 rounded-xl bg-brand-red text-white flex items-center justify-center font-bold text-sm shadow-md">1</button>
+                        <button class="w-9 h-9 rounded-xl border border-gray-200 flex items-center justify-center text-brand-text hover:bg-brand-red hover:text-white hover:border-brand-red transition-all">2</button>
+                        <button class="w-9 h-9 rounded-xl border border-gray-200 flex items-center justify-center text-brand-text hover:bg-brand-red hover:text-white hover:border-brand-red transition-all">3</button>
+                        <button class="w-9 h-9 rounded-xl border border-gray-200 flex items-center justify-center text-brand-text hover:bg-brand-red hover:text-white hover:border-brand-red transition-all">
+                            <i class="ph ph-caret-right"></i>
+                        </button>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </main>
+
+    <script>
+        const sidebar = document.getElementById('sidebar');
+        const overlay = document.getElementById('sidebarOverlay');
+        let isCollapsed = false;
+
+        function toggleSidebar() {
+            if (window.innerWidth < 768) {
+                sidebar.classList.toggle('-translate-x-full');
+                overlay.classList.toggle('hidden');
+            } else {
+                isCollapsed = !isCollapsed;
+                applyCollapsedState(isCollapsed);
+            }
+        }
+
+        function applyCollapsedState(collapsed) {
+            const elementsToToggle = document.querySelectorAll('.nav-text, .promo-box, .logo-text, .nav-badge, .nav-caret, .menu-header');
+            const navLinks = document.querySelectorAll('.nav-link');
+
+            if (collapsed) {
+                sidebar.classList.remove('w-64');
+                sidebar.classList.add('w-20');
+                elementsToToggle.forEach(el => el.classList.add('hidden'));
+                navLinks.forEach(link => {
+                    link.classList.add('justify-center');
+                    link.classList.remove('px-3');
+                });
+            } else {
+                sidebar.classList.remove('w-20');
+                sidebar.classList.add('w-64');
+                elementsToToggle.forEach(el => el.classList.remove('hidden'));
+                navLinks.forEach(link => {
+                    link.classList.remove('justify-center');
+                    link.classList.add('px-3');
+                });
+            }
+        }
+    </script>
+</body>
+</html>

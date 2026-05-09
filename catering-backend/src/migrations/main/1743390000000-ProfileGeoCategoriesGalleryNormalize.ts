@@ -34,7 +34,13 @@ export class ProfileGeoCategoriesGalleryNormalize1743390000000 implements Migrat
             generationStrategy: 'increment',
           },
           { name: 'name', type: 'varchar', length: '120', isNullable: false },
-          { name: 'code', type: 'varchar', length: '3', isNullable: true, isUnique: true },
+          {
+            name: 'code',
+            type: 'varchar',
+            length: '3',
+            isNullable: true,
+            isUnique: true,
+          },
           {
             name: 'created_at',
             type: 'datetime',
@@ -65,7 +71,12 @@ export class ProfileGeoCategoriesGalleryNormalize1743390000000 implements Migrat
             isGenerated: true,
             generationStrategy: 'increment',
           },
-          { name: 'country_id', type: 'smallint', unsigned: true, isNullable: false },
+          {
+            name: 'country_id',
+            type: 'smallint',
+            unsigned: true,
+            isNullable: false,
+          },
           { name: 'name', type: 'varchar', length: '120', isNullable: false },
           {
             name: 'created_at',
@@ -81,7 +92,12 @@ export class ProfileGeoCategoriesGalleryNormalize1743390000000 implements Migrat
             onUpdate: 'CURRENT_TIMESTAMP(6)',
           },
         ],
-        uniques: [new TableUnique({ name: 'UQ_states_country_name', columnNames: ['country_id', 'name'] })],
+        uniques: [
+          new TableUnique({
+            name: 'UQ_states_country_name',
+            columnNames: ['country_id', 'name'],
+          }),
+        ],
         foreignKeys: [
           new TableForeignKey({
             columnNames: ['country_id'],
@@ -106,7 +122,12 @@ export class ProfileGeoCategoriesGalleryNormalize1743390000000 implements Migrat
             isGenerated: true,
             generationStrategy: 'increment',
           },
-          { name: 'state_id', type: 'smallint', unsigned: true, isNullable: false },
+          {
+            name: 'state_id',
+            type: 'smallint',
+            unsigned: true,
+            isNullable: false,
+          },
           { name: 'name', type: 'varchar', length: '120', isNullable: false },
           {
             name: 'created_at',
@@ -122,7 +143,12 @@ export class ProfileGeoCategoriesGalleryNormalize1743390000000 implements Migrat
             onUpdate: 'CURRENT_TIMESTAMP(6)',
           },
         ],
-        uniques: [new TableUnique({ name: 'UQ_cities_state_name', columnNames: ['state_id', 'name'] })],
+        uniques: [
+          new TableUnique({
+            name: 'UQ_cities_state_name',
+            columnNames: ['state_id', 'name'],
+          }),
+        ],
         foreignKeys: [
           new TableForeignKey({
             columnNames: ['state_id'],
@@ -178,9 +204,15 @@ export class ProfileGeoCategoriesGalleryNormalize1743390000000 implements Migrat
     if (cityIdx) {
       await queryRunner.dropIndex('caterer_profiles', cityIdx);
     }
-    await queryRunner.query(`ALTER TABLE \`caterer_profiles\` DROP COLUMN \`city\``);
-    await queryRunner.query(`ALTER TABLE \`caterer_profiles\` DROP COLUMN \`state\``);
-    await queryRunner.query(`ALTER TABLE \`caterer_profiles\` DROP COLUMN \`country\``);
+    await queryRunner.query(
+      `ALTER TABLE \`caterer_profiles\` DROP COLUMN \`city\``,
+    );
+    await queryRunner.query(
+      `ALTER TABLE \`caterer_profiles\` DROP COLUMN \`state\``,
+    );
+    await queryRunner.query(
+      `ALTER TABLE \`caterer_profiles\` DROP COLUMN \`country\``,
+    );
     await queryRunner.createIndex(
       'caterer_profiles',
       new TableIndex({
@@ -193,7 +225,13 @@ export class ProfileGeoCategoriesGalleryNormalize1743390000000 implements Migrat
       new Table({
         name: 'caterer_profile_categories',
         columns: [
-          { name: 'caterer_profile_id', type: 'char', length: '36', isPrimary: true, isNullable: false },
+          {
+            name: 'caterer_profile_id',
+            type: 'char',
+            length: '36',
+            isPrimary: true,
+            isNullable: false,
+          },
           {
             name: 'category_id',
             type: 'smallint',
@@ -201,7 +239,12 @@ export class ProfileGeoCategoriesGalleryNormalize1743390000000 implements Migrat
             isPrimary: true,
             isNullable: false,
           },
-          { name: 'sort_order', type: 'smallint', isNullable: false, default: 0 },
+          {
+            name: 'sort_order',
+            type: 'smallint',
+            isNullable: false,
+            default: 0,
+          },
         ],
         foreignKeys: [
           new TableForeignKey({
@@ -235,23 +278,40 @@ export class ProfileGeoCategoriesGalleryNormalize1743390000000 implements Migrat
     `);
 
     const cpForCatIdx = await queryRunner.getTable('caterer_profiles');
-    const catIdx = cpForCatIdx?.indices.find((i) => i.name === 'IDX_cp_published_category');
+    const catIdx = cpForCatIdx?.indices.find(
+      (i) => i.name === 'IDX_cp_published_category',
+    );
     if (catIdx) {
       await queryRunner.dropIndex('caterer_profiles', catIdx);
     }
     const cpAfterGeo = await queryRunner.getTable('caterer_profiles');
-    const fkCat = cpAfterGeo?.foreignKeys.find((f) => f.name === 'FK_caterer_profiles_category');
+    const fkCat = cpAfterGeo?.foreignKeys.find(
+      (f) => f.name === 'FK_caterer_profiles_category',
+    );
     if (fkCat) {
       await queryRunner.dropForeignKey('caterer_profiles', fkCat);
     }
-    await queryRunner.query(`ALTER TABLE \`caterer_profiles\` DROP COLUMN \`category_id\``);
+    await queryRunner.query(
+      `ALTER TABLE \`caterer_profiles\` DROP COLUMN \`category_id\``,
+    );
 
     await queryRunner.createTable(
       new Table({
         name: 'caterer_profile_gallery_images',
         columns: [
-          { name: 'id', type: 'char', length: '36', isPrimary: true, isNullable: false },
-          { name: 'caterer_profile_id', type: 'char', length: '36', isNullable: false },
+          {
+            name: 'id',
+            type: 'char',
+            length: '36',
+            isPrimary: true,
+            isNullable: false,
+          },
+          {
+            name: 'caterer_profile_id',
+            type: 'char',
+            length: '36',
+            isNullable: false,
+          },
           { name: 'url', type: 'varchar', length: '512', isNullable: false },
           { name: 'sort_order', type: 'int', isNullable: false, default: 0 },
           {
@@ -283,11 +343,15 @@ export class ProfileGeoCategoriesGalleryNormalize1743390000000 implements Migrat
 
     await this.migrateGalleryJson(queryRunner);
 
-    await queryRunner.query(`ALTER TABLE \`caterer_profiles\` DROP COLUMN \`gallery_images\``);
+    await queryRunner.query(
+      `ALTER TABLE \`caterer_profiles\` DROP COLUMN \`gallery_images\``,
+    );
   }
 
   private async seedGeoFromProfiles(queryRunner: QueryRunner): Promise<void> {
-    await queryRunner.query(`INSERT INTO \`countries\` (\`name\`, \`code\`) VALUES ('India', 'IN')`);
+    await queryRunner.query(
+      `INSERT INTO \`countries\` (\`name\`, \`code\`) VALUES ('India', 'IN')`,
+    );
 
     const countryRows = (await queryRunner.query(`
       SELECT DISTINCT TRIM(\`country\`) AS n FROM \`caterer_profiles\`
@@ -295,14 +359,21 @@ export class ProfileGeoCategoriesGalleryNormalize1743390000000 implements Migrat
     `)) as { n: string }[];
 
     for (const { n } of countryRows) {
-      await queryRunner.query(`INSERT INTO \`countries\` (\`name\`, \`code\`) VALUES (?, NULL)`, [n]);
+      await queryRunner.query(
+        `INSERT INTO \`countries\` (\`name\`, \`code\`) VALUES (?, NULL)`,
+        [n],
+      );
     }
 
-    const countries = (await queryRunner.query(`SELECT \`id\`, \`name\` FROM \`countries\``)) as {
+    const countries = (await queryRunner.query(
+      `SELECT \`id\`, \`name\` FROM \`countries\``,
+    )) as {
       id: number;
       name: string;
     }[];
-    const countryIdByLower = new Map(countries.map((c) => [c.name.trim().toLowerCase(), c.id]));
+    const countryIdByLower = new Map(
+      countries.map((c) => [c.name.trim().toLowerCase(), c.id]),
+    );
     const indiaId = countryIdByLower.get('india');
     if (indiaId == null) {
       throw new Error('Migration: India country row missing');
@@ -319,14 +390,15 @@ export class ProfileGeoCategoriesGalleryNormalize1743390000000 implements Migrat
       const key = p.country_name.trim().toLowerCase();
       let cid = countryIdByLower.get(key);
       if (cid == null) {
-        await queryRunner.query(`INSERT INTO \`countries\` (\`name\`, \`code\`) VALUES (?, NULL)`, [
-          p.country_name.trim(),
-        ]);
+        await queryRunner.query(
+          `INSERT INTO \`countries\` (\`name\`, \`code\`) VALUES (?, NULL)`,
+          [p.country_name.trim()],
+        );
         const [inserted] = (await queryRunner.query(
           `SELECT \`id\` FROM \`countries\` WHERE \`name\` = ?`,
           [p.country_name.trim()],
         )) as { id: number }[];
-        cid = inserted!.id;
+        cid = inserted.id;
         countryIdByLower.set(p.country_name.trim().toLowerCase(), cid);
       }
       await queryRunner.query(
@@ -345,7 +417,8 @@ export class ProfileGeoCategoriesGalleryNormalize1743390000000 implements Migrat
     `)) as { country_name: string; state_name: string; city_name: string }[];
 
     for (const t of cityTriples) {
-      const coId = countryIdByLower.get(t.country_name.trim().toLowerCase()) ?? indiaId;
+      const coId =
+        countryIdByLower.get(t.country_name.trim().toLowerCase()) ?? indiaId;
       const [st] = (await queryRunner.query(
         `SELECT \`id\` FROM \`states\` WHERE \`country_id\` = ? AND \`name\` = ?`,
         [coId, t.state_name.trim()],
@@ -414,10 +487,10 @@ export class ProfileGeoCategoriesGalleryNormalize1743390000000 implements Migrat
       byProfile.set(g.caterer_profile_id, list);
     }
     for (const [pid, urls] of byProfile) {
-      await queryRunner.query(`UPDATE \`caterer_profiles\` SET \`gallery_images\` = ? WHERE \`id\` = ?`, [
-        JSON.stringify(urls),
-        pid,
-      ]);
+      await queryRunner.query(
+        `UPDATE \`caterer_profiles\` SET \`gallery_images\` = ? WHERE \`id\` = ?`,
+        [JSON.stringify(urls), pid],
+      );
     }
     await queryRunner.dropTable('caterer_profile_gallery_images', true);
 
@@ -436,7 +509,9 @@ export class ProfileGeoCategoriesGalleryNormalize1743390000000 implements Migrat
     await queryRunner.dropTable('caterer_profile_categories', true);
 
     const cpTblDown = await queryRunner.getTable('caterer_profiles');
-    const idxPubCat = cpTblDown?.indices.find((i) => i.name === 'IDX_cp_published_category');
+    const idxPubCat = cpTblDown?.indices.find(
+      (i) => i.name === 'IDX_cp_published_category',
+    );
     if (idxPubCat) {
       await queryRunner.dropIndex('caterer_profiles', idxPubCat);
     }
@@ -458,22 +533,28 @@ export class ProfileGeoCategoriesGalleryNormalize1743390000000 implements Migrat
       }),
     );
 
-    const idxPubCity = (await queryRunner.getTable('caterer_profiles'))?.indices.find(
-      (i) => i.name === 'IDX_cp_published_city',
-    );
+    const idxPubCity = (
+      await queryRunner.getTable('caterer_profiles')
+    )?.indices.find((i) => i.name === 'IDX_cp_published_city');
     if (idxPubCity) {
       await queryRunner.dropIndex('caterer_profiles', idxPubCity);
     }
-    const fkCity = (await queryRunner.getTable('caterer_profiles'))?.foreignKeys.find(
-      (f) => f.name === 'FK_caterer_profiles_city',
-    );
+    const fkCity = (
+      await queryRunner.getTable('caterer_profiles')
+    )?.foreignKeys.find((f) => f.name === 'FK_caterer_profiles_city');
     if (fkCity) {
       await queryRunner.dropForeignKey('caterer_profiles', fkCity);
     }
 
-    await queryRunner.query(`ALTER TABLE \`caterer_profiles\` ADD \`city\` varchar(120) NULL`);
-    await queryRunner.query(`ALTER TABLE \`caterer_profiles\` ADD \`state\` varchar(120) NULL`);
-    await queryRunner.query(`ALTER TABLE \`caterer_profiles\` ADD \`country\` varchar(80) NULL DEFAULT 'India'`);
+    await queryRunner.query(
+      `ALTER TABLE \`caterer_profiles\` ADD \`city\` varchar(120) NULL`,
+    );
+    await queryRunner.query(
+      `ALTER TABLE \`caterer_profiles\` ADD \`state\` varchar(120) NULL`,
+    );
+    await queryRunner.query(
+      `ALTER TABLE \`caterer_profiles\` ADD \`country\` varchar(80) NULL DEFAULT 'India'`,
+    );
 
     await queryRunner.query(`
       UPDATE \`caterer_profiles\` cp
@@ -484,7 +565,9 @@ export class ProfileGeoCategoriesGalleryNormalize1743390000000 implements Migrat
       WHERE cp.\`city_id\` IS NOT NULL
     `);
 
-    await queryRunner.query(`ALTER TABLE \`caterer_profiles\` DROP COLUMN \`city_id\``);
+    await queryRunner.query(
+      `ALTER TABLE \`caterer_profiles\` DROP COLUMN \`city_id\``,
+    );
 
     await queryRunner.createIndex(
       'caterer_profiles',

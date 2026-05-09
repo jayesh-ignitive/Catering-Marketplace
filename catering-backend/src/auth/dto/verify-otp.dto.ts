@@ -8,7 +8,11 @@ function normalizeOtpCode(value: unknown): string {
 }
 
 export class VerifyOtpDto {
-  @Transform(({ value }) => String(value ?? '').trim().toLowerCase())
+  @Transform(({ value }) =>
+    String(value ?? '')
+      .trim()
+      .toLowerCase(),
+  )
   @IsEmail()
   email!: string;
 

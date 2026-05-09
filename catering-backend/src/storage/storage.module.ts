@@ -30,6 +30,11 @@ function useR2Driver(config: ConfigService): boolean {
       inject: [ConfigService, LocalFilesystemImageStorage, R2S3ImageStorage],
     },
   ],
-  exports: [IMAGE_STORAGE, LocalFilesystemImageStorage, R2S3ImageStorage, ImagePublicUrlService],
+  exports: [
+    IMAGE_STORAGE,
+    LocalFilesystemImageStorage,
+    R2S3ImageStorage,
+    ImagePublicUrlService,
+  ],
 })
 export class StorageModule {}

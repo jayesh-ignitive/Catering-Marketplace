@@ -67,7 +67,10 @@ export class AdminDashboardService {
   }
 
   /** GROUP BY calendar day on `created_at` / createdAt. */
-  private async countsByCreatedDay(repo: Repository<object>, since: Date): Promise<Map<string, number>> {
+  private async countsByCreatedDay(
+    repo: Repository<object>,
+    since: Date,
+  ): Promise<Map<string, number>> {
     const rows = await repo
       .createQueryBuilder('t')
       .select('DATE(t.createdAt)', 'day')

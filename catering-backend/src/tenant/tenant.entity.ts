@@ -28,10 +28,21 @@ export class Tenant {
   subdomain!: string | null;
 
   /** Dedicated MySQL database for menu, staff, orders, invoices (name only, not DSN). */
-  @Column({ name: 'db_name', type: 'varchar', length: 64, unique: true, nullable: true })
+  @Column({
+    name: 'db_name',
+    type: 'varchar',
+    length: 64,
+    unique: true,
+    nullable: true,
+  })
   dbName!: string | null;
 
-  @Column({ name: 'provision_status', type: 'varchar', length: 16, default: 'pending' })
+  @Column({
+    name: 'provision_status',
+    type: 'varchar',
+    length: 16,
+    default: 'pending',
+  })
   provisionStatus!: TenantProvisionStatus;
 
   @Column({ name: 'profile_published', type: 'boolean', default: false })
@@ -42,7 +53,10 @@ export class Tenant {
   profileOptions!: Record<string, unknown> | null;
 
   /** Primary caterer user linked to this workspace (public profile / account owner). */
-  @ManyToOne(() => User, (u) => u.ownedTenant, { nullable: true, onDelete: 'SET NULL' })
+  @ManyToOne(() => User, (u) => u.ownedTenant, {
+    nullable: true,
+    onDelete: 'SET NULL',
+  })
   @JoinColumn({ name: 'user_id' })
   ownerUser!: User | null;
 

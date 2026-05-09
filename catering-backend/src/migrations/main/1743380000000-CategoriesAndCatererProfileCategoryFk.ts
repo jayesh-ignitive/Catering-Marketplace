@@ -1,4 +1,9 @@
-import { MigrationInterface, QueryRunner, TableForeignKey, TableIndex } from 'typeorm';
+import {
+  MigrationInterface,
+  QueryRunner,
+  TableForeignKey,
+  TableIndex,
+} from 'typeorm';
 
 const CATEGORY_SEED: [string, string, string, string][] = [
   [
@@ -31,14 +36,24 @@ const CATEGORY_SEED: [string, string, string, string][] = [
     'outdoor-catering',
     'Tents, grills, and on-location kitchen support.',
   ],
-  ['c6', 'Home Catering', 'home-catering', 'Intimate gatherings at your residence.'],
+  [
+    'c6',
+    'Home Catering',
+    'home-catering',
+    'Intimate gatherings at your residence.',
+  ],
   [
     'c7',
     'Engagement Catering',
     'engagement-catering',
     'Ring ceremonies and family functions.',
   ],
-  ['c8', 'BBQ & Live Grill', 'bbq-catering', 'Live grills, skewers, and outdoor dining.'],
+  [
+    'c8',
+    'BBQ & Live Grill',
+    'bbq-catering',
+    'Live grills, skewers, and outdoor dining.',
+  ],
 ];
 
 export class CategoriesAndCatererProfileCategoryFk1743380000000 implements MigrationInterface {
@@ -104,7 +119,9 @@ export class CategoriesAndCatererProfileCategoryFk1743380000000 implements Migra
     if (catIdx) {
       await queryRunner.dropIndex('caterer_profiles', catIdx);
     }
-    await queryRunner.query(`ALTER TABLE \`caterer_profiles\` DROP COLUMN \`primary_category_id\``);
+    await queryRunner.query(
+      `ALTER TABLE \`caterer_profiles\` DROP COLUMN \`primary_category_id\``,
+    );
     await queryRunner.createIndex(
       'caterer_profiles',
       new TableIndex({
@@ -120,7 +137,9 @@ export class CategoriesAndCatererProfileCategoryFk1743380000000 implements Migra
     }
 
     const cpTableDown = await queryRunner.getTable('caterer_profiles');
-    const catIdxDown = cpTableDown?.indices.find((i) => i.name === 'IDX_cp_published_category');
+    const catIdxDown = cpTableDown?.indices.find(
+      (i) => i.name === 'IDX_cp_published_category',
+    );
     if (catIdxDown) {
       await queryRunner.dropIndex('caterer_profiles', catIdxDown);
     }
@@ -136,11 +155,15 @@ export class CategoriesAndCatererProfileCategoryFk1743380000000 implements Migra
     `);
 
     const table = await queryRunner.getTable('caterer_profiles');
-    const fk = table?.foreignKeys.find((f) => f.name === 'FK_caterer_profiles_category');
+    const fk = table?.foreignKeys.find(
+      (f) => f.name === 'FK_caterer_profiles_category',
+    );
     if (fk) {
       await queryRunner.dropForeignKey('caterer_profiles', fk);
     }
-    await queryRunner.query(`ALTER TABLE \`caterer_profiles\` DROP COLUMN \`category_id\``);
+    await queryRunner.query(
+      `ALTER TABLE \`caterer_profiles\` DROP COLUMN \`category_id\``,
+    );
 
     await queryRunner.query(
       `CREATE INDEX \`IDX_cp_published_category\` ON \`caterer_profiles\` (\`published\`, \`primary_category_id\`)`,

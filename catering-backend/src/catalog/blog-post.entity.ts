@@ -1,4 +1,9 @@
-import { Column, CreateDateColumn, Entity, PrimaryGeneratedColumn } from 'typeorm';
+import {
+  Column,
+  CreateDateColumn,
+  Entity,
+  PrimaryGeneratedColumn,
+} from 'typeorm';
 
 @Entity('blog_posts')
 export class BlogPost {
@@ -18,10 +23,20 @@ export class BlogPost {
   bodyHtml!: string;
 
   /** Short label shown on cards e.g. Trends, Guide */
-  @Column({ name: 'category_label', type: 'varchar', length: 64, default: 'Insights' })
+  @Column({
+    name: 'category_label',
+    type: 'varchar',
+    length: 64,
+    default: 'Insights',
+  })
   categoryLabel!: string;
 
-  @Column({ name: 'featured_image_url', type: 'varchar', length: 512, nullable: true })
+  @Column({
+    name: 'featured_image_url',
+    type: 'varchar',
+    length: 512,
+    nullable: true,
+  })
   featuredImageUrl!: string | null;
 
   @Column({ name: 'published_at', type: 'datetime' })

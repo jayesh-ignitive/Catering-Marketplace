@@ -1,5 +1,10 @@
 import { randomUUID } from 'crypto';
-import { MigrationInterface, QueryRunner, TableForeignKey, TableIndex } from 'typeorm';
+import {
+  MigrationInterface,
+  QueryRunner,
+  TableForeignKey,
+  TableIndex,
+} from 'typeorm';
 
 function slugifyLabel(label: string): string {
   const s = label
@@ -55,23 +60,29 @@ export class KeywordsAndProfileKeywords1743440000000 implements MigrationInterfa
 
     await queryRunner.createIndex(
       'caterer_profile_keywords',
-      new TableIndex({ name: 'IDX_cpkw_profile', columnNames: ['caterer_profile_id'] }),
+      new TableIndex({
+        name: 'IDX_cpkw_profile',
+        columnNames: ['caterer_profile_id'],
+      }),
     );
     await queryRunner.createIndex(
       'caterer_profile_keywords',
       new TableIndex({ name: 'IDX_cpkw_keyword', columnNames: ['keyword_id'] }),
     );
 
-    const getOrCreateKeywordId = async (labelRaw: string): Promise<string | null> => {
+    const getOrCreateKeywordId = async (
+      labelRaw: string,
+    ): Promise<string | null> => {
       const label = labelRaw.trim().slice(0, 120);
       if (!label) {
         return null;
       }
-      const byLabel = (await queryRunner.query(`SELECT \`id\` FROM \`keywords\` WHERE \`label\` = ?`, [
-        label,
-      ])) as { id: string }[];
+      const byLabel = (await queryRunner.query(
+        `SELECT \`id\` FROM \`keywords\` WHERE \`label\` = ?`,
+        [label],
+      )) as { id: string }[];
       if (byLabel.length) {
-        return byLabel[0]!.id;
+        return byLabel[0].id;
       }
       const base = slugifyLabel(label);
       let slug = base;
@@ -83,8 +94,8 @@ export class KeywordsAndProfileKeywords1743440000000 implements MigrationInterfa
         if (!bySlug.length) {
           break;
         }
-        if (bySlug[0]!.label === label) {
-          return bySlug[0]!.id;
+        if (bySlug[0].label === label) {
+          return bySlug[0].id;
         }
         slug = `${base}-${n + 2}`.slice(0, 80);
       }

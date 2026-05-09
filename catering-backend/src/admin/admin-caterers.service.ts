@@ -2,7 +2,10 @@ import { Injectable } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { Repository } from 'typeorm';
 import { Tenant } from '../tenant/tenant.entity';
-import type { AdminCatererSortField, ListAdminCaterersQueryDto } from './dto/list-admin-caterers-query.dto';
+import type {
+  AdminCatererSortField,
+  ListAdminCaterersQueryDto,
+} from './dto/list-admin-caterers-query.dto';
 
 export type AdminCatererListItem = {
   id: string;
@@ -57,7 +60,9 @@ export class AdminCaterersService {
     private readonly tenants: Repository<Tenant>,
   ) {}
 
-  async list(dto: ListAdminCaterersQueryDto): Promise<AdminCatererListResponse> {
+  async list(
+    dto: ListAdminCaterersQueryDto,
+  ): Promise<AdminCatererListResponse> {
     const page = dto.page ?? 1;
     const limit = dto.limit ?? 20;
     const q = dto.q?.trim();
@@ -85,7 +90,7 @@ export class AdminCaterersService {
     if (q) {
       const like = `%${q.toLowerCase()}%`;
       qb.andWhere(
-        '(LOWER(t.name) LIKE :like OR LOWER(t.slug) LIKE :like OR LOWER(COALESCE(t.subdomain, \'\')) LIKE :like OR LOWER(COALESCE(owner.email, \'\')) LIKE :like OR LOWER(COALESCE(owner.fullName, \'\')) LIKE :like)',
+        "(LOWER(t.name) LIKE :like OR LOWER(t.slug) LIKE :like OR LOWER(COALESCE(t.subdomain, '')) LIKE :like OR LOWER(COALESCE(owner.email, '')) LIKE :like OR LOWER(COALESCE(owner.fullName, '')) LIKE :like)",
         { like },
       );
     }

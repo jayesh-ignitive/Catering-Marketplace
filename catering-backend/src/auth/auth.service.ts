@@ -18,7 +18,11 @@ import type { RegisterDto } from './dto/register.dto';
 import type { UpdateAccountProfileDto } from './dto/update-account-profile.dto';
 import type { JwtPayload } from './jwt-payload.type';
 import { MailService } from '../mail/mail.service';
-import { mysqlDbNameFromTenantSlug, slugify, subdomainLabelFrom } from '../tenant/slug.util';
+import {
+  mysqlDbNameFromTenantSlug,
+  slugify,
+  subdomainLabelFrom,
+} from '../tenant/slug.util';
 import { Tenant } from '../tenant/tenant.entity';
 import { MarketplaceService } from '../marketplace/marketplace.service';
 import { TenantProvisioningService } from '../tenant-provisioning/tenant-provisioning.service';
@@ -79,13 +83,18 @@ export class AuthService {
   }
 
   /** Caterer: update display name and business name (syncs linked tenant name). */
-  async updateAccountProfile(userId: string, dto: UpdateAccountProfileDto): Promise<AuthUserView> {
+  async updateAccountProfile(
+    userId: string,
+    dto: UpdateAccountProfileDto,
+  ): Promise<AuthUserView> {
     const fullName = dto.fullName.trim().slice(0, 120);
     const businessName = dto.businessName.trim().slice(0, 120);
 
     const user = await this.loadUserWithTenant(userId);
     if (user.role !== UserRole.CATERER) {
-      throw new ForbiddenException('Only caterer accounts can update this profile');
+      throw new ForbiddenException(
+        'Only caterer accounts can update this profile',
+      );
     }
 
     user.fullName = fullName;
@@ -158,7 +167,9 @@ export class AuthService {
   }
 
   private getDevOtpEmail(): string {
-    return (this.readEnv('DEV_OTP_EMAIL') || 'test123@yopmail.com').toLowerCase();
+    return (
+      this.readEnv('DEV_OTP_EMAIL') || 'test123@yopmail.com'
+    ).toLowerCase();
   }
 
   private getDevOtpCode(): string {
@@ -171,7 +182,9 @@ export class AuthService {
    * ALLOW_FIXED_OTP_IN_PRODUCTION=true (staging only).
    */
   private isRegistrationFixedOtpMode(): boolean {
-    const inSafeEnv = this.isNonProduction() || this.isEnvTruthy('ALLOW_FIXED_OTP_IN_PRODUCTION');
+    const inSafeEnv =
+      this.isNonProduction() ||
+      this.isEnvTruthy('ALLOW_FIXED_OTP_IN_PRODUCTION');
     if (!inSafeEnv) {
       return false;
     }
@@ -213,7 +226,9 @@ export class AuthService {
       return false;
     }
     const c = code.replace(/\D/g, '').slice(0, 6);
-    return c === this.getRegistrationFixedOtpCode() || c === this.getDevOtpCode();
+    return (
+      c === this.getRegistrationFixedOtpCode() || c === this.getDevOtpCode()
+    );
   }
 
   private plainOtpForUser(user: User): string {
@@ -290,11 +305,16 @@ export class AuthService {
       const maxBaseLen = Math.max(1, 64 - suffix.length);
       candidate = `${base.slice(0, maxBaseLen)}${suffix}`;
     }
-    return `${base.slice(0, 40)}_${randomUUID().replace(/-/g, '')}`.slice(0, 64);
+    return `${base.slice(0, 40)}_${randomUUID().replace(/-/g, '')}`.slice(
+      0,
+      64,
+    );
   }
 
   async register(dto: RegisterDto): Promise<RegisterResult> {
-    const existing = await this.users.findOne({ where: { email: dto.email.toLowerCase() } });
+    const existing = await this.users.findOne({
+      where: { email: dto.email.toLowerCase() },
+    });
     if (existing) {
       throw new ConflictException('An account with this email already exists');
     }
@@ -308,9 +328,15 @@ export class AuthService {
       const tenantRepo = em.getRepository(Tenant);
       const userRepo = em.getRepository(User);
       const tenantId = randomUUID();
-      const slug = await this.ensureUniqueTenantSlugInManager(tenantRepo, businessName);
+      const slug = await this.ensureUniqueTenantSlugInManager(
+        tenantRepo,
+        businessName,
+      );
       const dbName = await this.ensureUniqueDbNameInManager(tenantRepo, slug);
-      const subdomain = await this.ensureUniqueSubdomainInManager(tenantRepo, businessName);
+      const subdomain = await this.ensureUniqueSubdomainInManager(
+        tenantRepo,
+        businessName,
+      );
       responseSubdomain = subdomain;
 
       const tenant = tenantRepo.create({
@@ -345,7 +371,10 @@ export class AuthService {
       await tenantRepo.save(tenantForOwner);
     });
 
-    const saved = await this.users.findOne({ where: { email }, relations: { tenant: true } });
+    const saved = await this.users.findOne({
+      where: { email },
+      relations: { tenant: true },
+    });
     if (saved?.tenant?.subdomain != null) {
       responseSubdomain = saved.tenant.subdomain;
     }
@@ -364,11 +393,16 @@ export class AuthService {
   }
 
   /** Creates tenant DB and runs migrations after email is verified (register does not provision). */
-  private async provisionTenantAfterEmailVerify(tenantId: string): Promise<void> {
+  private async provisionTenantAfterEmailVerify(
+    tenantId: string,
+  ): Promise<void> {
     try {
       await this.provisioning.provisionTenant(tenantId);
     } catch (e) {
-      this.log.error(`Tenant DB provision failed after email verify (${tenantId})`, e);
+      this.log.error(
+        `Tenant DB provision failed after email verify (${tenantId})`,
+        e,
+      );
     }
   }
 
@@ -424,7 +458,10 @@ export class AuthService {
       if (fresh.tenant?.id) {
         await this.afterCatererEmailVerified(fresh.tenant.id);
       }
-      return { accessToken: await this.signToken(fresh), user: this.toView(fresh) };
+      return {
+        accessToken: await this.signToken(fresh),
+        user: this.toView(fresh),
+      };
     }
 
     if (!user.emailVerificationOtpHash || !user.emailVerificationExpiresAt) {
@@ -433,9 +470,14 @@ export class AuthService {
       );
     }
     if (user.emailVerificationExpiresAt.getTime() < Date.now()) {
-      throw new UnauthorizedException('Code expired. Request a new code and try again.');
+      throw new UnauthorizedException(
+        'Code expired. Request a new code and try again.',
+      );
     }
-    const ok = await bcrypt.compare(normalizedCode, user.emailVerificationOtpHash);
+    const ok = await bcrypt.compare(
+      normalizedCode,
+      user.emailVerificationOtpHash,
+    );
     if (!ok) {
       if (this.isNonProduction()) {
         this.log.debug(
@@ -522,7 +564,9 @@ export class AuthService {
       );
     }
     if (user.role === UserRole.CATERER && user.tenant?.id) {
-      await this.provisioning.ensureTenantDataReady(user.tenant.id).catch(() => undefined);
+      await this.provisioning
+        .ensureTenantDataReady(user.tenant.id)
+        .catch(() => undefined);
     }
     const accessToken = await this.signToken(user);
     return { accessToken, user: this.toView(user) };

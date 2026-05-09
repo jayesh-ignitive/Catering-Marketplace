@@ -35,7 +35,9 @@ export class UploadController {
   ) {
     const k = kindRaw?.trim().toLowerCase();
     if (k !== 'banner' && k !== 'gallery') {
-      throw new BadRequestException('Query parameter "kind" must be "banner" or "gallery"');
+      throw new BadRequestException(
+        'Query parameter "kind" must be "banner" or "gallery"',
+      );
     }
     return this.upload.uploadAuthenticatedImage(file, req.user, k);
   }

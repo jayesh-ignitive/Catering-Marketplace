@@ -48,7 +48,9 @@ export class AdminStaffService {
   }
 
   async findOne(id: string): Promise<StaffRow> {
-    const user = await this.users.findOne({ where: { id, role: UserRole.ADMIN } });
+    const user = await this.users.findOne({
+      where: { id, role: UserRole.ADMIN },
+    });
     if (!user) {
       throw new NotFoundException('Staff member not found');
     }
@@ -78,10 +80,16 @@ export class AdminStaffService {
   }
 
   async update(id: string, dto: UpdateStaffDto): Promise<StaffRow> {
-    if (dto.email === undefined && dto.fullName === undefined && dto.password === undefined) {
+    if (
+      dto.email === undefined &&
+      dto.fullName === undefined &&
+      dto.password === undefined
+    ) {
       throw new BadRequestException('Provide at least one field to update');
     }
-    const user = await this.users.findOne({ where: { id, role: UserRole.ADMIN } });
+    const user = await this.users.findOne({
+      where: { id, role: UserRole.ADMIN },
+    });
     if (!user) {
       throw new NotFoundException('Staff member not found');
     }
@@ -89,7 +97,9 @@ export class AdminStaffService {
       const email = dto.email.toLowerCase();
       const taken = await this.users.findOne({ where: { email } });
       if (taken && taken.id !== id) {
-        throw new ConflictException('An account with this email already exists');
+        throw new ConflictException(
+          'An account with this email already exists',
+        );
       }
       user.email = email;
     }
@@ -107,11 +117,17 @@ export class AdminStaffService {
     if (targetId === actorId) {
       throw new BadRequestException('You cannot remove your own account');
     }
-    const adminCount = await this.users.count({ where: { role: UserRole.ADMIN } });
+    const adminCount = await this.users.count({
+      where: { role: UserRole.ADMIN },
+    });
     if (adminCount <= 1) {
-      throw new BadRequestException('Cannot remove the last platform administrator');
+      throw new BadRequestException(
+        'Cannot remove the last platform administrator',
+      );
     }
-    const user = await this.users.findOne({ where: { id: targetId, role: UserRole.ADMIN } });
+    const user = await this.users.findOne({
+      where: { id: targetId, role: UserRole.ADMIN },
+    });
     if (!user) {
       throw new NotFoundException('Staff member not found');
     }

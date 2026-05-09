@@ -1,5 +1,13 @@
 import { Transform, Type } from 'class-transformer';
-import { IsIn, IsInt, IsOptional, IsString, Max, MaxLength, Min } from 'class-validator';
+import {
+  IsIn,
+  IsInt,
+  IsOptional,
+  IsString,
+  Max,
+  MaxLength,
+  Min,
+} from 'class-validator';
 
 export const ADMIN_CATERER_SORT_FIELDS = [
   'createdAt',
@@ -41,7 +49,9 @@ export class ListAdminCaterersQueryDto {
   sortBy?: AdminCatererSortField;
 
   @IsOptional()
-  @Transform(({ value }) => (typeof value === 'string' ? value.toLowerCase() : value))
+  @Transform(({ value }) =>
+    typeof value === 'string' ? value.toLowerCase() : value,
+  )
   @IsIn(['asc', 'desc'])
   sortDir?: 'asc' | 'desc';
 }

@@ -11,6 +11,8 @@ export class EmailVerificationOtp1743210000000 implements MigrationInterface {
   }
 
   public async down(queryRunner: QueryRunner): Promise<void> {
-    await queryRunner.query(`ALTER TABLE \`users\` DROP COLUMN \`email_verification_otp_hash\``);
+    await queryRunner.query(
+      `ALTER TABLE \`users\` DROP COLUMN \`email_verification_otp_hash\``,
+    );
   }
 }

@@ -1,4 +1,8 @@
-import { ValidationArguments, ValidatorConstraint, ValidatorConstraintInterface } from 'class-validator';
+import {
+  ValidationArguments,
+  ValidatorConstraint,
+  ValidatorConstraintInterface,
+} from 'class-validator';
 
 /**
  * Gallery entries may be hosted URLs or browser uploads (`data:image/…`), mirroring hero handling.
@@ -14,7 +18,9 @@ export class GalleryImageUrlOrDataConstraint implements ValidatorConstraintInter
       return v.length <= 3 * 1024 * 1024;
     }
     if (v.startsWith('images/gallery/')) {
-      return v.length <= 2048 && !/\s/.test(v) && /\.(jpe?g|png|webp|gif)$/i.test(v);
+      return (
+        v.length <= 2048 && !/\s/.test(v) && /\.(jpe?g|png|webp|gif)$/i.test(v)
+      );
     }
     /** Legacy relative keys e.g. images/2026/05/uuid.jpg */
     if (v.startsWith('images/')) {

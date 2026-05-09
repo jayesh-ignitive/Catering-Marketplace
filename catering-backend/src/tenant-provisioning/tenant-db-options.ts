@@ -32,7 +32,10 @@ export function tenantMigrateDataSourceOptions(
   return opts;
 }
 
-export function tenantRuntimeDataSourceOptions(config: ConfigService, database: string): DataSourceOptions {
+export function tenantRuntimeDataSourceOptions(
+  config: ConfigService,
+  database: string,
+): DataSourceOptions {
   const opts: MysqlConnectionOptions = {
     ...tenantMysqlBaseOptions(config),
     database,

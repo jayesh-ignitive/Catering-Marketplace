@@ -11,7 +11,11 @@ import { randomBytes, randomUUID } from 'crypto';
 import { In, Repository, SelectQueryBuilder } from 'typeorm';
 import { ImagePublicUrlService } from '../storage/image-public-url.service';
 import { TenantProvisioningService } from '../tenant-provisioning/tenant-provisioning.service';
-import { mysqlDbNameFromTenantSlug, slugify, subdomainLabelFrom } from '../tenant/slug.util';
+import {
+  mysqlDbNameFromTenantSlug,
+  slugify,
+  subdomainLabelFrom,
+} from '../tenant/slug.util';
 import { Tenant } from '../tenant/tenant.entity';
 import { User } from '../user/user.entity';
 import { UserRole } from '../user/user-role.enum';
@@ -32,7 +36,10 @@ import type { UpsertCatererWorkspaceProfileDto } from './dto/upsert-caterer-work
 import type { WorkspaceProfileStep0Dto } from './dto/workspace-profile-step-0.dto';
 import type { WorkspaceProfileStep1Dto } from './dto/workspace-profile-step-1.dto';
 import type { WorkspaceProfileStep2Dto } from './dto/workspace-profile-step-2.dto';
-import { buildMarketplaceProfileSlug, parseMarketplaceProfileSlug } from './marketplace-slug.util';
+import {
+  buildMarketplaceProfileSlug,
+  parseMarketplaceProfileSlug,
+} from './marketplace-slug.util';
 
 export type MarketplaceCategoryRef = { code: string; name: string };
 
@@ -188,7 +195,9 @@ export class MarketplaceService {
     return v.trim().replace(/\s+/g, ' ').slice(0, 120);
   }
 
-  private computeCompletion(profile: CatererWorkspaceProfile): WorkspaceCompletionStatus {
+  private computeCompletion(
+    profile: CatererWorkspaceProfile,
+  ): WorkspaceCompletionStatus {
     const missingFields: string[] = [];
     if (!profile.cityId) missingFields.push('city');
     if (!profile.about) missingFields.push('about');
@@ -200,7 +209,9 @@ export class MarketplaceService {
     return { isComplete: missingFields.length === 0, missingFields };
   }
 
-  private async loadWorkspaceListingOrThrow(tenantId: string): Promise<CatererMarketplaceListing> {
+  private async loadWorkspaceListingOrThrow(
+    tenantId: string,
+  ): Promise<CatererMarketplaceListing> {
     await this.ensureDraftListingForTenant(tenantId);
     const profile = await this.listings.findOne({
       where: { tenantId },
@@ -218,7 +229,9 @@ export class MarketplaceService {
     return profile;
   }
 
-  private toWorkspaceProfile(profile: CatererMarketplaceListing): CatererWorkspaceProfile {
+  private toWorkspaceProfile(
+    profile: CatererMarketplaceListing,
+  ): CatererWorkspaceProfile {
     const dto: CatererWorkspaceProfile = {
       cityId: profile.cityRef?.id ?? null,
       streetAddress: profile.streetAddress,
@@ -262,7 +275,9 @@ export class MarketplaceService {
   }
 
   /** Keyword autocomplete for search (published profiles only; uses indexed slug + label). */
-  async suggestPublishedKeywords(term: string): Promise<MarketplaceKeywordRef[]> {
+  async suggestPublishedKeywords(
+    term: string,
+  ): Promise<MarketplaceKeywordRef[]> {
     const t = term.trim().slice(0, 80);
     if (t.length < 1) {
       return [];
@@ -327,13 +342,18 @@ export class MarketplaceService {
     };
   }
 
-  private orderedCategoryRefs(m: CatererMarketplaceListing): MarketplaceCategoryRef[] {
+  private orderedCategoryRefs(
+    m: CatererMarketplaceListing,
+  ): MarketplaceCategoryRef[] {
     const links = [...(m.profileCategories ?? [])].sort(
       (a, b) =>
         a.sortOrder - b.sortOrder || a.categoryId.localeCompare(b.categoryId),
     );
     return links
-      .filter((l): l is typeof l & { category: NonNullable<typeof l.category> } => l.category != null)
+      .filter(
+        (l): l is typeof l & { category: NonNullable<typeof l.category> } =>
+          l.category != null,
+      )
       .map((l) => ({ code: l.category.code, name: l.category.name }));
   }
 
@@ -350,18 +370,25 @@ export class MarketplaceService {
     return [...(m.galleryItems ?? [])]
       .sort(
         (a, b) =>
-          a.sortOrder - b.sortOrder || this.gallerySortKey(a) - this.gallerySortKey(b) || a.url.localeCompare(b.url),
+          a.sortOrder - b.sortOrder ||
+          this.gallerySortKey(a) - this.gallerySortKey(b) ||
+          a.url.localeCompare(b.url),
       )
       .map((g) => g.url);
   }
 
-  private orderedKeywordRefs(m: CatererMarketplaceListing): MarketplaceKeywordRef[] {
+  private orderedKeywordRefs(
+    m: CatererMarketplaceListing,
+  ): MarketplaceKeywordRef[] {
     return [...(m.profileKeywords ?? [])]
       .sort(
         (a, b) =>
           a.sortOrder - b.sortOrder || a.keywordId.localeCompare(b.keywordId),
       )
-      .filter((l): l is typeof l & { keyword: NonNullable<typeof l.keyword> } => l.keyword != null)
+      .filter(
+        (l): l is typeof l & { keyword: NonNullable<typeof l.keyword> } =>
+          l.keyword != null,
+      )
       .map((l) => ({ slug: l.keyword.slug, label: l.keyword.label }));
   }
 
@@ -394,7 +421,10 @@ export class MarketplaceService {
       .filter((n): n is string => !!n);
   }
 
-  private toListItem(m: CatererMarketplaceListing, t: Tenant): MarketplaceListItem {
+  private toListItem(
+    m: CatererMarketplaceListing,
+    t: Tenant,
+  ): MarketplaceListItem {
     const profileSlug = buildMarketplaceProfileSlug(t.slug);
     const cats = this.orderedCategoryRefs(m);
     const primary = cats[0];
@@ -488,9 +518,14 @@ export class MarketplaceService {
   async listCities(): Promise<{ city: string }[]> {
     return this.cities
       .createQueryBuilder('cy')
-      .innerJoin('caterer_profiles', 'cp', 'cp.city_id = cy.id AND cp.published = :pub', {
-        pub: true,
-      })
+      .innerJoin(
+        'caterer_profiles',
+        'cp',
+        'cp.city_id = cy.id AND cp.published = :pub',
+        {
+          pub: true,
+        },
+      )
       .select('cy.name', 'city')
       .distinct(true)
       .orderBy('cy.name', 'ASC')
@@ -627,7 +662,9 @@ export class MarketplaceService {
       throw new UnauthorizedException();
     }
     if (initial.role !== UserRole.CATERER) {
-      throw new ForbiddenException('Workspace profile is only available for caterer accounts');
+      throw new ForbiddenException(
+        'Workspace profile is only available for caterer accounts',
+      );
     }
     if (initial.tenant?.id) {
       return initial.tenant.id;
@@ -646,18 +683,27 @@ export class MarketplaceService {
         throw new UnauthorizedException();
       }
       if (row.role !== UserRole.CATERER) {
-        throw new ForbiddenException('Workspace profile is only available for caterer accounts');
+        throw new ForbiddenException(
+          'Workspace profile is only available for caterer accounts',
+        );
       }
       if (row.tenant?.id) {
         tenantIdOut = row.tenant.id;
         return;
       }
 
-      const businessName = (row.businessName ?? row.fullName ?? 'My catering').trim();
+      const businessName = (
+        row.businessName ??
+        row.fullName ??
+        'My catering'
+      ).trim();
       const tenantId = randomUUID();
       const slug = await this.ensureUniqueTenantSlug(tenantRepo, businessName);
       const dbName = await this.ensureUniqueDbName(tenantRepo, slug);
-      const subdomain = await this.ensureUniqueSubdomain(tenantRepo, businessName);
+      const subdomain = await this.ensureUniqueSubdomain(
+        tenantRepo,
+        businessName,
+      );
 
       const tenant = tenantRepo.create({
         id: tenantId,
@@ -683,13 +729,18 @@ export class MarketplaceService {
 
     await this.ensureDraftListingForTenant(tenantIdOut);
     await this.provisioning.provisionTenant(tenantIdOut).catch((e) => {
-      this.log.warn(`provisionTenant after auto-link failed (${tenantIdOut})`, e);
+      this.log.warn(
+        `provisionTenant after auto-link failed (${tenantIdOut})`,
+        e,
+      );
     });
 
     return tenantIdOut;
   }
 
-  async getWorkspaceProfileForUser(userId: string): Promise<CatererWorkspaceProfile> {
+  async getWorkspaceProfileForUser(
+    userId: string,
+  ): Promise<CatererWorkspaceProfile> {
     const tenantId = await this.resolveTenantIdForWorkspaceUser(userId);
     return this.getWorkspaceProfile(tenantId);
   }
@@ -714,10 +765,14 @@ export class MarketplaceService {
       dto.capacityGuestMax != null &&
       dto.capacityGuestMin > dto.capacityGuestMax
     ) {
-      throw new BadRequestException('capacityGuestMin cannot exceed capacityGuestMax');
+      throw new BadRequestException(
+        'capacityGuestMin cannot exceed capacityGuestMax',
+      );
     }
 
-    const cityRef = await this.cities.findOne({ where: { id: dto.cityId.trim() } });
+    const cityRef = await this.cities.findOne({
+      where: { id: dto.cityId.trim() },
+    });
     if (!cityRef) throw new BadRequestException('Invalid cityId');
 
     profile.cityRef = cityRef;
@@ -736,7 +791,8 @@ export class MarketplaceService {
       profile.priceBand = dto.priceBand ?? null;
     }
     if (dto.priceFrom !== undefined) {
-      profile.priceFrom = dto.priceFrom != null ? Number(dto.priceFrom).toFixed(2) : null;
+      profile.priceFrom =
+        dto.priceFrom != null ? Number(dto.priceFrom).toFixed(2) : null;
     }
     if (dto.yearsInBusiness !== undefined) {
       profile.yearsInBusiness = dto.yearsInBusiness ?? null;
@@ -765,7 +821,9 @@ export class MarketplaceService {
       dto.capacityGuestMax != null &&
       dto.capacityGuestMin > dto.capacityGuestMax
     ) {
-      throw new BadRequestException('capacityGuestMin cannot exceed capacityGuestMax');
+      throw new BadRequestException(
+        'capacityGuestMin cannot exceed capacityGuestMax',
+      );
     }
 
     await this.syncProfileCategories(profile, dto.categoryCodes);
@@ -778,7 +836,8 @@ export class MarketplaceService {
       needsSave = true;
     }
     if (dto.priceFrom !== undefined) {
-      profile.priceFrom = dto.priceFrom != null ? Number(dto.priceFrom).toFixed(2) : null;
+      profile.priceFrom =
+        dto.priceFrom != null ? Number(dto.priceFrom).toFixed(2) : null;
       needsSave = true;
     }
     if (dto.yearsInBusiness !== undefined) {
@@ -809,18 +868,25 @@ export class MarketplaceService {
     const profile = await this.loadWorkspaceListingOrThrow(tenantId);
     await this.syncProfileGallery(profile, dto.galleryImageUrls);
     /** Avoid `save(profile)` while `galleryItems` may still be attached from the pre-sync load. */
-    await this.listings.update({ id: profile.id }, { heroImageUrl: this.persistHeroRef(dto.heroImageUrl) });
+    await this.listings.update(
+      { id: profile.id },
+      { heroImageUrl: this.persistHeroRef(dto.heroImageUrl) },
+    );
     await this.refreshPublishedFlag(tenantId);
     return this.getWorkspaceProfile(tenantId);
   }
 
-  async publishWorkspaceProfileForUser(userId: string): Promise<CatererWorkspaceProfile> {
+  async publishWorkspaceProfileForUser(
+    userId: string,
+  ): Promise<CatererWorkspaceProfile> {
     const tenantId = await this.resolveTenantIdForWorkspaceUser(userId);
     const refreshed = await this.loadWorkspaceListingOrThrow(tenantId);
     const workspace = this.toWorkspaceProfile(refreshed);
     if (!workspace.completion.isComplete) {
       throw new BadRequestException({
-        message: workspace.completion.missingFields.map((f) => `Missing required field: ${f}`),
+        message: workspace.completion.missingFields.map(
+          (f) => `Missing required field: ${f}`,
+        ),
         missingFields: workspace.completion.missingFields,
       });
     }
@@ -829,7 +895,10 @@ export class MarketplaceService {
     return this.getWorkspaceProfile(tenantId);
   }
 
-  private async ensureUniqueTenantSlug(tenantRepo: Repository<Tenant>, baseInput: string): Promise<string> {
+  private async ensureUniqueTenantSlug(
+    tenantRepo: Repository<Tenant>,
+    baseInput: string,
+  ): Promise<string> {
     const base = slugify(baseInput).slice(0, 50) || 'catering';
     let candidate = base;
     for (let i = 0; i < 24; i++) {
@@ -843,7 +912,10 @@ export class MarketplaceService {
     return `${base}-${randomUUID().slice(0, 8)}`.slice(0, 80);
   }
 
-  private async ensureUniqueSubdomain(tenantRepo: Repository<Tenant>, baseInput: string): Promise<string> {
+  private async ensureUniqueSubdomain(
+    tenantRepo: Repository<Tenant>,
+    baseInput: string,
+  ): Promise<string> {
     const base = subdomainLabelFrom(baseInput) || 'catering';
     let candidate = base;
     for (let i = 0; i < 24; i++) {
@@ -857,7 +929,10 @@ export class MarketplaceService {
     return `${base}-${randomUUID().slice(0, 8)}`.slice(0, 63);
   }
 
-  private async ensureUniqueDbName(tenantRepo: Repository<Tenant>, tenantSlug: string): Promise<string> {
+  private async ensureUniqueDbName(
+    tenantRepo: Repository<Tenant>,
+    tenantSlug: string,
+  ): Promise<string> {
     const base = mysqlDbNameFromTenantSlug(tenantSlug);
     let candidate = base;
     for (let i = 0; i < 24; i++) {
@@ -869,10 +944,15 @@ export class MarketplaceService {
       const maxBaseLen = Math.max(1, 64 - suffix.length);
       candidate = `${base.slice(0, maxBaseLen)}${suffix}`;
     }
-    return `${base.slice(0, 40)}_${randomUUID().replace(/-/g, '')}`.slice(0, 64);
+    return `${base.slice(0, 40)}_${randomUUID().replace(/-/g, '')}`.slice(
+      0,
+      64,
+    );
   }
 
-  async getWorkspaceProfile(tenantId: string): Promise<CatererWorkspaceProfile> {
+  async getWorkspaceProfile(
+    tenantId: string,
+  ): Promise<CatererWorkspaceProfile> {
     const profile = await this.loadWorkspaceListingOrThrow(tenantId);
     return this.toWorkspaceProfile(profile);
   }
@@ -891,8 +971,12 @@ export class MarketplaceService {
     profile: CatererMarketplaceListing,
     categoryCodesRaw: string[],
   ): Promise<void> {
-    const categoryCodes = [...new Set(categoryCodesRaw.map((x) => x.trim()).filter(Boolean))];
-    const categories = await this.categories.findBy({ code: In(categoryCodes) });
+    const categoryCodes = [
+      ...new Set(categoryCodesRaw.map((x) => x.trim()).filter(Boolean)),
+    ];
+    const categories = await this.categories.findBy({
+      code: In(categoryCodes),
+    });
     if (categories.length !== categoryCodes.length) {
       throw new BadRequestException('One or more category codes are invalid');
     }
@@ -912,10 +996,14 @@ export class MarketplaceService {
     profile: CatererMarketplaceListing,
     serviceOfferingIdsRaw: string[],
   ): Promise<void> {
-    const serviceIds = [...new Set(serviceOfferingIdsRaw.map((x) => x.trim()).filter(Boolean))];
+    const serviceIds = [
+      ...new Set(serviceOfferingIdsRaw.map((x) => x.trim()).filter(Boolean)),
+    ];
     const services = await this.serviceOfferings.findBy({ id: In(serviceIds) });
     if (services.length !== serviceIds.length) {
-      throw new BadRequestException('One or more serviceOfferingIds are invalid');
+      throw new BadRequestException(
+        'One or more serviceOfferingIds are invalid',
+      );
     }
     await this.profileServiceOfferings.delete({ catererProfileId: profile.id });
     await this.profileServiceOfferings.save(
@@ -933,10 +1021,16 @@ export class MarketplaceService {
     profile: CatererMarketplaceListing,
     keywordsRaw: string[],
   ): Promise<void> {
-    const keywordLabels = [...new Set(keywordsRaw.map((x) => this.normalizeKeywordLabel(x)).filter(Boolean))];
+    const keywordLabels = [
+      ...new Set(
+        keywordsRaw.map((x) => this.normalizeKeywordLabel(x)).filter(Boolean),
+      ),
+    ];
     const keywordSlugs = keywordLabels.map((x) => this.normalizeKeywordSlug(x));
     if (keywordSlugs.some((s) => !s)) {
-      throw new BadRequestException('Invalid keywords: only letters and numbers are allowed');
+      throw new BadRequestException(
+        'Invalid keywords: only letters and numbers are allowed',
+      );
     }
 
     const existingKeywords = await this.keywords
@@ -945,11 +1039,11 @@ export class MarketplaceService {
       .getMany();
     const keywordBySlug = new Map(existingKeywords.map((k) => [k.slug, k]));
     for (let i = 0; i < keywordSlugs.length; i += 1) {
-      const slug = keywordSlugs[i]!;
+      const slug = keywordSlugs[i];
       if (keywordBySlug.has(slug)) continue;
       const created = this.keywords.create({
         slug,
-        label: keywordLabels[i]!,
+        label: keywordLabels[i],
       });
       const saved = await this.keywords.save(created);
       keywordBySlug.set(saved.slug, saved);
@@ -973,7 +1067,9 @@ export class MarketplaceService {
   ): Promise<void> {
     const galleryUrls = this.persistGalleryRefs(galleryUrlsRaw);
     await this.galleryImages.manager.transaction(async (manager) => {
-      await manager.delete(CatererProfileGalleryImage, { catererProfileId: profile.id });
+      await manager.delete(CatererProfileGalleryImage, {
+        catererProfileId: profile.id,
+      });
       if (galleryUrls.length === 0) {
         return;
       }
@@ -1000,10 +1096,14 @@ export class MarketplaceService {
       dto.capacityGuestMax != null &&
       dto.capacityGuestMin > dto.capacityGuestMax
     ) {
-      throw new BadRequestException('capacityGuestMin cannot exceed capacityGuestMax');
+      throw new BadRequestException(
+        'capacityGuestMin cannot exceed capacityGuestMax',
+      );
     }
 
-    const cityRef = await this.cities.findOne({ where: { id: dto.cityId.trim() } });
+    const cityRef = await this.cities.findOne({
+      where: { id: dto.cityId.trim() },
+    });
     if (!cityRef) throw new BadRequestException('Invalid cityId');
 
     profile.cityRef = cityRef;
@@ -1012,7 +1112,8 @@ export class MarketplaceService {
     profile.about = this.normalizeString(dto.about);
     profile.heroImageUrl = this.persistHeroRef(dto.heroImageUrl);
     profile.priceBand = dto.priceBand ?? null;
-    profile.priceFrom = dto.priceFrom != null ? Number(dto.priceFrom).toFixed(2) : null;
+    profile.priceFrom =
+      dto.priceFrom != null ? Number(dto.priceFrom).toFixed(2) : null;
     profile.yearsInBusiness = dto.yearsInBusiness ?? null;
     profile.capacityGuestMin = dto.capacityGuestMin ?? null;
     profile.capacityGuestMax = dto.capacityGuestMax ?? null;
@@ -1025,7 +1126,9 @@ export class MarketplaceService {
     await this.syncProfileGallery(profile, dto.galleryImageUrls);
 
     await this.refreshPublishedFlag(tenantId);
-    return this.toWorkspaceProfile(await this.loadWorkspaceListingOrThrow(tenantId));
+    return this.toWorkspaceProfile(
+      await this.loadWorkspaceListingOrThrow(tenantId),
+    );
   }
 
   async listReviewsForSlug(
@@ -1077,7 +1180,9 @@ export class MarketplaceService {
     await this.reviews.save(rev);
 
     await this.refreshReviewAggregatesForTenant(tenant.id);
-    const updated = await this.listings.findOne({ where: { tenantId: tenant.id } });
+    const updated = await this.listings.findOne({
+      where: { tenantId: tenant.id },
+    });
 
     return {
       review: this.toReviewView(rev),

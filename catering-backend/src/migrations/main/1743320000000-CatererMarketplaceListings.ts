@@ -1,4 +1,10 @@
-import { MigrationInterface, QueryRunner, Table, TableForeignKey, TableIndex } from 'typeorm';
+import {
+  MigrationInterface,
+  QueryRunner,
+  Table,
+  TableForeignKey,
+  TableIndex,
+} from 'typeorm';
 
 /**
  * Public marketplace rows (main DB): caterer discovery, filters, profile detail URLs.
@@ -14,25 +20,83 @@ export class CatererMarketplaceListings1743320000000 implements MigrationInterfa
           name: 'caterer_marketplace_listings',
           columns: [
             { name: 'id', type: 'char', length: '36', isPrimary: true },
-            { name: 'tenant_id', type: 'char', length: '36', isUnique: true, isNullable: false },
+            {
+              name: 'tenant_id',
+              type: 'char',
+              length: '36',
+              isUnique: true,
+              isNullable: false,
+            },
             { name: 'city', type: 'varchar', length: '120', isNullable: true },
             { name: 'state', type: 'varchar', length: '120', isNullable: true },
-            { name: 'country', type: 'varchar', length: '80', isNullable: true, default: `'India'` },
-            { name: 'primary_category_id', type: 'varchar', length: '32', isNullable: true },
+            {
+              name: 'country',
+              type: 'varchar',
+              length: '80',
+              isNullable: true,
+              default: `'India'`,
+            },
+            {
+              name: 'primary_category_id',
+              type: 'varchar',
+              length: '32',
+              isNullable: true,
+            },
             { name: 'cuisines', type: 'json', isNullable: true },
-            { name: 'price_band', type: 'varchar', length: '16', isNullable: true },
-            { name: 'tagline', type: 'varchar', length: '220', isNullable: true },
+            {
+              name: 'price_band',
+              type: 'varchar',
+              length: '16',
+              isNullable: true,
+            },
+            {
+              name: 'tagline',
+              type: 'varchar',
+              length: '220',
+              isNullable: true,
+            },
             { name: 'about', type: 'text', isNullable: true },
-            { name: 'hero_image_url', type: 'varchar', length: '512', isNullable: true },
+            {
+              name: 'hero_image_url',
+              type: 'varchar',
+              length: '512',
+              isNullable: true,
+            },
             { name: 'gallery_images', type: 'json', isNullable: true },
             { name: 'services_offered', type: 'json', isNullable: true },
-            { name: 'years_in_business', type: 'smallint', unsigned: true, isNullable: true },
-            { name: 'capacity_hint', type: 'varchar', length: '80', isNullable: true },
-            { name: 'avg_rating', type: 'decimal', precision: 2, scale: 1, default: `'0.0'` },
+            {
+              name: 'years_in_business',
+              type: 'smallint',
+              unsigned: true,
+              isNullable: true,
+            },
+            {
+              name: 'capacity_hint',
+              type: 'varchar',
+              length: '80',
+              isNullable: true,
+            },
+            {
+              name: 'avg_rating',
+              type: 'decimal',
+              precision: 2,
+              scale: 1,
+              default: `'0.0'`,
+            },
             { name: 'review_count', type: 'int', unsigned: true, default: 0 },
-            { name: 'price_hint', type: 'varchar', length: '120', isNullable: true },
+            {
+              name: 'price_hint',
+              type: 'varchar',
+              length: '120',
+              isNullable: true,
+            },
             { name: 'published', type: 'tinyint', width: 1, default: 0 },
-            { name: 'created_at', type: 'datetime', precision: 6, default: 'CURRENT_TIMESTAMP(6)' },
+            {
+              name: 'created_at',
+              type: 'datetime',
+              precision: 6,
+              default: 'CURRENT_TIMESTAMP(6)',
+            },
             {
               name: 'updated_at',
               type: 'datetime',
@@ -57,7 +121,10 @@ export class CatererMarketplaceListings1743320000000 implements MigrationInterfa
 
       await queryRunner.createIndex(
         'caterer_marketplace_listings',
-        new TableIndex({ name: 'IDX_cml_published_city', columnNames: ['published', 'city'] }),
+        new TableIndex({
+          name: 'IDX_cml_published_city',
+          columnNames: ['published', 'city'],
+        }),
       );
       await queryRunner.createIndex(
         'caterer_marketplace_listings',

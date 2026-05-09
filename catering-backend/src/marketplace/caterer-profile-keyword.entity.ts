@@ -13,7 +13,9 @@ export class CatererProfileKeyword {
   @Column({ name: 'sort_order', type: 'int', default: 0 })
   sortOrder!: number;
 
-  @ManyToOne(() => CatererMarketplaceListing, (p) => p.profileKeywords, { onDelete: 'CASCADE' })
+  @ManyToOne(() => CatererMarketplaceListing, (p) => p.profileKeywords, {
+    onDelete: 'CASCADE',
+  })
   @JoinColumn({ name: 'caterer_profile_id' })
   profile!: CatererMarketplaceListing;
 

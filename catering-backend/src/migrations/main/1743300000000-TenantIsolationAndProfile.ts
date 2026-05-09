@@ -13,7 +13,12 @@ export class TenantIsolationAndProfile1743300000000 implements MigrationInterfac
         name: 'platform_sequences',
         columns: [
           { name: 'name', type: 'varchar', length: '64', isPrimary: true },
-          { name: 'next_value', type: 'int', unsigned: true, isNullable: false },
+          {
+            name: 'next_value',
+            type: 'int',
+            unsigned: true,
+            isNullable: false,
+          },
         ],
       }),
       true,
@@ -71,7 +76,9 @@ export class TenantIsolationAndProfile1743300000000 implements MigrationInterfac
       await queryRunner.query(
         `UPDATE \`platform_sequences\` SET \`next_value\` = LAST_INSERT_ID(\`next_value\` + 1) WHERE \`name\` = 'tenant_listing'`,
       );
-      const [row] = (await queryRunner.query(`SELECT LAST_INSERT_ID() AS lid`)) as { lid: number }[];
+      const [row] = (await queryRunner.query(
+        `SELECT LAST_INSERT_ID() AS lid`,
+      )) as { lid: number }[];
       const listingId = Number(row.lid);
       const dbName = `ct_${t.id.replace(/-/g, '')}`.slice(0, 64);
       await queryRunner.query(

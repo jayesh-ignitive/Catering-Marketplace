@@ -2,7 +2,11 @@ import { PutObjectCommand, S3Client } from '@aws-sdk/client-s3';
 import { Injectable, Logger } from '@nestjs/common';
 import { ConfigService } from '@nestjs/config';
 import { randomUUID } from 'crypto';
-import type { ImageStoragePort, SaveImageInput, SaveImageResult } from './image-storage.port';
+import type {
+  ImageStoragePort,
+  SaveImageInput,
+  SaveImageResult,
+} from './image-storage.port';
 
 const MIME_EXT: Record<string, string> = {
   'image/jpeg': 'jpg',
@@ -27,7 +31,9 @@ export class R2S3ImageStorage implements ImageStoragePort {
     }
     const endpoint = this.config.get<string>('S3_ENDPOINT')?.trim();
     const accessKeyId = this.config.get<string>('S3_ACCESS_KEY_ID')?.trim();
-    const secretAccessKey = this.config.get<string>('S3_SECRET_ACCESS_KEY')?.trim();
+    const secretAccessKey = this.config
+      .get<string>('S3_SECRET_ACCESS_KEY')
+      ?.trim();
     const bucket = this.config.get<string>('S3_BUCKET')?.trim();
     const region = this.config.get<string>('S3_REGION')?.trim() || 'auto';
     const rawPublic = this.config.get<string>('S3_PUBLIC_BASE_URL')?.trim();
@@ -54,7 +60,7 @@ export class R2S3ImageStorage implements ImageStoragePort {
   }
 
   async saveImage(input: SaveImageInput): Promise<SaveImageResult> {
-    const mime = input.mimeType.toLowerCase().split(';')[0]!.trim();
+    const mime = input.mimeType.toLowerCase().split(';')[0].trim();
     const ext = MIME_EXT[mime];
     if (!ext) {
       throw new Error(`unsupported_image_type:${mime}`);
@@ -78,7 +84,9 @@ export class R2S3ImageStorage implements ImageStoragePort {
     );
 
     const url = `${this.publicBase}/${key}`;
-    this.log.debug(`R2 put ${this.bucket}/${key} (${input.buffer.length} bytes)`);
+    this.log.debug(
+      `R2 put ${this.bucket}/${key} (${input.buffer.length} bytes)`,
+    );
     return { key, url };
   }
 }

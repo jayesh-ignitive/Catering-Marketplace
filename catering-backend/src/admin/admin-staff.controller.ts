@@ -47,7 +47,10 @@ export class AdminStaffController {
   }
 
   @Delete(':id')
-  remove(@Param('id', ParseUUIDPipe) id: string, @Req() req: Request & { user: User }) {
+  remove(
+    @Param('id', ParseUUIDPipe) id: string,
+    @Req() req: Request & { user: User },
+  ) {
     return this.staff.remove(id, req.user.id);
   }
 }

@@ -1,4 +1,9 @@
-import { MigrationInterface, QueryRunner, TableColumn, TableForeignKey } from 'typeorm';
+import {
+  MigrationInterface,
+  QueryRunner,
+  TableColumn,
+  TableForeignKey,
+} from 'typeorm';
 
 /** Links each workspace tenant to its primary caterer user (profile owner). */
 export class TenantOwnerUserId1743370000000 implements MigrationInterface {
@@ -41,7 +46,9 @@ export class TenantOwnerUserId1743370000000 implements MigrationInterface {
 
   public async down(queryRunner: QueryRunner): Promise<void> {
     const table = await queryRunner.getTable('tenants');
-    const fk = table?.foreignKeys.find((f) => f.columnNames.includes('user_id'));
+    const fk = table?.foreignKeys.find((f) =>
+      f.columnNames.includes('user_id'),
+    );
     if (fk) {
       await queryRunner.dropForeignKey('tenants', fk);
     }

@@ -172,6 +172,42 @@ export type AdminCatererListResponse = {
   sortDir: AdminCatererSortDir;
 };
 
+export type AdminLanguageItem = {
+  id: string;
+  code: string;
+  name: string;
+  nativeName: string | null;
+  direction: "ltr" | "rtl" | string;
+  isDefault: boolean;
+  isActive: boolean;
+  sortOrder: number;
+  createdAt: string;
+};
+
+export type AdminMenuCategoryTranslationItem = {
+  id: string;
+  languageId: string;
+  languageCode: string;
+  languageName: string;
+  name: string;
+  description: string | null;
+};
+
+export type AdminMenuCategoryItem = {
+  id: string;
+  parentId: string | null;
+  slug: string;
+  imageUrl: string | null;
+  iconUrl: string | null;
+  displayOrder: number;
+  categoryType: string | null;
+  isFeatured: boolean;
+  isActive: boolean;
+  createdAt: string;
+  updatedAt: string;
+  translations: AdminMenuCategoryTranslationItem[];
+};
+
 // --- Calls -----------------------------------------------------------------
 
 export async function fetchAdminDashboardOverview(accessToken: string): Promise<AdminDashboardOverview> {
@@ -239,4 +275,171 @@ export async function fetchAdminUserDetail(accessToken: string, userId: string):
     throw new Error(res.status === 404 ? "not_found" : `API error ${res.status}`);
   }
   return parseJson<AdminUserDetail>(res);
+}
+
+export async function fetchAdminLanguages(accessToken: string): Promise<AdminLanguageItem[]> {
+  const res = await fetch(`${getAdminApiBase()}/api/admin/languages`, {
+    ...fetchOpts,
+    headers: bearer(accessToken),
+  });
+  return parseJson<AdminLanguageItem[]>(res);
+}
+
+export async function createAdminLanguage(
+  accessToken: string,
+  payload: {
+    code: string;
+    name: string;
+    nativeName?: string;
+    direction?: "ltr" | "rtl";
+    isDefault?: boolean;
+    isActive?: boolean;
+    sortOrder?: number;
+  },
+): Promise<AdminLanguageItem> {
+  const res = await fetch(`${getAdminApiBase()}/api/admin/languages`, {
+    ...fetchOpts,
+    method: "POST",
+    headers: { ...bearer(accessToken), "Content-Type": "application/json" },
+    body: JSON.stringify(payload),
+  });
+  return parseJson<AdminLanguageItem>(res);
+}
+
+export async function updateAdminLanguage(
+  accessToken: string,
+  languageId: string,
+  payload: Partial<{
+    code: string;
+    name: string;
+    nativeName: string;
+    direction: "ltr" | "rtl";
+    isDefault: boolean;
+    isActive: boolean;
+    sortOrder: number;
+  }>,
+): Promise<AdminLanguageItem> {
+  const res = await fetch(`${getAdminApiBase()}/api/admin/languages/${encodeURIComponent(languageId)}`, {
+    ...fetchOpts,
+    method: "PATCH",
+    headers: { ...bearer(accessToken), "Content-Type": "application/json" },
+    body: JSON.stringify(payload),
+  });
+  return parseJson<AdminLanguageItem>(res);
+}
+
+export async function deleteAdminLanguage(accessToken: string, languageId: string): Promise<{ success: true }> {
+  const res = await fetch(`${getAdminApiBase()}/api/admin/languages/${encodeURIComponent(languageId)}`, {
+    ...fetchOpts,
+    method: "DELETE",
+    headers: bearer(accessToken),
+  });
+  return parseJson<{ success: true }>(res);
+}
+
+export async function fetchAdminMenuCategories(accessToken: string): Promise<AdminMenuCategoryItem[]> {
+  const res = await fetch(`${getAdminApiBase()}/api/admin/menu-categories`, {
+    ...fetchOpts,
+    headers: bearer(accessToken),
+  });
+  return parseJson<AdminMenuCategoryItem[]>(res);
+}
+
+export async function createAdminMenuCategory(
+  accessToken: string,
+  payload: {
+    parentId?: number;
+    slug: string;
+    imageUrl?: string;
+    displayOrder?: number;
+    categoryType?: string;
+    isFeatured?: boolean;
+    isActive?: boolean;
+    englishName: string;
+    englishDescription?: string;
+    translations?: Array<{
+      languageId: number;
+      name: string;
+      description?: string;
+    }>;
+  },
+): Promise<AdminMenuCategoryItem> {
+  const res = await fetch(`${getAdminApiBase()}/api/admin/menu-categories`, {
+    ...fetchOpts,
+    method: "POST",
+    headers: { ...bearer(accessToken), "Content-Type": "application/json" },
+    body: JSON.stringify(payload),
+  });
+  return parseJson<AdminMenuCategoryItem>(res);
+}
+
+export async function updateAdminMenuCategory(
+  accessToken: string,
+  categoryId: string,
+  payload: Partial<{
+    parentId: number | null;
+    slug: string;
+    imageUrl: string | null;
+    displayOrder: number;
+    categoryType: string | null;
+    isFeatured: boolean;
+    isActive: boolean;
+  }>,
+): Promise<AdminMenuCategoryItem> {
+  const res = await fetch(`${getAdminApiBase()}/api/admin/menu-categories/${encodeURIComponent(categoryId)}`, {
+    ...fetchOpts,
+    method: "PATCH",
+    headers: { ...bearer(accessToken), "Content-Type": "application/json" },
+    body: JSON.stringify(payload),
+  });
+  return parseJson<AdminMenuCategoryItem>(res);
+}
+
+export async function deleteAdminMenuCategory(
+  accessToken: string,
+  categoryId: string,
+): Promise<{ success: true }> {
+  const res = await fetch(`${getAdminApiBase()}/api/admin/menu-categories/${encodeURIComponent(categoryId)}`, {
+    ...fetchOpts,
+    method: "DELETE",
+    headers: bearer(accessToken),
+  });
+  return parseJson<{ success: true }>(res);
+}
+
+export async function upsertAdminMenuCategoryTranslation(
+  accessToken: string,
+  categoryId: string,
+  payload: {
+    languageId: number;
+    name: string;
+    description?: string;
+  },
+): Promise<AdminMenuCategoryItem> {
+  const res = await fetch(
+    `${getAdminApiBase()}/api/admin/menu-categories/${encodeURIComponent(categoryId)}/translations`,
+    {
+      ...fetchOpts,
+      method: "POST",
+      headers: { ...bearer(accessToken), "Content-Type": "application/json" },
+      body: JSON.stringify(payload),
+    },
+  );
+  return parseJson<AdminMenuCategoryItem>(res);
+}
+
+export async function deleteAdminMenuCategoryTranslation(
+  accessToken: string,
+  categoryId: string,
+  languageId: string,
+): Promise<AdminMenuCategoryItem> {
+  const res = await fetch(
+    `${getAdminApiBase()}/api/admin/menu-categories/${encodeURIComponent(categoryId)}/translations/${encodeURIComponent(languageId)}`,
+    {
+      ...fetchOpts,
+      method: "DELETE",
+      headers: bearer(accessToken),
+    },
+  );
+  return parseJson<AdminMenuCategoryItem>(res);
 }

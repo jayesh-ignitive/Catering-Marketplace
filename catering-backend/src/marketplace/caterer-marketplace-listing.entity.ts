@@ -34,7 +34,12 @@ export class CatererMarketplaceListing {
   @JoinColumn({ name: 'city_id' })
   cityRef!: City | null;
 
-  @Column({ name: 'street_address', type: 'varchar', length: 300, nullable: true })
+  @Column({
+    name: 'street_address',
+    type: 'varchar',
+    length: 300,
+    nullable: true,
+  })
   streetAddress!: string | null;
 
   @Column({ type: 'decimal', precision: 10, scale: 7, nullable: true })
@@ -46,13 +51,17 @@ export class CatererMarketplaceListing {
   @OneToMany(() => CatererProfileCategory, (c) => c.profile, { cascade: false })
   profileCategories!: CatererProfileCategory[];
 
-  @OneToMany(() => CatererProfileGalleryImage, (g) => g.profile, { cascade: false })
+  @OneToMany(() => CatererProfileGalleryImage, (g) => g.profile, {
+    cascade: false,
+  })
   galleryItems!: CatererProfileGalleryImage[];
 
   @OneToMany(() => CatererProfileCuisine, (c) => c.profile, { cascade: false })
   profileCuisines!: CatererProfileCuisine[];
 
-  @OneToMany(() => CatererProfileServiceOffering, (s) => s.profile, { cascade: false })
+  @OneToMany(() => CatererProfileServiceOffering, (s) => s.profile, {
+    cascade: false,
+  })
   profileServiceOfferings!: CatererProfileServiceOffering[];
 
   @OneToMany(() => CatererProfileKeyword, (k) => k.profile, { cascade: false })
@@ -71,25 +80,52 @@ export class CatererMarketplaceListing {
   @Column({ name: 'hero_image_url', type: 'longtext', nullable: true })
   heroImageUrl!: string | null;
 
-  @Column({ name: 'years_in_business', type: 'smallint', unsigned: true, nullable: true })
+  @Column({
+    name: 'years_in_business',
+    type: 'smallint',
+    unsigned: true,
+    nullable: true,
+  })
   yearsInBusiness!: number | null;
 
   /** Minimum typical guest count (inclusive). */
-  @Column({ name: 'capacity_guest_min', type: 'int', unsigned: true, nullable: true })
+  @Column({
+    name: 'capacity_guest_min',
+    type: 'int',
+    unsigned: true,
+    nullable: true,
+  })
   capacityGuestMin!: number | null;
 
   /** Maximum typical guest count (inclusive). */
-  @Column({ name: 'capacity_guest_max', type: 'int', unsigned: true, nullable: true })
+  @Column({
+    name: 'capacity_guest_max',
+    type: 'int',
+    unsigned: true,
+    nullable: true,
+  })
   capacityGuestMax!: number | null;
 
-  @Column({ name: 'avg_rating', type: 'decimal', precision: 2, scale: 1, default: 0 })
+  @Column({
+    name: 'avg_rating',
+    type: 'decimal',
+    precision: 2,
+    scale: 1,
+    default: 0,
+  })
   avgRating!: string;
 
   @Column({ name: 'review_count', type: 'int', unsigned: true, default: 0 })
   reviewCount!: number;
 
   /** Indicative minimum price per guest (INR); display with `Intl` on clients. */
-  @Column({ name: 'price_from', type: 'decimal', precision: 12, scale: 2, nullable: true })
+  @Column({
+    name: 'price_from',
+    type: 'decimal',
+    precision: 12,
+    scale: 2,
+    nullable: true,
+  })
   priceFrom!: string | null;
 
   @Column({ type: 'boolean', default: false })

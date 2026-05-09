@@ -10,10 +10,10 @@ export class ImagePublicUrlService {
   constructor(private readonly config: ConfigService) {}
 
   private uploadPublicBase(): string {
-    return (this.config.get<string>('UPLOAD_PUBLIC_BASE_URL')?.trim() || 'http://localhost:4000').replace(
-      /\/$/,
-      '',
-    );
+    return (
+      this.config.get<string>('UPLOAD_PUBLIC_BASE_URL')?.trim() ||
+      'http://localhost:4000'
+    ).replace(/\/$/, '');
   }
 
   private uploadsBase(): string {
@@ -21,11 +21,16 @@ export class ImagePublicUrlService {
   }
 
   private r2PublicBase(): string {
-    return (this.config.get<string>('S3_PUBLIC_BASE_URL')?.trim() || '').replace(/\/$/, '');
+    return (
+      this.config.get<string>('S3_PUBLIC_BASE_URL')?.trim() || ''
+    ).replace(/\/$/, '');
   }
 
   private useR2(): boolean {
-    const d = this.config.get<string>('IMAGE_STORAGE_DRIVER')?.trim().toLowerCase();
+    const d = this.config
+      .get<string>('IMAGE_STORAGE_DRIVER')
+      ?.trim()
+      .toLowerCase();
     return d === 'r2' || d === 's3';
   }
 

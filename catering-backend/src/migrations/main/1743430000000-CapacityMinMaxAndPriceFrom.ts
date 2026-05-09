@@ -1,6 +1,9 @@
 import { MigrationInterface, QueryRunner } from 'typeorm';
 
-function parseCapacityHint(raw: string | null): { min: number | null; max: number | null } {
+function parseCapacityHint(raw: string | null): {
+  min: number | null;
+  max: number | null;
+} {
   if (raw == null || typeof raw !== 'string') {
     return { min: null, max: null };
   }
@@ -19,12 +22,16 @@ function parseCapacityHint(raw: string | null): { min: number | null; max: numbe
   const minOnly = s.match(/min\.?\s*(\d+)/i);
   if (minOnly) {
     const n = Number(minOnly[1]);
-    return Number.isFinite(n) ? { min: n, max: null } : { min: null, max: null };
+    return Number.isFinite(n)
+      ? { min: n, max: null }
+      : { min: null, max: null };
   }
   const single = s.match(/(\d+)\s*\+?\s*guests?/i);
   if (single) {
     const n = Number(single[1]);
-    return Number.isFinite(n) ? { min: n, max: null } : { min: null, max: null };
+    return Number.isFinite(n)
+      ? { min: n, max: null }
+      : { min: null, max: null };
   }
   return { min: null, max: null };
 }
@@ -40,7 +47,7 @@ function parsePriceHintToDecimal(raw: string | null): string | null {
   }
   const afterRupee = s.match(/₹\s*([\d,]+(?:\.\d{1,2})?)/);
   if (afterRupee) {
-    const n = Number(afterRupee[1]!.replace(/,/g, ''));
+    const n = Number(afterRupee[1].replace(/,/g, ''));
     if (Number.isFinite(n) && n > 0 && n < 1_000_000) {
       return n.toFixed(2);
     }
@@ -73,15 +80,25 @@ export class CapacityMinMaxAndPriceFrom1743430000000 implements MigrationInterfa
       `ALTER TABLE \`caterer_profiles\` ADD \`price_from\` decimal(12,2) NULL`,
     );
 
-    const hasCapHint = await queryRunner.hasColumn('caterer_profiles', 'capacity_hint');
-    const hasPriceHint = await queryRunner.hasColumn('caterer_profiles', 'price_hint');
+    const hasCapHint = await queryRunner.hasColumn(
+      'caterer_profiles',
+      'capacity_hint',
+    );
+    const hasPriceHint = await queryRunner.hasColumn(
+      'caterer_profiles',
+      'price_hint',
+    );
 
     if (hasCapHint || hasPriceHint) {
       const capSel = hasCapHint ? '`capacity_hint`' : 'NULL AS `capacity_hint`';
       const priceSel = hasPriceHint ? '`price_hint`' : 'NULL AS `price_hint`';
       const rows = (await queryRunner.query(
         `SELECT \`id\`, ${capSel}, ${priceSel} FROM \`caterer_profiles\``,
-      )) as { id: string; capacity_hint: string | null; price_hint: string | null }[];
+      )) as {
+        id: string;
+        capacity_hint: string | null;
+        price_hint: string | null;
+      }[];
 
       for (const r of rows) {
         const caps = parseCapacityHint(r.capacity_hint);
@@ -94,15 +111,21 @@ export class CapacityMinMaxAndPriceFrom1743430000000 implements MigrationInterfa
     }
 
     if (hasCapHint) {
-      await queryRunner.query(`ALTER TABLE \`caterer_profiles\` DROP COLUMN \`capacity_hint\``);
+      await queryRunner.query(
+        `ALTER TABLE \`caterer_profiles\` DROP COLUMN \`capacity_hint\``,
+      );
     }
     if (hasPriceHint) {
-      await queryRunner.query(`ALTER TABLE \`caterer_profiles\` DROP COLUMN \`price_hint\``);
+      await queryRunner.query(
+        `ALTER TABLE \`caterer_profiles\` DROP COLUMN \`price_hint\``,
+      );
     }
   }
 
   public async down(queryRunner: QueryRunner): Promise<void> {
-    if (!(await queryRunner.hasColumn('caterer_profiles', 'capacity_guest_min'))) {
+    if (
+      !(await queryRunner.hasColumn('caterer_profiles', 'capacity_guest_min'))
+    ) {
       return;
     }
 
@@ -142,8 +165,14 @@ export class CapacityMinMaxAndPriceFrom1743430000000 implements MigrationInterfa
       );
     }
 
-    await queryRunner.query(`ALTER TABLE \`caterer_profiles\` DROP COLUMN \`capacity_guest_min\``);
-    await queryRunner.query(`ALTER TABLE \`caterer_profiles\` DROP COLUMN \`capacity_guest_max\``);
-    await queryRunner.query(`ALTER TABLE \`caterer_profiles\` DROP COLUMN \`price_from\``);
+    await queryRunner.query(
+      `ALTER TABLE \`caterer_profiles\` DROP COLUMN \`capacity_guest_min\``,
+    );
+    await queryRunner.query(
+      `ALTER TABLE \`caterer_profiles\` DROP COLUMN \`capacity_guest_max\``,
+    );
+    await queryRunner.query(
+      `ALTER TABLE \`caterer_profiles\` DROP COLUMN \`price_from\``,
+    );
   }
 }

@@ -1,4 +1,9 @@
-import { MigrationInterface, QueryRunner, Table, TableForeignKey } from 'typeorm';
+import {
+  MigrationInterface,
+  QueryRunner,
+  Table,
+  TableForeignKey,
+} from 'typeorm';
 
 /** Platform database — tenant registry (metadata); business data lives in per-tenant DBs. */
 export class TenantsAndUserTenantId1743220000000 implements MigrationInterface {
@@ -46,7 +51,9 @@ export class TenantsAndUserTenantId1743220000000 implements MigrationInterface {
 
   public async down(queryRunner: QueryRunner): Promise<void> {
     const table = await queryRunner.getTable('users');
-    const fk = table?.foreignKeys.find((f) => f.columnNames.includes('tenant_id'));
+    const fk = table?.foreignKeys.find((f) =>
+      f.columnNames.includes('tenant_id'),
+    );
     if (fk) {
       await queryRunner.dropForeignKey('users', fk);
     }

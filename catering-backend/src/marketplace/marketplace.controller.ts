@@ -1,4 +1,15 @@
-import { Body, Controller, ForbiddenException, Get, Param, Patch, Post, Query, Req, UseGuards } from '@nestjs/common';
+import {
+  Body,
+  Controller,
+  ForbiddenException,
+  Get,
+  Param,
+  Patch,
+  Post,
+  Query,
+  Req,
+  UseGuards,
+} from '@nestjs/common';
 import type { Request } from 'express';
 import type { User } from '../user/user.entity';
 import { UserRole } from '../user/user-role.enum';
@@ -51,12 +62,18 @@ export class MarketplaceController {
   }
 
   @Get('caterers/:slug/reviews')
-  listCatererReviews(@Param('slug') slug: string, @Query() query: ListCatererReviewsQueryDto) {
+  listCatererReviews(
+    @Param('slug') slug: string,
+    @Query() query: ListCatererReviewsQueryDto,
+  ) {
     return this.marketplace.listReviewsForSlug(slug, query);
   }
 
   @Post('caterers/:slug/reviews')
-  createCatererReview(@Param('slug') slug: string, @Body() body: CreateCatererReviewDto) {
+  createCatererReview(
+    @Param('slug') slug: string,
+    @Body() body: CreateCatererReviewDto,
+  ) {
     return this.marketplace.createReviewForSlug(slug, body);
   }
 
@@ -69,7 +86,9 @@ export class MarketplaceController {
   @UseGuards(JwtAuthGuard)
   workspaceProfile(@Req() req: Request & { user: User }) {
     if (req.user.role !== UserRole.CATERER) {
-      throw new ForbiddenException('Workspace profile is only available for caterer accounts');
+      throw new ForbiddenException(
+        'Workspace profile is only available for caterer accounts',
+      );
     }
     return this.marketplace.getWorkspaceProfileForUser(req.user.id);
   }
@@ -77,31 +96,55 @@ export class MarketplaceController {
   /** Wizard step 0 — business basics (city, about, pricing fields, optional banner URL). */
   @Patch('caterer/profile/step/0')
   @UseGuards(JwtAuthGuard)
-  patchWorkspaceProfileStep0(@Req() req: Request & { user: User }, @Body() body: WorkspaceProfileStep0Dto) {
+  patchWorkspaceProfileStep0(
+    @Req() req: Request & { user: User },
+    @Body() body: WorkspaceProfileStep0Dto,
+  ) {
     if (req.user.role !== UserRole.CATERER) {
-      throw new ForbiddenException('Workspace profile is only available for caterer accounts');
+      throw new ForbiddenException(
+        'Workspace profile is only available for caterer accounts',
+      );
     }
-    return this.marketplace.patchWorkspaceProfileStep0ForUser(req.user.id, body);
+    return this.marketplace.patchWorkspaceProfileStep0ForUser(
+      req.user.id,
+      body,
+    );
   }
 
   /** Wizard step 1 — categories, service offerings, keywords. */
   @Patch('caterer/profile/step/1')
   @UseGuards(JwtAuthGuard)
-  patchWorkspaceProfileStep1(@Req() req: Request & { user: User }, @Body() body: WorkspaceProfileStep1Dto) {
+  patchWorkspaceProfileStep1(
+    @Req() req: Request & { user: User },
+    @Body() body: WorkspaceProfileStep1Dto,
+  ) {
     if (req.user.role !== UserRole.CATERER) {
-      throw new ForbiddenException('Workspace profile is only available for caterer accounts');
+      throw new ForbiddenException(
+        'Workspace profile is only available for caterer accounts',
+      );
     }
-    return this.marketplace.patchWorkspaceProfileStep1ForUser(req.user.id, body);
+    return this.marketplace.patchWorkspaceProfileStep1ForUser(
+      req.user.id,
+      body,
+    );
   }
 
   /** Wizard step 2 — gallery image URLs + required banner. */
   @Patch('caterer/profile/step/2')
   @UseGuards(JwtAuthGuard)
-  patchWorkspaceProfileStep2(@Req() req: Request & { user: User }, @Body() body: WorkspaceProfileStep2Dto) {
+  patchWorkspaceProfileStep2(
+    @Req() req: Request & { user: User },
+    @Body() body: WorkspaceProfileStep2Dto,
+  ) {
     if (req.user.role !== UserRole.CATERER) {
-      throw new ForbiddenException('Workspace profile is only available for caterer accounts');
+      throw new ForbiddenException(
+        'Workspace profile is only available for caterer accounts',
+      );
     }
-    return this.marketplace.patchWorkspaceProfileStep2ForUser(req.user.id, body);
+    return this.marketplace.patchWorkspaceProfileStep2ForUser(
+      req.user.id,
+      body,
+    );
   }
 
   /** Wizard step 3 — publish when server-side completion checks pass. */
@@ -109,7 +152,9 @@ export class MarketplaceController {
   @UseGuards(JwtAuthGuard)
   publishWorkspaceProfile(@Req() req: Request & { user: User }) {
     if (req.user.role !== UserRole.CATERER) {
-      throw new ForbiddenException('Workspace profile is only available for caterer accounts');
+      throw new ForbiddenException(
+        'Workspace profile is only available for caterer accounts',
+      );
     }
     return this.marketplace.publishWorkspaceProfileForUser(req.user.id);
   }
@@ -122,7 +167,9 @@ export class MarketplaceController {
     @Body() body: UpsertCatererWorkspaceProfileDto,
   ) {
     if (req.user.role !== UserRole.CATERER) {
-      throw new ForbiddenException('Workspace profile is only available for caterer accounts');
+      throw new ForbiddenException(
+        'Workspace profile is only available for caterer accounts',
+      );
     }
     return this.marketplace.upsertWorkspaceProfileForUser(req.user.id, body);
   }

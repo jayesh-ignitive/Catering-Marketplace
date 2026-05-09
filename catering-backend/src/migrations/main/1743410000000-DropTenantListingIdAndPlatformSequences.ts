@@ -9,7 +9,9 @@ export class DropTenantListingIdAndPlatformSequences1743410000000 implements Mig
       await queryRunner.dropTable('platform_sequences', true);
     }
     if (await queryRunner.hasColumn('tenants', 'listing_id')) {
-      await queryRunner.query(`ALTER TABLE \`tenants\` DROP COLUMN \`listing_id\``);
+      await queryRunner.query(
+        `ALTER TABLE \`tenants\` DROP COLUMN \`listing_id\``,
+      );
     }
   }
 

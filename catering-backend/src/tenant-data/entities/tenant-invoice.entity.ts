@@ -20,7 +20,10 @@ export class TenantInvoice {
   @Column({ name: 'order_id', type: 'varchar', length: 36, nullable: true })
   orderId!: string | null;
 
-  @ManyToOne(() => TenantOrder, (o) => o.invoices, { nullable: true, onDelete: 'SET NULL' })
+  @ManyToOne(() => TenantOrder, (o) => o.invoices, {
+    nullable: true,
+    onDelete: 'SET NULL',
+  })
   @JoinColumn({ name: 'order_id' })
   order!: TenantOrder | null;
 

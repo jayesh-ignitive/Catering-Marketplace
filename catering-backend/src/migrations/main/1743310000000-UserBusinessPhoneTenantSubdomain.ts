@@ -54,7 +54,11 @@ export class UserBusinessPhoneTenantSubdomain1743310000000 implements MigrationI
 
     const taken = new Set<string>();
     for (const t of tenants) {
-      let base = (t.slug || 'catering').toLowerCase().replace(/[^a-z0-9-]/g, '').replace(/^-+|-+$/g, '') || 'catering';
+      let base =
+        (t.slug || 'catering')
+          .toLowerCase()
+          .replace(/[^a-z0-9-]/g, '')
+          .replace(/^-+|-+$/g, '') || 'catering';
       base = base.slice(0, 63);
       let candidate = base;
       let n = 0;
@@ -64,10 +68,10 @@ export class UserBusinessPhoneTenantSubdomain1743310000000 implements MigrationI
         candidate = `${base.slice(0, Math.max(1, 63 - suffix.length))}${suffix}`;
       }
       taken.add(candidate);
-      await queryRunner.query(`UPDATE \`tenants\` SET \`subdomain\` = ? WHERE \`id\` = ?`, [
-        candidate,
-        t.id,
-      ]);
+      await queryRunner.query(
+        `UPDATE \`tenants\` SET \`subdomain\` = ? WHERE \`id\` = ?`,
+        [candidate, t.id],
+      );
     }
 
     await queryRunner.query(
