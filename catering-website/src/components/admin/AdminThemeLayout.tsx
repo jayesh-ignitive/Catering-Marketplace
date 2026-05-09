@@ -27,7 +27,7 @@ export function AdminThemeLayout({ user, onLogout, children }: AdminThemeLayoutP
   }
 
   return (
-    <div className="flex min-h-screen bg-slate-100 text-slate-800">
+    <div className="flex h-[100dvh] overflow-hidden bg-brand-page font-sans text-brand-text-muted">
       <AdminSidebar
         user={user}
         mobileOpen={mobileOpen}
@@ -42,9 +42,9 @@ export function AdminThemeLayout({ user, onLogout, children }: AdminThemeLayoutP
         onCloseMobile={() => setMobileOpen(false)}
         onLogout={onLogout}
       />
-      <div className="flex min-w-0 flex-1 flex-col">
+      <div className="flex min-h-0 min-w-0 flex-1 flex-col overflow-hidden">
         <AdminHeader user={user} onToggleSidebar={handleToggleSidebar} onLogout={onLogout} />
-        <main className="flex-1 overflow-y-auto p-4 md:p-8">{children}</main>
+        <main className="admin-shell-scroll min-h-0 flex-1 overflow-y-auto p-4 md:p-8">{children}</main>
         <AdminFooter />
       </div>
     </div>

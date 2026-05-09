@@ -1,5 +1,6 @@
 "use client";
 
+import { AdminBreadcrumb } from "@/components/admin/AdminBreadcrumb";
 import { useAuth } from "@/context/AuthContext";
 import {
   createAdminLanguage,
@@ -119,7 +120,7 @@ export default function AdminLanguagesPage() {
 
   if (listQ.isPending) {
     return (
-      <div className="flex min-h-[40vh] items-center justify-center text-slate-600">
+      <div className="flex min-h-[40vh] items-center justify-center text-brand-text-muted">
         <p className="text-sm font-semibold">Loading languages…</p>
       </div>
     );
@@ -127,7 +128,7 @@ export default function AdminLanguagesPage() {
 
   if (listQ.isError || !listQ.data) {
     return (
-      <div className="mx-auto max-w-3xl rounded-xl border border-rose-200 bg-rose-50 p-6 text-rose-700">
+      <div className="admin-panel-card mx-auto max-w-3xl border border-rose-100 bg-rose-50/90 p-6 text-rose-800">
         <h1 className="text-lg font-bold">Could not load languages</h1>
         <p className="mt-2 text-sm">Check your connection and admin permissions, then try again.</p>
       </div>
@@ -135,61 +136,58 @@ export default function AdminLanguagesPage() {
   }
 
   return (
-    <section className="mx-auto max-w-[1200px] space-y-6">
-      <header>
-        <p className="text-xs font-bold uppercase tracking-wider text-slate-500">Localization</p>
-        <h1 className="mt-1 text-3xl font-extrabold tracking-tight text-slate-900">Languages</h1>
-      </header>
+    <section className="mx-auto max-w-[1200px]">
+      <AdminBreadcrumb items={[{ label: "Dashboard", href: "/admin" }, { label: "Languages" }]} />
 
-      <div className="grid gap-5 lg:grid-cols-[1.7fr_1fr]">
-        <div className="overflow-hidden rounded-xl border border-slate-200 bg-white shadow-sm">
-          <table className="w-full border-collapse text-left text-sm">
-            <thead className="border-b border-slate-200 bg-slate-50">
+      <div className="grid gap-6 lg:grid-cols-[1.7fr_1fr]">
+        <div className="admin-datatable-shell overflow-x-auto">
+          <table className="w-full min-w-[720px] border-collapse text-left">
+            <thead className="admin-datatable-thead">
               <tr>
-                <th className="px-4 py-3 text-xs font-bold uppercase tracking-wide text-slate-500">Code</th>
-                <th className="px-4 py-3 text-xs font-bold uppercase tracking-wide text-slate-500">Name</th>
-                <th className="px-4 py-3 text-xs font-bold uppercase tracking-wide text-slate-500">Native</th>
-                <th className="px-4 py-3 text-xs font-bold uppercase tracking-wide text-slate-500">Direction</th>
-                <th className="px-4 py-3 text-xs font-bold uppercase tracking-wide text-slate-500">Default</th>
-                <th className="px-4 py-3 text-xs font-bold uppercase tracking-wide text-slate-500">Active</th>
-                <th className="px-4 py-3 text-xs font-bold uppercase tracking-wide text-slate-500">Sort</th>
-                <th className="px-4 py-3 text-right text-xs font-bold uppercase tracking-wide text-slate-500">Actions</th>
+                <th className="admin-datatable-th">Code</th>
+                <th className="admin-datatable-th">Name</th>
+                <th className="admin-datatable-th">Native</th>
+                <th className="admin-datatable-th">Direction</th>
+                <th className="admin-datatable-th">Default</th>
+                <th className="admin-datatable-th">Active</th>
+                <th className="admin-datatable-th">Sort</th>
+                <th className="admin-datatable-th text-right">Actions</th>
               </tr>
             </thead>
-            <tbody className="divide-y divide-slate-100">
+            <tbody className="admin-table-body">
               {listQ.data.map((row) => (
-                <tr key={row.id} className="hover:bg-slate-50">
-                  <td className="px-4 py-3 font-mono text-xs font-semibold">{row.code}</td>
-                  <td className="px-4 py-3 font-semibold text-slate-900">{row.name}</td>
-                  <td className="px-4 py-3 text-slate-700">{row.nativeName || "—"}</td>
-                  <td className="px-4 py-3 text-slate-700">{row.direction}</td>
-                  <td className="px-4 py-3">{row.isDefault ? "Yes" : "No"}</td>
-                  <td className="px-4 py-3">{row.isActive ? "Yes" : "No"}</td>
-                  <td className="px-4 py-3 tabular-nums">{row.sortOrder}</td>
-                  <td className="px-4 py-3 text-right">
-                    <div className="inline-flex gap-2">
+                <tr key={row.id}>
+                  <td className="admin-datatable-cell font-mono text-xs font-semibold">{row.code}</td>
+                  <td className="admin-datatable-cell font-bold">{row.name}</td>
+                  <td className="admin-datatable-cell text-brand-text-muted">{row.nativeName || "—"}</td>
+                  <td className="admin-datatable-cell text-brand-text-muted">{row.direction}</td>
+                  <td className="admin-datatable-cell">{row.isDefault ? "Yes" : "No"}</td>
+                  <td className="admin-datatable-cell">{row.isActive ? "Yes" : "No"}</td>
+                  <td className="admin-datatable-cell tabular-nums">{row.sortOrder}</td>
+                  <td className="admin-datatable-cell text-right">
+                    <div className="inline-flex justify-end gap-2">
                       <button
                         type="button"
+                        title="Edit"
                         onClick={() => {
                           setSelectedId(row.id);
                           setForm(mapToForm(row));
                           setError(null);
                         }}
-                        className="inline-flex items-center gap-1 rounded-lg border border-slate-200 bg-white px-2.5 py-1.5 text-xs font-semibold text-slate-700 hover:bg-slate-50"
+                        className="flex size-8 items-center justify-center rounded-lg bg-blue-50 text-blue-600 shadow-sm transition hover:bg-blue-600 hover:text-white"
                       >
-                        <PencilSimple size={14} />
-                        Edit
+                        <PencilSimple size={18} />
                       </button>
                       <button
                         type="button"
+                        title="Delete"
                         disabled={deleteM.isPending}
                         onClick={() => {
                           if (confirm(`Delete "${row.name}" language?`)) deleteM.mutate(row.id);
                         }}
-                        className="inline-flex items-center gap-1 rounded-lg border border-rose-200 bg-white px-2.5 py-1.5 text-xs font-semibold text-rose-700 hover:bg-rose-50 disabled:opacity-50"
+                        className="flex size-8 items-center justify-center rounded-lg bg-red-50 text-brand-red shadow-sm transition hover:bg-brand-red hover:text-white disabled:opacity-50"
                       >
-                        <Trash size={14} />
-                        Delete
+                        <Trash size={18} />
                       </button>
                     </div>
                   </td>
@@ -199,34 +197,36 @@ export default function AdminLanguagesPage() {
           </table>
         </div>
 
-        <aside className="rounded-xl border border-slate-200 bg-white p-4 shadow-sm">
-          <h2 className="text-base font-bold text-slate-900">{editing ? "Edit language" : "Add language"}</h2>
-          <p className="mt-1 text-xs text-slate-500">Only admins can access and modify these records.</p>
+        <aside className="admin-panel-card h-fit p-6">
+          <h2 className="font-heading text-lg font-bold text-brand-text-dark">
+            {editing ? "Edit language" : "Add language"}
+          </h2>
+          <p className="mt-1 text-xs text-brand-text-muted">Only admins can access and modify these records.</p>
 
           <div className="mt-4 space-y-3">
             <input
               placeholder="Code (e.g. en)"
               value={form.code}
               onChange={(e) => setForm((s) => ({ ...s, code: e.target.value }))}
-              className="w-full rounded-lg border border-slate-200 px-3 py-2 text-sm"
+              className="admin-field-quiet w-full px-3 py-2.5"
             />
             <input
               placeholder="Name (e.g. English)"
               value={form.name}
               onChange={(e) => setForm((s) => ({ ...s, name: e.target.value }))}
-              className="w-full rounded-lg border border-slate-200 px-3 py-2 text-sm"
+              className="admin-field-quiet w-full px-3 py-2.5"
             />
             <input
               placeholder="Native name"
               value={form.nativeName}
               onChange={(e) => setForm((s) => ({ ...s, nativeName: e.target.value }))}
-              className="w-full rounded-lg border border-slate-200 px-3 py-2 text-sm"
+              className="admin-field-quiet w-full px-3 py-2.5"
             />
             <div className="grid grid-cols-2 gap-2">
               <select
                 value={form.direction}
                 onChange={(e) => setForm((s) => ({ ...s, direction: e.target.value as "ltr" | "rtl" }))}
-                className="rounded-lg border border-slate-200 px-3 py-2 text-sm"
+                className="admin-field-quiet px-3 py-2.5"
               >
                 <option value="ltr">LTR</option>
                 <option value="rtl">RTL</option>
@@ -236,10 +236,10 @@ export default function AdminLanguagesPage() {
                 min={0}
                 value={form.sortOrder}
                 onChange={(e) => setForm((s) => ({ ...s, sortOrder: Number(e.target.value || 0) }))}
-                className="rounded-lg border border-slate-200 px-3 py-2 text-sm"
+                className="admin-field-quiet px-3 py-2.5"
               />
             </div>
-            <label className="flex items-center gap-2 text-sm text-slate-700">
+            <label className="flex items-center gap-2 text-sm text-brand-text-dark">
               <input
                 type="checkbox"
                 checked={form.isDefault}
@@ -247,7 +247,7 @@ export default function AdminLanguagesPage() {
               />
               Default language
             </label>
-            <label className="flex items-center gap-2 text-sm text-slate-700">
+            <label className="flex items-center gap-2 text-sm text-brand-text-dark">
               <input
                 type="checkbox"
                 checked={form.isActive}
@@ -256,14 +256,14 @@ export default function AdminLanguagesPage() {
               Active
             </label>
             {error ? <p className="text-xs font-semibold text-rose-700">{error}</p> : null}
-            <div className="flex gap-2">
+            <div className="flex gap-2 pt-1">
               <button
                 type="button"
                 disabled={createM.isPending || updateM.isPending}
                 onClick={submitForm}
-                className="inline-flex items-center gap-1 rounded-lg bg-brand-red px-3 py-2 text-xs font-bold text-white disabled:opacity-60"
+                className="inline-flex items-center gap-2 rounded-xl bg-brand-red px-5 py-2.5 text-xs font-bold text-white shadow-[0_8px_20px_rgba(229,57,53,0.28)] transition hover:-translate-y-0.5 disabled:opacity-60"
               >
-                <Plus size={14} />
+                <Plus size={14} weight="bold" />
                 {editing ? "Save changes" : "Add language"}
               </button>
               {editing ? (
@@ -274,7 +274,7 @@ export default function AdminLanguagesPage() {
                     setForm(EMPTY_FORM);
                     setError(null);
                   }}
-                  className="rounded-lg border border-slate-200 bg-white px-3 py-2 text-xs font-semibold text-slate-700"
+                  className="rounded-xl border border-gray-200 bg-white px-4 py-2.5 text-xs font-bold text-brand-text-dark transition hover:bg-brand-page"
                 >
                   Cancel
                 </button>

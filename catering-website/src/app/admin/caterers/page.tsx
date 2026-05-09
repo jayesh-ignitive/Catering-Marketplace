@@ -1,15 +1,17 @@
 "use client";
 
+import { AdminBreadcrumb } from "@/components/admin/AdminBreadcrumb";
 import { useAuth } from "@/context/AuthContext";
 import {
   type AdminCatererSortDir,
   type AdminCatererSortField,
   fetchAdminCaterersList,
 } from "@/lib/admin-api";
-import { ArrowRight, CaretDown, CaretUp, MagnifyingGlass } from "@phosphor-icons/react";
+import { ArrowRight, CaretDown, CaretLeft, CaretRight, CaretUp, MagnifyingGlass } from "@phosphor-icons/react";
 import { useQuery } from "@tanstack/react-query";
+import { ADMIN_SEARCH_DEBOUNCE_MS, useDebouncedValue } from "@/hooks/useDebouncedValue";
 import Link from "next/link";
-import { useMemo, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 
 function initials(fullName: string | null | undefined, email: string | null | undefined): string {
   const n = fullName?.trim();
@@ -32,11 +34,11 @@ function defaultSortDir(field: AdminCatererSortField): AdminCatererSortDir {
 function provisionBadgeClass(status: string): string {
   switch (status) {
     case "ready":
-      return "bg-emerald-50 text-emerald-800 ring-1 ring-emerald-100";
+      return "bg-emerald-50 text-emerald-800";
     case "failed":
-      return "bg-rose-50 text-rose-800 ring-1 ring-rose-100";
+      return "bg-rose-50 text-rose-800";
     default:
-      return "bg-amber-50 text-amber-800 ring-1 ring-amber-100";
+      return "bg-amber-50 text-amber-800";
   }
 }
 
@@ -77,20 +79,18 @@ function SortableTh({
     <th
       scope="col"
       aria-sort={active ? (sortDir === "asc" ? "ascending" : "descending") : undefined}
-      className={`whitespace-nowrap px-4 py-3.5 text-xs font-bold uppercase tracking-wide text-slate-500 ${
-        align === "right" ? "text-right" : "text-left"
-      }`}
+      className={`admin-datatable-th whitespace-nowrap ${align === "right" ? "text-right" : "text-left"}`}
     >
       <button
         type="button"
         onClick={() => onSort(field)}
         title={active ? `Sorted ${sortDir === "asc" ? "ascending" : "descending"}. Click to reverse.` : `Sort by ${label}`}
-        className={`group inline-flex items-center gap-1.5 rounded-none px-1.5 py-0.5 -mx-1.5 transition hover:bg-slate-200/80 hover:text-slate-800 ${
+        className={`group inline-flex items-center gap-1.5 rounded-lg px-1 py-0.5 transition hover:bg-brand-page ${
           align === "right" ? "ml-auto flex-row-reverse" : ""
         }`}
       >
         <span>{label}</span>
-        <span className="flex flex-col leading-none text-slate-400 group-hover:text-slate-600">
+        <span className="flex flex-col leading-none text-brand-text-muted group-hover:text-brand-text-dark">
           {active ? (
             sortDir === "asc" ? (
               <CaretUp size={14} weight="bold" className="text-brand-red" aria-hidden />
@@ -115,6 +115,17 @@ export default function AdminCaterersListPage() {
   const [sortBy, setSortBy] = useState<AdminCatererSortField>("createdAt");
   const [sortDir, setSortDir] = useState<AdminCatererSortDir>("desc");
 
+  const debouncedQ = useDebouncedValue(draftQ, ADMIN_SEARCH_DEBOUNCE_MS);
+
+  useEffect(() => {
+    const next = debouncedQ.trim();
+    setAppliedQ((prev) => (prev === next ? prev : next));
+  }, [debouncedQ]);
+
+  useEffect(() => {
+    setPage(1);
+  }, [appliedQ]);
+
   const listQ = useQuery({
     queryKey: ["admin", "caterers", token, page, appliedQ, limit, sortBy, sortDir],
     queryFn: () =>
@@ -136,8 +147,9 @@ export default function AdminCaterersListPage() {
 
   const pageButtons = useMemo(() => visiblePageNumbers(page, totalPages), [page, totalPages]);
 
-  function applySearch() {
-    setAppliedQ(draftQ.trim());
+  function flushSearchNow() {
+    const next = draftQ.trim();
+    setAppliedQ(next);
     setPage(1);
   }
 
@@ -153,8 +165,8 @@ export default function AdminCaterersListPage() {
 
   if (listQ.isPending) {
     return (
-      <div className="flex min-h-[40vh] flex-col items-center justify-center gap-3 text-slate-500">
-        <div className="h-10 w-10 animate-spin rounded-full border-4 border-slate-200 border-t-brand-red" />
+      <div className="flex min-h-[40vh] flex-col items-center justify-center gap-3 text-brand-text-muted">
+        <div className="h-10 w-10 animate-spin rounded-full border-4 border-gray-200 border-t-brand-red" />
         <p className="text-sm font-semibold">Loading caterers…</p>
       </div>
     );
@@ -162,70 +174,83 @@ export default function AdminCaterersListPage() {
 
   if (listQ.isError || !listQ.data) {
     return (
-      <div className="mx-auto max-w-3xl rounded-none border border-rose-200 bg-rose-50 p-6 text-rose-700">
+      <div className="admin-panel-card mx-auto max-w-3xl border border-rose-100 bg-rose-50/90 p-6 text-rose-800">
         <h1 className="text-lg font-bold">Could not load caterers</h1>
         <p className="mt-2 text-sm">Check your connection and admin permissions, then try again.</p>
       </div>
     );
   }
 
-  const { items } = listQ.data;
+  const { items, total } = listQ.data;
+  const showingFrom = total === 0 ? 0 : (page - 1) * limit + 1;
+  const showingTo = Math.min(page * limit, total);
 
   return (
-    <section className="mx-auto max-w-[1400px] space-y-6">
-      <header className="flex flex-col gap-5 lg:flex-row lg:items-end lg:justify-between lg:gap-8">
-        <div className="min-w-0">
-          <p className="text-xs font-bold uppercase tracking-wider text-slate-500">Directory</p>
-          <h1 className="mt-1 text-3xl font-extrabold tracking-tight text-slate-900">Caterers</h1>
-        </div>
+    <section className="mx-auto max-w-[1400px]">
+      <AdminBreadcrumb items={[{ label: "Dashboard", href: "/admin" }, { label: "Caterers" }]} />
 
-        <div className="flex w-full min-w-0 flex-col gap-2 sm:flex-row sm:items-center lg:max-w-2xl">
-          <div className="relative min-w-0 flex-1">
-            <MagnifyingGlass
-              className="pointer-events-none absolute left-3 top-1/2 -translate-y-1/2 text-slate-400"
-              size={18}
-              aria-hidden
-            />
-            <input
-              type="search"
-              placeholder="Search workspace, slug, subdomain, or owner…"
-              value={draftQ}
-              onChange={(e) => setDraftQ(e.target.value)}
-              onKeyDown={(e) => {
-                if (e.key === "Enter") applySearch();
+      <div className="admin-datatable-shell">
+        <div className="flex flex-col items-stretch justify-between gap-4 border-b border-gray-100 p-6 md:flex-row md:items-center">
+          <label className="flex flex-wrap items-center gap-2 text-sm text-brand-text-muted">
+            <span>Show</span>
+            <select
+              value={limit}
+              onChange={(e) => {
+                setLimit(Number(e.target.value));
+                setPage(1);
               }}
-              className="w-full rounded-none border border-slate-200 bg-white py-2.5 pl-10 pr-3 text-sm text-slate-900 shadow-sm outline-none ring-brand-red/25 transition placeholder:text-slate-400 focus:border-slate-300 focus:ring-2"
-            />
-          </div>
-          <div className="flex shrink-0 items-center gap-2 sm:justify-end">
-            <button
-              type="button"
-              onClick={applySearch}
-              className="rounded-none bg-brand-red px-3 py-1.5 text-xs font-bold text-white shadow-sm transition hover:opacity-[0.96]"
+              className="admin-field-quiet rounded-lg px-3 py-1.5 font-semibold"
             >
-              Search
-            </button>
-            {appliedQ ? (
-              <button
-                type="button"
-                onClick={() => {
-                  setDraftQ("");
-                  setAppliedQ("");
-                  setPage(1);
+              <option value={10}>10</option>
+              <option value={20}>20</option>
+              <option value={50}>50</option>
+              <option value={100}>100</option>
+            </select>
+            <span>entries</span>
+          </label>
+
+          <div className="flex w-full min-w-0 flex-col gap-2 sm:flex-row sm:items-center md:max-w-md md:flex-1 lg:max-w-xl">
+            <div className="relative min-w-0 flex-1">
+              <MagnifyingGlass
+                className="pointer-events-none absolute left-3 top-1/2 -translate-y-1/2 text-brand-text-muted"
+                size={20}
+                aria-hidden
+              />
+              <input
+                type="search"
+                placeholder="Search workspace, slug, subdomain, or owner…"
+                value={draftQ}
+                onChange={(e) => setDraftQ(e.target.value)}
+                onKeyDown={(e) => {
+                  if (e.key === "Enter") {
+                    e.preventDefault();
+                    flushSearchNow();
+                  }
                 }}
-                className="rounded-none border border-slate-200 bg-white px-3 py-1.5 text-xs font-semibold text-slate-700 shadow-sm transition hover:bg-slate-50"
-              >
-                Clear
-              </button>
-            ) : null}
+                className="admin-field-quiet w-full py-2.5 pl-10 pr-4"
+              />
+            </div>
+            <div className="flex shrink-0 items-center gap-2 sm:justify-end">
+              {appliedQ ? (
+                <button
+                  type="button"
+                  onClick={() => {
+                    setDraftQ("");
+                    setAppliedQ("");
+                    setPage(1);
+                  }}
+                  className="rounded-xl border border-gray-200 bg-white px-4 py-2 text-xs font-bold text-brand-text-dark transition hover:bg-brand-page"
+                >
+                  Clear
+                </button>
+              ) : null}
+            </div>
           </div>
         </div>
-      </header>
 
-      <div className="overflow-hidden rounded-none border border-slate-200/90 bg-white shadow-md shadow-slate-200/40">
-        <div className="overflow-x-auto border-b border-slate-100">
-          <table className="w-full min-w-[1080px] border-collapse text-left text-sm">
-            <thead className="sticky top-0 z-[1] border-b border-slate-200 bg-slate-50/95 backdrop-blur-sm">
+        <div className="overflow-x-auto">
+          <table className="w-full min-w-[1080px] border-collapse text-left">
+            <thead className="admin-datatable-thead sticky top-0 z-[1]">
               <tr>
                 <SortableTh label="Workspace" field="name" sortBy={sortBy} sortDir={sortDir} onSort={toggleColumnSort} />
                 <SortableTh label="Slug" field="slug" sortBy={sortBy} sortDir={sortDir} onSort={toggleColumnSort} />
@@ -271,91 +296,89 @@ export default function AdminCaterersListPage() {
                   sortDir={sortDir}
                   onSort={toggleColumnSort}
                 />
-                <th
-                  scope="col"
-                  className="whitespace-nowrap px-4 py-3.5 text-right text-xs font-bold uppercase tracking-wide text-slate-500"
-                >
+                <th scope="col" className="admin-datatable-th whitespace-nowrap text-right">
                   <span className="sr-only">Actions</span>
                 </th>
               </tr>
             </thead>
-            <tbody className="divide-y divide-slate-100">
+            <tbody className="admin-table-body">
               {items.length === 0 ? (
                 <tr>
-                  <td colSpan={9} className="px-4 py-20 text-center">
-                    <p className="text-base font-semibold text-slate-700">No caterers match your filters</p>
-                    <p className="mt-1 text-sm text-slate-500">Try a different search or clear the query.</p>
+                  <td colSpan={9} className="admin-datatable-cell py-20 text-center">
+                    <p className="text-base font-semibold text-brand-text-dark">No caterers match your filters</p>
+                    <p className="mt-1 text-sm text-brand-text-muted">Try a different search or clear the query.</p>
                   </td>
                 </tr>
               ) : (
                 items.map((row) => (
-                  <tr
-                    key={row.id}
-                    className="transition-colors hover:bg-red-50/50 odd:bg-slate-50/40 hover:odd:bg-red-50/50"
-                  >
-                    <td className="px-4 py-3.5">
+                  <tr key={row.id}>
+                    <td className="admin-datatable-cell">
                       <div className="flex items-center gap-3">
                         <div
-                          className="flex h-10 w-10 shrink-0 items-center justify-center rounded-none bg-gradient-to-br from-brand-red to-red-700 text-xs font-bold text-white shadow-inner"
+                          className="flex h-10 w-10 shrink-0 items-center justify-center rounded-xl bg-gradient-to-br from-brand-red to-red-700 text-xs font-bold text-white shadow-inner"
                           aria-hidden
                         >
                           {initials(row.name, row.slug)}
                         </div>
                         <div className="min-w-0">
-                          <p className="max-w-[220px] truncate font-semibold text-slate-900">{row.name}</p>
-                          <p className="font-mono text-xs text-slate-500">ID · {row.id.slice(0, 8)}…</p>
+                          <p className="max-w-[220px] truncate font-bold text-brand-text-dark">{row.name}</p>
+                          <p className="font-mono text-xs text-brand-text-muted">ID · {row.id.slice(0, 8)}…</p>
                         </div>
                       </div>
                     </td>
-                    <td className="max-w-[140px] truncate px-4 py-3.5 font-mono text-xs font-semibold text-slate-800">
+                    <td className="admin-datatable-cell max-w-[140px] truncate font-mono text-xs font-semibold">
                       {row.slug}
                     </td>
-                    <td className="max-w-[140px] truncate px-4 py-3.5 text-slate-700" title={row.subdomain ?? ""}>
+                    <td className="admin-datatable-cell max-w-[140px] truncate text-brand-text-dark" title={row.subdomain ?? ""}>
                       {row.subdomain ? (
                         <span className="font-mono text-xs">{row.subdomain}</span>
                       ) : (
-                        <span className="text-slate-400">—</span>
+                        <span className="text-brand-text-muted">—</span>
                       )}
                     </td>
-                    <td className="px-4 py-3.5">
-                      <p className="max-w-[180px] truncate font-medium text-slate-900">
-                        {row.ownerFullName ? row.ownerFullName : <span className="text-slate-400">—</span>}
+                    <td className="admin-datatable-cell">
+                      <p className="max-w-[180px] truncate font-medium text-brand-text-dark">
+                        {row.ownerFullName ? row.ownerFullName : <span className="text-brand-text-muted">—</span>}
                       </p>
                     </td>
-                    <td className="max-w-[200px] truncate px-4 py-3.5 text-slate-800" title={row.ownerEmail ?? ""}>
-                      {row.ownerEmail ? row.ownerEmail : <span className="text-slate-400">—</span>}
+                    <td className="admin-datatable-cell max-w-[200px] truncate" title={row.ownerEmail ?? ""}>
+                      {row.ownerEmail ? row.ownerEmail : <span className="text-brand-text-muted">—</span>}
                     </td>
-                    <td className="whitespace-nowrap px-4 py-3.5">
+                    <td className="admin-datatable-cell whitespace-nowrap">
                       <span
-                        className={`inline-flex rounded-none px-2.5 py-1 text-[11px] font-bold uppercase tracking-wide ${provisionBadgeClass(row.provisionStatus)}`}
+                        className={`inline-flex rounded-full px-3 py-1 text-[11px] font-bold uppercase tracking-wide ${provisionBadgeClass(row.provisionStatus)}`}
                       >
                         {row.provisionStatus}
                       </span>
                     </td>
-                    <td className="whitespace-nowrap px-4 py-3.5">
+                    <td className="admin-datatable-cell whitespace-nowrap">
                       {row.profilePublished ? (
-                        <span className="font-semibold text-emerald-600">Yes</span>
+                        <span className="inline-flex rounded-full bg-emerald-50 px-3 py-1 text-xs font-semibold text-emerald-700">
+                          Yes
+                        </span>
                       ) : (
-                        <span className="font-semibold text-slate-500">No</span>
+                        <span className="inline-flex rounded-full bg-gray-100 px-3 py-1 text-xs font-semibold text-brand-text-muted">
+                          No
+                        </span>
                       )}
                     </td>
-                    <td className="whitespace-nowrap px-4 py-3.5 tabular-nums text-slate-600">
+                    <td className="admin-datatable-cell whitespace-nowrap tabular-nums text-brand-text-muted">
                       {new Date(row.createdAt).toLocaleString(undefined, {
                         dateStyle: "medium",
                         timeStyle: "short",
                       })}
                     </td>
-                    <td className="whitespace-nowrap px-4 py-3.5 text-right">
+                    <td className="admin-datatable-cell whitespace-nowrap text-right">
                       {row.ownerUserId ? (
                         <Link
                           href={`/admin/users/${row.ownerUserId}`}
-                          className="inline-flex items-center gap-1 rounded-none px-2 py-1.5 text-xs font-bold text-brand-red transition hover:bg-red-50"
+                          className="inline-flex items-center gap-1 rounded-lg bg-blue-50 px-2 py-2 text-xs font-bold text-blue-600 shadow-sm transition hover:bg-blue-600 hover:text-white"
                         >
                           Owner
                           <ArrowRight size={14} weight="bold" aria-hidden />
                         </Link>
                       ) : (
-                        <span className="text-xs text-slate-400">—</span>
+                        <span className="text-xs text-brand-text-muted">—</span>
                       )}
                     </td>
                   </tr>
@@ -365,25 +388,26 @@ export default function AdminCaterersListPage() {
           </table>
         </div>
 
-        <footer className="flex flex-col gap-4 border-t border-slate-100 bg-slate-50/50 px-4 py-4 md:flex-row md:flex-wrap md:items-center md:justify-between md:gap-x-6 md:px-6">
-          <nav
-            className="flex flex-wrap items-center justify-center gap-1 sm:gap-1.5 md:flex-1"
-            aria-label="Pagination"
-          >
+        <footer className="flex flex-col gap-4 border-t border-gray-100 p-6 md:flex-row md:items-center md:justify-between">
+          <p className="text-center text-sm text-brand-text-muted md:text-left">
+            Showing {showingFrom} to {showingTo} of {total} entries
+          </p>
+          <nav className="flex flex-wrap items-center justify-center gap-1" aria-label="Pagination">
             <button
               type="button"
               disabled={page <= 1}
               onClick={() => setPage((p) => Math.max(1, p - 1))}
-              className="rounded-none border border-slate-200 bg-white px-3 py-2 text-sm font-semibold text-slate-700 shadow-sm transition hover:border-slate-300 hover:bg-slate-50 disabled:cursor-not-allowed disabled:opacity-40"
+              aria-label="Previous page"
+              className="admin-pagination-btn disabled:pointer-events-none disabled:opacity-35"
             >
-              Previous
+              <CaretLeft size={18} weight="bold" aria-hidden />
             </button>
             {totalPages > 0 &&
               pageButtons.map((item, idx) =>
                 item === "gap" ? (
                   <span
                     key={`ellipsis-${idx}`}
-                    className="select-none px-1.5 text-sm font-medium text-slate-400"
+                    className="select-none px-2 text-sm font-medium text-brand-text-muted"
                     aria-hidden
                   >
                     …
@@ -394,10 +418,8 @@ export default function AdminCaterersListPage() {
                     type="button"
                     onClick={() => setPage(item)}
                     aria-current={item === page ? "page" : undefined}
-                    className={`min-w-[2.5rem] rounded-none border px-2.5 py-2 text-sm font-semibold tabular-nums shadow-sm transition ${
-                      item === page
-                        ? "border-brand-red bg-brand-red text-white"
-                        : "border-slate-200 bg-white text-slate-700 hover:border-slate-300 hover:bg-slate-50"
+                    className={`admin-pagination-btn min-w-[2.25rem] font-bold tabular-nums ${
+                      item === page ? "admin-pagination-btn--active" : ""
                     }`}
                   >
                     {item}
@@ -408,28 +430,12 @@ export default function AdminCaterersListPage() {
               type="button"
               disabled={page >= totalPages}
               onClick={() => setPage((p) => p + 1)}
-              className="rounded-none border border-slate-200 bg-white px-3 py-2 text-sm font-semibold text-slate-700 shadow-sm transition hover:border-slate-300 hover:bg-slate-50 disabled:cursor-not-allowed disabled:opacity-40"
+              aria-label="Next page"
+              className="admin-pagination-btn disabled:pointer-events-none disabled:opacity-35"
             >
-              Next
+              <CaretRight size={18} weight="bold" aria-hidden />
             </button>
           </nav>
-
-          <label className="flex items-center justify-center gap-2 text-sm text-slate-600 md:justify-end">
-            <span className="whitespace-nowrap font-medium text-slate-500">Rows per page</span>
-            <select
-              value={limit}
-              onChange={(e) => {
-                setLimit(Number(e.target.value));
-                setPage(1);
-              }}
-              className="rounded-none border border-slate-200 bg-white px-3 py-2 text-sm font-semibold text-slate-800 shadow-sm outline-none ring-brand-red/20 focus:ring-2"
-            >
-              <option value={10}>10</option>
-              <option value={20}>20</option>
-              <option value={50}>50</option>
-              <option value={100}>100</option>
-            </select>
-          </label>
         </footer>
       </div>
     </section>

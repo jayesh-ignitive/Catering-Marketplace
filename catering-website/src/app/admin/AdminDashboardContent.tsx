@@ -1,5 +1,6 @@
 "use client";
 
+import { AdminBreadcrumb } from "@/components/admin/AdminBreadcrumb";
 import { useAuth } from "@/context/AuthContext";
 import type { AdminDashboardOverview } from "@/lib/admin-api";
 import { fetchAdminDashboardOverview } from "@/lib/admin-api";
@@ -22,10 +23,10 @@ import {
 
 function StatCard({ label, value, hint }: { label: string; value: number | string; hint?: string }) {
   return (
-    <article className="rounded-2xl border border-stone-200/80 bg-white p-5 shadow-sm">
-      <p className="text-xs font-bold uppercase tracking-wider text-stone-500">{label}</p>
-      <p className="mt-3 text-3xl font-extrabold tracking-tight text-stone-900">{value}</p>
-      {hint ? <p className="mt-2 text-xs text-stone-500">{hint}</p> : null}
+    <article className="admin-panel-card p-5">
+      <p className="text-xs font-bold uppercase tracking-[0.05em] text-brand-text-muted">{label}</p>
+      <p className="mt-3 font-heading text-3xl font-bold tracking-tight text-brand-text-dark">{value}</p>
+      {hint ? <p className="mt-2 text-xs text-brand-text-muted">{hint}</p> : null}
     </article>
   );
 }
@@ -56,7 +57,7 @@ function RoleMixChart({
   const filtered = data.filter((x) => x.value > 0);
   if (filtered.length === 0) {
     return (
-      <div className="flex h-[260px] items-center justify-center text-sm text-stone-400">{emptyHint}</div>
+      <div className="flex h-[260px] items-center justify-center text-sm text-brand-text-muted">{emptyHint}</div>
     );
   }
   return (
@@ -88,9 +89,9 @@ function ActivityCharts({ d }: { d: AdminDashboardOverview }) {
 
   return (
     <div className="mt-8 grid gap-6 lg:grid-cols-2">
-      <div className="rounded-2xl border border-stone-200/80 bg-white p-5 shadow-sm">
-        <h2 className="text-sm font-bold text-stone-900">New registrations</h2>
-        <p className="mt-1 text-xs text-stone-500">
+      <div className="admin-panel-card p-5">
+        <h2 className="text-sm font-bold text-brand-text-dark">New registrations</h2>
+        <p className="mt-1 text-xs text-brand-text-muted">
           User sign-ups per day · last {d.timeline.days} days
         </p>
         <div className="mt-4 h-[280px] w-full min-w-0">
@@ -128,9 +129,9 @@ function ActivityCharts({ d }: { d: AdminDashboardOverview }) {
         </div>
       </div>
 
-      <div className="rounded-2xl border border-stone-200/80 bg-white p-5 shadow-sm">
-        <h2 className="text-sm font-bold text-stone-900">Inquiries & reviews</h2>
-        <p className="mt-1 text-xs text-stone-500">
+      <div className="admin-panel-card p-5">
+        <h2 className="text-sm font-bold text-brand-text-dark">Inquiries & reviews</h2>
+        <p className="mt-1 text-xs text-brand-text-muted">
           Contact form messages vs new reviews · last {d.timeline.days} days
         </p>
         <div className="mt-4 h-[280px] w-full min-w-0">
@@ -179,8 +180,8 @@ export default function AdminDashboardContent() {
 
   if (overviewQ.isPending) {
     return (
-      <div className="flex min-h-[40vh] flex-col items-center justify-center gap-3 text-stone-500">
-        <div className="h-10 w-10 animate-spin rounded-full border-4 border-stone-200 border-t-brand-red" />
+      <div className="flex min-h-[40vh] flex-col items-center justify-center gap-3 text-brand-text-muted">
+        <div className="h-10 w-10 animate-spin rounded-full border-4 border-gray-200 border-t-brand-red" />
         <p className="text-sm font-semibold">Loading dashboard…</p>
       </div>
     );
@@ -188,7 +189,7 @@ export default function AdminDashboardContent() {
 
   if (overviewQ.isError || !overviewQ.data) {
     return (
-      <div className="mx-auto max-w-3xl rounded-2xl border border-rose-200 bg-rose-50 p-6 text-rose-700">
+      <div className="admin-panel-card mx-auto max-w-3xl border border-rose-100 bg-rose-50/90 p-6 text-rose-800">
         <h1 className="text-lg font-bold">Could not load admin dashboard</h1>
         <p className="mt-2 text-sm">
           Please refresh and try again. If this keeps happening, verify that your account has admin
@@ -212,13 +213,11 @@ export default function AdminDashboardContent() {
 
   return (
     <section className="mx-auto max-w-7xl">
-      <p className="text-xs font-bold uppercase tracking-wider text-[var(--foreground-muted)]">
-        Admin
-      </p>
-      <h1 className="mt-2 text-2xl font-extrabold tracking-tight text-[var(--foreground)]">
-        Dashboard
-      </h1>
-      <p className="mt-2 text-sm text-stone-500">
+      <AdminBreadcrumb items={[{ label: "Dashboard" }]} />
+
+      <p className="text-xs font-bold uppercase tracking-[0.05em] text-brand-text-muted">Admin</p>
+      <h1 className="font-heading mt-2 text-2xl font-bold tracking-tight text-brand-text-dark">Dashboard</h1>
+      <p className="mt-2 text-sm text-brand-text-muted">
         Last updated: {new Date(d.generatedAt).toLocaleString()}
       </p>
 
@@ -235,14 +234,14 @@ export default function AdminDashboardContent() {
       <ActivityCharts d={d} />
 
       <div className="mt-8 grid gap-6 lg:grid-cols-2">
-        <div className="rounded-2xl border border-stone-200/80 bg-white p-5 shadow-sm">
-          <h2 className="text-sm font-bold text-stone-900">Accounts by role</h2>
-          <p className="mt-1 text-xs text-stone-500">Caterer vs admin users</p>
+        <div className="admin-panel-card p-5">
+          <h2 className="text-sm font-bold text-brand-text-dark">Accounts by role</h2>
+          <p className="mt-1 text-xs text-brand-text-muted">Caterer vs admin users</p>
           <RoleMixChart data={rolePie} valueLabel="Accounts" emptyHint="No accounts yet" />
         </div>
-        <div className="rounded-2xl border border-stone-200/80 bg-white p-5 shadow-sm">
-          <h2 className="text-sm font-bold text-stone-900">Listing pipeline</h2>
-          <p className="mt-1 text-xs text-stone-500">Published marketplace profiles vs drafts</p>
+        <div className="admin-panel-card p-5">
+          <h2 className="text-sm font-bold text-brand-text-dark">Listing pipeline</h2>
+          <p className="mt-1 text-xs text-brand-text-muted">Published marketplace profiles vs drafts</p>
           <RoleMixChart data={listingPie} valueLabel="Listings" emptyHint="No listings yet" />
         </div>
       </div>

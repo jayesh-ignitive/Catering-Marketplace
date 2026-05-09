@@ -1,5 +1,6 @@
 "use client";
 
+import { AdminBreadcrumb } from "@/components/admin/AdminBreadcrumb";
 import { useAuth } from "@/context/AuthContext";
 import type { AdminTenantSnapshot } from "@/lib/admin-api";
 import { fetchAdminUserDetail } from "@/lib/admin-api";
@@ -10,31 +11,31 @@ import { useParams } from "next/navigation";
 
 function DlRow({ label, children }: { label: string; children: React.ReactNode }) {
   return (
-    <div className="grid gap-1 border-b border-stone-100 py-3 last:border-b-0 sm:grid-cols-[minmax(160px,220px)_1fr] sm:gap-6">
-      <dt className="text-[11px] font-bold uppercase tracking-wider text-stone-400">{label}</dt>
-      <dd className="break-words text-sm text-stone-900">{children}</dd>
+    <div className="grid gap-1 border-b border-gray-100 py-3 last:border-b-0 sm:grid-cols-[minmax(160px,220px)_1fr] sm:gap-6">
+      <dt className="text-[11px] font-bold uppercase tracking-[0.05em] text-brand-text-muted">{label}</dt>
+      <dd className="break-words text-sm text-brand-text-dark">{children}</dd>
     </div>
   );
 }
 
 function YesNo({ v }: { v: boolean }) {
   return (
-    <span className={v ? "font-semibold text-emerald-600" : "font-semibold text-stone-400"}>{v ? "Yes" : "No"}</span>
+    <span className={v ? "font-semibold text-emerald-600" : "font-semibold text-brand-text-muted"}>{v ? "Yes" : "No"}</span>
   );
 }
 
 function TenantSection({ title, t }: { title: string; t: AdminTenantSnapshot | null }) {
   if (!t) {
     return (
-      <div className="rounded-2xl border border-stone-200/80 bg-white p-5 shadow-sm">
-        <h2 className="text-sm font-bold text-stone-900">{title}</h2>
-        <p className="mt-2 text-sm text-stone-500">None linked.</p>
+      <div className="admin-panel-card p-5">
+        <h2 className="text-sm font-bold text-brand-text-dark">{title}</h2>
+        <p className="mt-2 text-sm text-brand-text-muted">None linked.</p>
       </div>
     );
   }
   return (
-    <div className="rounded-2xl border border-stone-200/80 bg-white p-5 shadow-sm">
-      <h2 className="text-sm font-bold text-stone-900">{title}</h2>
+    <div className="admin-panel-card p-5">
+      <h2 className="text-sm font-bold text-brand-text-dark">{title}</h2>
       <dl className="mt-2">
         <DlRow label="Tenant ID">{t.id}</DlRow>
         <DlRow label="Business name">{t.name}</DlRow>
@@ -49,11 +50,11 @@ function TenantSection({ title, t }: { title: string; t: AdminTenantSnapshot | n
         <DlRow label="Updated">{new Date(t.updatedAt).toLocaleString()}</DlRow>
         <DlRow label="Profile options (JSON)">
           {t.profileOptions && Object.keys(t.profileOptions).length > 0 ? (
-            <pre className="max-h-48 overflow-auto rounded-lg bg-stone-900 p-3 text-xs text-stone-100">
+            <pre className="max-h-48 overflow-auto rounded-xl bg-brand-dark p-3 text-xs text-white">
               {JSON.stringify(t.profileOptions, null, 2)}
             </pre>
           ) : (
-            <span className="text-stone-400">—</span>
+            <span className="text-brand-text-muted">—</span>
           )}
         </DlRow>
       </dl>
@@ -75,9 +76,9 @@ export default function AdminUserDetailPage() {
 
   if (!id) {
     return (
-      <div className="rounded-2xl border border-rose-200 bg-rose-50 p-6 text-rose-700">
+      <div className="admin-panel-card border border-rose-100 bg-rose-50/90 p-6 text-rose-800">
         <p className="font-semibold">Invalid user id.</p>
-        <Link href="/admin/users" className="mt-3 inline-block text-sm font-bold underline">
+        <Link href="/admin/users" className="mt-3 inline-block text-sm font-bold text-brand-red underline">
           Back to users
         </Link>
       </div>
@@ -86,8 +87,8 @@ export default function AdminUserDetailPage() {
 
   if (detailQ.isPending) {
     return (
-      <div className="flex min-h-[40vh] flex-col items-center justify-center gap-3 text-stone-500">
-        <div className="h-10 w-10 animate-spin rounded-full border-4 border-stone-200 border-t-brand-red" />
+      <div className="flex min-h-[40vh] flex-col items-center justify-center gap-3 text-brand-text-muted">
+        <div className="h-10 w-10 animate-spin rounded-full border-4 border-gray-200 border-t-brand-red" />
         <p className="text-sm font-semibold">Loading user…</p>
       </div>
     );
@@ -96,7 +97,7 @@ export default function AdminUserDetailPage() {
   if (detailQ.isError || !detailQ.data) {
     const missing = detailQ.error instanceof Error && detailQ.error.message === "not_found";
     return (
-      <div className="mx-auto max-w-3xl rounded-2xl border border-rose-200 bg-rose-50 p-6 text-rose-700">
+      <div className="admin-panel-card mx-auto max-w-3xl border border-rose-100 bg-rose-50/90 p-6 text-rose-800">
         <h1 className="text-lg font-bold">{missing ? "User not found" : "Could not load user"}</h1>
         <Link href="/admin/users" className="mt-4 inline-flex items-center gap-2 text-sm font-bold text-brand-red">
           <ArrowLeft size={16} weight="bold" aria-hidden />
@@ -111,23 +112,31 @@ export default function AdminUserDetailPage() {
 
   return (
     <section className="mx-auto max-w-4xl">
+      <AdminBreadcrumb
+        items={[
+          { label: "Dashboard", href: "/admin" },
+          { label: "Users", href: "/admin/users" },
+          { label: "User details" },
+        ]}
+      />
+
       <Link
         href="/admin/users"
-        className="inline-flex items-center gap-2 text-sm font-bold text-brand-red hover:underline"
+        className="inline-flex items-center gap-2 text-sm font-bold text-brand-red transition hover:underline"
       >
         <ArrowLeft size={18} weight="bold" aria-hidden />
         All users
       </Link>
 
-      <div className="mt-6 rounded-2xl border border-stone-200/80 bg-white p-6 shadow-sm">
-        <p className="text-xs font-bold uppercase tracking-wider text-stone-400">User record</p>
-        <h1 className="mt-2 text-2xl font-extrabold tracking-tight text-stone-900">{u.fullName}</h1>
-        <p className="mt-1 font-mono text-sm text-stone-500">{u.email}</p>
+      <div className="admin-panel-card mt-6 p-6">
+        <p className="text-xs font-bold uppercase tracking-[0.05em] text-brand-text-muted">User record</p>
+        <h1 className="font-heading mt-2 text-2xl font-bold tracking-tight text-brand-text-dark">{u.fullName}</h1>
+        <p className="mt-1 font-mono text-sm text-brand-text-muted">{u.email}</p>
       </div>
 
       <div className="mt-6 grid gap-6">
-        <div className="rounded-2xl border border-stone-200/80 bg-white p-5 shadow-sm">
-          <h2 className="text-sm font-bold text-stone-900">Identity & contact</h2>
+        <div className="admin-panel-card p-5">
+          <h2 className="text-sm font-bold text-brand-text-dark">Identity & contact</h2>
           <dl className="mt-2">
             <DlRow label="User ID">{u.id}</DlRow>
             <DlRow label="Email">{u.email}</DlRow>
@@ -143,9 +152,9 @@ export default function AdminUserDetailPage() {
           </dl>
         </div>
 
-        <div className="rounded-2xl border border-stone-200/80 bg-white p-5 shadow-sm">
-          <h2 className="text-sm font-bold text-stone-900">Email verification & auth flags</h2>
-          <p className="mt-1 text-xs text-stone-500">
+        <div className="admin-panel-card p-5">
+          <h2 className="text-sm font-bold text-brand-text-dark">Email verification & auth flags</h2>
+          <p className="mt-1 text-xs text-brand-text-muted">
             Secrets (password, OTP hash, verification token value) are never exposed via this API.
           </p>
           <dl className="mt-3">
@@ -168,10 +177,10 @@ export default function AdminUserDetailPage() {
         <TenantSection title="Workspace (tenant_id on user)" t={u.tenant} />
         <TenantSection title="Owned tenant (tenants.user_id)" t={u.ownedTenant} />
 
-        <div className="rounded-2xl border border-stone-200/80 bg-white p-5 shadow-sm">
-          <h2 className="text-sm font-bold text-stone-900">Marketplace profile</h2>
+        <div className="admin-panel-card p-5">
+          <h2 className="text-sm font-bold text-brand-text-dark">Marketplace profile</h2>
           {!mp ? (
-            <p className="mt-2 text-sm text-stone-500">No caterer marketplace profile row for this workspace.</p>
+            <p className="mt-2 text-sm text-brand-text-muted">No caterer marketplace profile row for this workspace.</p>
           ) : (
             <dl className="mt-3">
               <DlRow label="Tenant ID">{mp.tenantId}</DlRow>
@@ -185,7 +194,7 @@ export default function AdminUserDetailPage() {
               <DlRow label="About (preview)">{mp.aboutPreview ?? "—"}</DlRow>
               <DlRow label="Hero image URL">
                 {mp.heroImageUrl ? (
-                  <span className="break-all font-mono text-xs text-stone-600">{mp.heroImageUrl}</span>
+                  <span className="break-all font-mono text-xs text-brand-text-muted">{mp.heroImageUrl}</span>
                 ) : (
                   "—"
                 )}

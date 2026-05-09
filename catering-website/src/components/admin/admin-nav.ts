@@ -13,13 +13,31 @@ export type AdminNavItem = {
   icon: Icon;
 };
 
-export const ADMIN_NAV_ITEMS: AdminNavItem[] = [
-  { href: "/admin", label: "Dashboard", icon: SquaresFour },
-  { href: "/admin/caterers", label: "Caterers", icon: Storefront },
-  { href: "/admin/users", label: "Users", icon: UsersThree },
-  { href: "/admin/languages", label: "Languages", icon: Translate },
-  { href: "/admin/menu-categories", label: "Menu Categories", icon: ListBullets },
+export type AdminNavSection = {
+  label: string;
+  items: AdminNavItem[];
+};
+
+export const ADMIN_NAV_SECTIONS: AdminNavSection[] = [
+  {
+    label: "Platform",
+    items: [
+      { href: "/admin", label: "Dashboard", icon: SquaresFour },
+      { href: "/admin/caterers", label: "Caterers", icon: Storefront },
+      { href: "/admin/users", label: "Users", icon: UsersThree },
+    ],
+  },
+  {
+    label: "Catalog",
+    items: [
+      { href: "/admin/languages", label: "Languages", icon: Translate },
+      { href: "/admin/menu-categories", label: "Menu Categories", icon: ListBullets },
+    ],
+  },
 ];
+
+/** Flat list for consumers that need every link in order */
+export const ADMIN_NAV_ITEMS: AdminNavItem[] = ADMIN_NAV_SECTIONS.flatMap((s) => s.items);
 
 /** Active nav item for `/admin`, `/admin/caterers`, `/admin/users`, etc. */
 export function isAdminNavActive(pathname: string, href: string): boolean {

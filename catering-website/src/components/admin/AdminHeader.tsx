@@ -11,6 +11,12 @@ function adminSectionTitle(pathname: string): string {
   if (pathname.startsWith("/admin/users/") && pathname !== "/admin/users") {
     return "User details";
   }
+  if (pathname.startsWith("/admin/menu-categories")) {
+    return "Menu categories";
+  }
+  if (pathname.startsWith("/admin/languages")) {
+    return "Languages";
+  }
   if (pathname.startsWith("/admin/caterers")) {
     return "Caterers";
   }
@@ -21,6 +27,28 @@ function adminSectionTitle(pathname: string): string {
     return "Dashboard";
   }
   return "Admin";
+}
+
+function adminSectionSubtitle(pathname: string): string {
+  if (pathname.startsWith("/admin/users/") && pathname !== "/admin/users") {
+    return "Inspect account, tenant links, and marketplace profile.";
+  }
+  if (pathname.startsWith("/admin/menu-categories")) {
+    return "Manage catalog hierarchy, English source labels, and translations.";
+  }
+  if (pathname.startsWith("/admin/languages")) {
+    return "Configure locales available across the platform.";
+  }
+  if (pathname.startsWith("/admin/caterers")) {
+    return "Browse workspaces, provisioning state, and publishing.";
+  }
+  if (pathname.startsWith("/admin/users")) {
+    return "Search accounts, roles, verification, and workspace links.";
+  }
+  if (pathname === "/admin") {
+    return "Platform overview, traffic signals, and listing health.";
+  }
+  return "Platform administration";
 }
 
 type AdminHeaderProps = {
@@ -35,8 +63,8 @@ export function AdminHeader({ user, onToggleSidebar, onLogout }: AdminHeaderProp
   const menuRef = useRef<HTMLDivElement>(null);
 
   const avatarUrl = `https://ui-avatars.com/api/?name=${encodeURIComponent(
-    user.fullName
-  )}&background=334155&color=f1f5f9&bold=true`;
+    user.fullName,
+  )}&background=e53935&color=ffffff&bold=true`;
 
   useEffect(() => {
     if (!menuOpen) return;
@@ -57,85 +85,72 @@ export function AdminHeader({ user, onToggleSidebar, onLogout }: AdminHeaderProp
   }, [menuOpen]);
 
   const title = adminSectionTitle(pathname);
+  const subtitle = adminSectionSubtitle(pathname);
 
   return (
-    <header className="sticky top-0 z-20 flex h-20 shrink-0 items-center justify-between border-b border-slate-200/90 bg-white px-4 shadow-sm shadow-slate-200/30 md:px-8">
-      <div className="flex min-w-0 items-center gap-3 md:gap-4">
+    <header className="sticky top-0 z-20 flex h-20 shrink-0 items-center justify-between border-b border-gray-100 bg-white/80 px-4 backdrop-blur-md md:px-8">
+      <div className="flex min-w-0 items-center gap-4">
         <button
           type="button"
           onClick={onToggleSidebar}
-          className="grid h-10 w-10 shrink-0 place-items-center rounded-xl bg-slate-100 text-slate-700 transition hover:bg-slate-900 hover:text-white"
+          className="grid shrink-0 place-items-center text-brand-text-muted transition-colors hover:text-brand-red"
           aria-label="Toggle admin navigation"
         >
-          <List size={22} weight="bold" aria-hidden />
+          <List size={26} weight="regular" aria-hidden />
         </button>
-        <div className="hidden h-9 w-px shrink-0 bg-slate-200 sm:block" aria-hidden />
-        <div className="min-w-0">
-          <p className="text-[10px] font-bold uppercase tracking-widest text-slate-500">Admin console</p>
-          <h1 className="font-heading truncate text-xl font-extrabold tracking-tight text-slate-900">{title}</h1>
+        <div className="hidden min-w-0 md:block">
+          <h1 className="font-heading text-xl font-bold tracking-tight text-brand-text-dark">{title}</h1>
+          <p className="text-xs text-brand-text-muted">{subtitle}</p>
         </div>
       </div>
 
-      <div className="relative flex items-center gap-3" ref={menuRef}>
+      <div className="relative flex items-center gap-4" ref={menuRef}>
         <button
           type="button"
           onClick={() => setMenuOpen((v) => !v)}
-          className={`group flex items-center justify-center rounded-lg p-1 transition focus-visible:outline focus-visible:ring-2 focus-visible:ring-slate-900/20 ${
-            menuOpen ? "bg-slate-100" : "hover:bg-slate-100"
+          className={`group flex items-center justify-center rounded-full p-0.5 transition focus-visible:outline focus-visible:ring-2 focus-visible:ring-brand-red/25 ${
+            menuOpen ? "ring-2 ring-brand-red/20" : ""
           }`}
           aria-expanded={menuOpen}
           aria-haspopup="menu"
           aria-label="Account menu"
         >
-          <div className="relative">
-            <div className="relative h-9 w-9 overflow-hidden rounded-lg border border-slate-200 shadow-sm transition-transform group-hover:scale-[1.02]">
-              <Image
-                src={avatarUrl}
-                alt={user.fullName}
-                fill
-                sizes="36px"
-                className="object-cover"
-                unoptimized
-              />
-            </div>
-            <span
-              className="absolute -bottom-0.5 -right-0.5 h-2.5 w-2.5 rounded-full bg-emerald-500 ring-2 ring-white"
-              aria-hidden
-            />
+          <div className="relative h-10 w-10 overflow-hidden rounded-full border-2 border-transparent shadow-sm transition-all group-hover:border-brand-red">
+            <Image src={avatarUrl} alt={user.fullName} fill sizes="40px" className="object-cover" unoptimized />
           </div>
         </button>
 
         {menuOpen ? (
           <div
             role="menu"
-            className="absolute right-0 top-full z-[60] mt-3 w-56 rounded-xl border border-slate-200 bg-white py-1 shadow-lg shadow-slate-300/40"
+            className="absolute right-0 top-full z-[60] mt-3 w-56 rounded-2xl border border-gray-100 bg-white py-1 shadow-[0_10px_40px_-10px_rgba(0,0,0,0.12)]"
           >
-            <div className="border-b border-slate-100 px-4 py-3">
-              <p className="truncate text-sm font-bold text-slate-900">{user.fullName}</p>
-              <p className="truncate text-xs text-slate-500">{user.email}</p>
-              <span className="mt-2 inline-block rounded-md bg-slate-100 px-1.5 py-0.5 text-[9px] font-bold uppercase tracking-widest text-slate-600">
+            <div className="border-b border-gray-50 px-4 py-3">
+              <p className="truncate text-sm font-bold text-brand-text-dark">{user.fullName}</p>
+              <p className="truncate text-xs text-brand-text-muted">{user.email}</p>
+              <span className="mt-2 inline-block rounded-full bg-brand-red-light px-2 py-0.5 text-[9px] font-bold uppercase tracking-widest text-brand-red">
                 Administrator
               </span>
             </div>
             <Link
               href="/admin"
               role="menuitem"
-              className="flex w-full items-center gap-3 px-4 py-2.5 text-left text-sm font-semibold text-slate-700 transition hover:bg-slate-50"
+              className="flex w-full items-center gap-3 px-4 py-2.5 text-left text-sm font-semibold text-brand-text-dark transition hover:bg-brand-page"
               onClick={() => setMenuOpen(false)}
             >
-              <UserCircle size={18} weight="bold" className="text-slate-400" aria-hidden />
+              <UserCircle size={18} weight="bold" className="text-brand-text-muted" aria-hidden />
               Dashboard
             </Link>
             <button
               type="button"
               role="menuitem"
-              className="flex w-full items-center gap-3 border-t border-slate-50 px-4 py-2.5 text-left text-sm font-semibold text-slate-700 transition hover:bg-slate-50"
+              className="flex w-full items-center gap-3 border-t border-gray-50 px-4 py-2.5 text-left text-sm font-semibold text-brand-text-dark transition hover:bg-brand-page"
               onClick={() => {
                 setMenuOpen(false);
                 onLogout();
               }}
             >
-              <SignOut size={18} weight="bold" className="text-slate-400" aria-hidden />
+              <SignOut size={18} weight="bold" className="text-brand-text-muted" aria-hidden />
               Sign out
             </button>
           </div>

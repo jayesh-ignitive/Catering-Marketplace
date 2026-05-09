@@ -22,7 +22,7 @@ export function AdminWorkspaceShell({ children }: { children: React.ReactNode })
 
   if (!ready || !user) {
     return (
-      <div className="flex min-h-screen items-center justify-center bg-[var(--background)] text-sm text-[var(--foreground-muted)]">
+      <div className="flex min-h-screen items-center justify-center bg-brand-page text-sm font-medium text-brand-text-muted">
         Loading…
       </div>
     );
@@ -30,7 +30,7 @@ export function AdminWorkspaceShell({ children }: { children: React.ReactNode })
 
   if (user.role !== "admin") {
     return (
-      <div className="flex min-h-screen items-center justify-center bg-[var(--background)] text-sm text-[var(--foreground-muted)]">
+      <div className="flex min-h-screen items-center justify-center bg-brand-page text-sm font-medium text-brand-text-muted">
         Redirecting…
       </div>
     );

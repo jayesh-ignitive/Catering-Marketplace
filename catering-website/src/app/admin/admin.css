@@ -1,0 +1,68 @@
+/**
+ * Admin dashboard — tokens and components (Catering_html categories-style).
+ * Imported from globals.css so Tailwind merges @theme with the rest of the app.
+ */
+
+@theme inline {
+  --color-brand-red-light: #ffebee;
+  --color-brand-page: #f8f9fa;
+  --color-brand-text-muted: #8a92a6;
+  --color-brand-text-dark: #232d42;
+}
+
+@layer components {
+  .admin-shell-scroll {
+    -ms-overflow-style: none;
+    scrollbar-width: none;
+  }
+  .admin-shell-scroll::-webkit-scrollbar {
+    display: none;
+  }
+
+  .admin-datatable-shell {
+    box-shadow:
+      0 10px 30px -5px rgb(0 0 0 / 0.04),
+      0 20px 25px -5px rgb(0 0 0 / 0.03);
+    @apply overflow-hidden rounded-3xl border border-gray-50 bg-white;
+  }
+
+  .admin-panel-card {
+    box-shadow:
+      0 10px 30px -5px rgb(0 0 0 / 0.04),
+      0 20px 25px -5px rgb(0 0 0 / 0.03);
+    @apply rounded-3xl border border-gray-50 bg-white;
+  }
+
+  .admin-datatable-thead {
+    @apply bg-white;
+  }
+
+  .admin-datatable-th {
+    @apply border-b-2 border-[#f1f1f1] px-6 py-4 text-left text-[0.75rem] font-bold uppercase tracking-[0.05em] text-brand-text-dark;
+  }
+
+  .admin-datatable-cell {
+    @apply border-b border-[#f1f1f1] px-6 py-5 text-sm font-medium text-brand-text-dark;
+  }
+
+  .admin-table-body > tr:nth-child(even) {
+    background-color: #fdfdfd;
+  }
+
+  .admin-table-body > tr:hover {
+    background-color: #f8f9fa;
+    transition: background-color 0.2s ease;
+  }
+
+  .admin-field-quiet {
+    @apply rounded-xl border border-transparent bg-brand-page text-sm text-brand-text-dark outline-none transition placeholder:text-brand-text-muted focus:border-brand-red focus:bg-white;
+  }
+
+  .admin-pagination-btn {
+    @apply flex h-9 w-9 shrink-0 items-center justify-center rounded-xl border border-gray-200 text-sm font-semibold text-brand-text-muted transition hover:border-brand-red hover:bg-brand-red hover:text-white;
+  }
+
+  .admin-pagination-btn--active {
+    @apply border-brand-red bg-brand-red font-bold text-white shadow-md;
+  }
+}
