@@ -2,6 +2,12 @@ import 'reflect-metadata';
 import { config } from 'dotenv';
 import { DataSource } from 'typeorm';
 import { BlogPost } from './catalog/blog-post.entity';
+import { AttributeTranslation } from './catalog/attribute-translation.entity';
+import { Attribute } from './catalog/attribute.entity';
+import { IngredientCategoryTranslation } from './catalog/ingredient-category-translation.entity';
+import { IngredientCategory } from './catalog/ingredient-category.entity';
+import { IngredientTranslation } from './catalog/ingredient-translation.entity';
+import { Ingredient } from './catalog/ingredient.entity';
 import { MenuCategoryTranslation } from './catalog/menu-category-translation.entity';
 import { MenuCategory } from './catalog/menu-category.entity';
 import { ContactSubmission } from './contact/contact-submission.entity';
@@ -38,6 +44,12 @@ const AppDataSource = new DataSource({
     BlogPost,
     MenuCategory,
     MenuCategoryTranslation,
+    IngredientCategory,
+    IngredientCategoryTranslation,
+    Ingredient,
+    IngredientTranslation,
+    Attribute,
+    AttributeTranslation,
     ContactSubmission,
     Language,
     User,

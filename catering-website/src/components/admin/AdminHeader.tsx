@@ -14,6 +14,15 @@ function adminSectionTitle(pathname: string): string {
   if (pathname.startsWith("/admin/menu-categories")) {
     return "Menu categories";
   }
+  if (pathname.startsWith("/admin/ingredient-categories")) {
+    return "Ingredient categories";
+  }
+  if (pathname.startsWith("/admin/ingredients")) {
+    return "Ingredients";
+  }
+  if (pathname.startsWith("/admin/attributes")) {
+    return "Attributes";
+  }
   if (pathname.startsWith("/admin/languages")) {
     return "Languages";
   }
@@ -35,6 +44,15 @@ function adminSectionSubtitle(pathname: string): string {
   }
   if (pathname.startsWith("/admin/menu-categories")) {
     return "Manage catalog hierarchy, English source labels, and translations.";
+  }
+  if (pathname.startsWith("/admin/ingredient-categories")) {
+    return "Manage ingredient taxonomy, English names, and translations.";
+  }
+  if (pathname.startsWith("/admin/ingredients")) {
+    return "Stock items with codes, units, categories, and translations.";
+  }
+  if (pathname.startsWith("/admin/attributes")) {
+    return "Cuisine, dietary, service, and spice labels with multilingual names.";
   }
   if (pathname.startsWith("/admin/languages")) {
     return "Configure locales available across the platform.";
@@ -93,7 +111,7 @@ export function AdminHeader({ user, onToggleSidebar, onLogout }: AdminHeaderProp
         <button
           type="button"
           onClick={onToggleSidebar}
-          className="grid shrink-0 place-items-center text-brand-text-muted transition-colors hover:text-brand-red"
+          className="grid h-10 w-10 shrink-0 cursor-pointer place-items-center rounded-xl text-brand-text-muted transition-colors hover:bg-brand-red/10 hover:text-brand-red focus-visible:outline focus-visible:ring-2 focus-visible:ring-brand-red/30 focus-visible:ring-offset-2"
           aria-label="Toggle admin navigation"
         >
           <List size={26} weight="regular" aria-hidden />
@@ -108,15 +126,24 @@ export function AdminHeader({ user, onToggleSidebar, onLogout }: AdminHeaderProp
         <button
           type="button"
           onClick={() => setMenuOpen((v) => !v)}
-          className={`group flex items-center justify-center rounded-full p-0.5 transition focus-visible:outline focus-visible:ring-2 focus-visible:ring-brand-red/25 ${
-            menuOpen ? "ring-2 ring-brand-red/20" : ""
+          className={`group relative flex h-10 w-10 shrink-0 cursor-pointer items-center justify-center rounded-full border border-gray-200 bg-white p-0.5 shadow-sm transition-all duration-300 hover:scale-110 hover:border-brand-red hover:shadow-md focus-visible:outline focus-visible:ring-2 focus-visible:ring-brand-red/35 focus-visible:ring-offset-2 ${
+            menuOpen ? "border-brand-red ring-2 ring-brand-red/25" : ""
           }`}
           aria-expanded={menuOpen}
           aria-haspopup="menu"
           aria-label="Account menu"
+          title="Account menu"
         >
-          <div className="relative h-10 w-10 overflow-hidden rounded-full border-2 border-transparent shadow-sm transition-all group-hover:border-brand-red">
-            <Image src={avatarUrl} alt={user.fullName} fill sizes="40px" className="object-cover" unoptimized />
+          <div className="relative h-full w-full overflow-hidden rounded-full">
+            <Image
+              src={avatarUrl}
+              alt=""
+              fill
+              sizes="40px"
+              className="pointer-events-none object-cover"
+              unoptimized
+            />
+            <span className="sr-only">{user.fullName}</span>
           </div>
         </button>
 
@@ -135,7 +162,7 @@ export function AdminHeader({ user, onToggleSidebar, onLogout }: AdminHeaderProp
             <Link
               href="/admin"
               role="menuitem"
-              className="flex w-full items-center gap-3 px-4 py-2.5 text-left text-sm font-semibold text-brand-text-dark transition hover:bg-brand-page"
+              className="flex w-full cursor-pointer items-center gap-3 px-4 py-2.5 text-left text-sm font-semibold text-brand-text-dark transition hover:bg-brand-page"
               onClick={() => setMenuOpen(false)}
             >
               <UserCircle size={18} weight="bold" className="text-brand-text-muted" aria-hidden />
@@ -144,7 +171,7 @@ export function AdminHeader({ user, onToggleSidebar, onLogout }: AdminHeaderProp
             <button
               type="button"
               role="menuitem"
-              className="flex w-full items-center gap-3 border-t border-gray-50 px-4 py-2.5 text-left text-sm font-semibold text-brand-text-dark transition hover:bg-brand-page"
+              className="flex w-full cursor-pointer items-center gap-3 border-t border-gray-50 px-4 py-2.5 text-left text-sm font-semibold text-brand-text-dark transition hover:bg-brand-page"
               onClick={() => {
                 setMenuOpen(false);
                 onLogout();

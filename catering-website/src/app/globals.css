@@ -1,6 +1,16 @@
 @import "tailwindcss";
 @import "./admin/admin.css";
 
+@layer base {
+  /** Explicit pointer affordance (some resets leave native button cursor ambiguous). */
+  button:enabled {
+    cursor: pointer;
+  }
+  button:disabled {
+    cursor: not-allowed;
+  }
+}
+
 :root {
   /* Core orange brand (existing) + extended warm scale */
   --primary: #c35529;

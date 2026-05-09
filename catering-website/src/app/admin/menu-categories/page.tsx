@@ -1,6 +1,8 @@
 "use client";
 
 import { AdminBreadcrumb } from "@/components/admin/AdminBreadcrumb";
+import { AdminSearchableSelect } from "@/components/admin/AdminSearchableSelect";
+import { AdminTableSortArrows } from "@/components/admin/AdminTableSortArrows";
 import { AdminModal, AdminModalField } from "@/components/admin/AdminModal";
 import { useAuth } from "@/context/AuthContext";
 import {
@@ -17,10 +19,8 @@ import {
 import { uploadCateringImage } from "@/lib/catering-api";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import {
-  CaretDown,
   CaretLeft,
   CaretRight,
-  CaretUp,
   MagnifyingGlass,
   PencilSimple,
   Plus,
@@ -120,6 +120,16 @@ export default function AdminMenuCategoriesPage() {
     queryFn: () => fetchAdminLanguages(token!),
     enabled: Boolean(token && user?.role === "admin"),
   });
+
+  const parentCategorySelectOptions = useMemo(() => {
+    const rows = categoriesQ.data ?? [];
+    const opts: { value: string; label: string }[] = [{ value: "", label: "None — top level" }];
+    for (const c of rows.filter((x) => x.id !== editingId && x.parentId === null)) {
+      const en = c.translations.find((t) => t.languageCode === "en");
+      opts.push({ value: c.id, label: en?.name ?? c.slug });
+    }
+    return opts;
+  }, [categoriesQ.data, editingId]);
 
   function closeCategoryModal() {
     setCategoryModalOpen(false);
@@ -464,15 +474,7 @@ export default function AdminMenuCategoriesPage() {
                     className="inline-flex cursor-pointer items-center gap-1 hover:bg-brand-page"
                   >
                     Category
-                    {sortBy === "category" ? (
-                      sortDir === "asc" ? (
-                        <CaretUp size={13} className="text-brand-red" weight="bold" />
-                      ) : (
-                        <CaretDown size={13} className="text-brand-red" weight="bold" />
-                      )
-                    ) : (
-                      <CaretUp size={13} className="opacity-35" />
-                    )}
+                    <AdminTableSortArrows active={sortBy === "category"} sortDir={sortDir} size={13} />
                   </button>
                 </th>
                 <th className="admin-datatable-th">
@@ -482,15 +484,7 @@ export default function AdminMenuCategoriesPage() {
                     className="inline-flex cursor-pointer items-center gap-1 hover:bg-brand-page"
                   >
                     Parent
-                    {sortBy === "parent" ? (
-                      sortDir === "asc" ? (
-                        <CaretUp size={13} className="text-brand-red" weight="bold" />
-                      ) : (
-                        <CaretDown size={13} className="text-brand-red" weight="bold" />
-                      )
-                    ) : (
-                      <CaretUp size={13} className="opacity-35" />
-                    )}
+                    <AdminTableSortArrows active={sortBy === "parent"} sortDir={sortDir} size={13} />
                   </button>
                 </th>
                 <th className="admin-datatable-th">Order</th>
@@ -737,23 +731,16 @@ export default function AdminMenuCategoriesPage() {
 
           <div className="grid gap-5 sm:grid-cols-2">
             <AdminModalField label="Parent category">
-              <select
+              <AdminSearchableSelect
+                instanceId="admin-menu-category-parent"
+                ariaLabel="Parent category"
+                placeholder="Search parent…"
+                options={parentCategorySelectOptions}
                 value={form.parentId}
-                onChange={(e) => setForm((s) => ({ ...s, parentId: e.target.value }))}
-                className="admin-field-quiet w-full px-3 py-3"
-              >
-                <option value="">None — top level</option>
-                {categoriesQ.data
-                  .filter((c) => c.id !== editingId && c.parentId === null)
-                  .map((c) => {
-                    const en = c.translations.find((t) => t.languageCode === "en");
-                    return (
-                      <option key={c.id} value={c.id}>
-                        {en?.name ?? c.slug}
-                      </option>
-                    );
-                  })}
-              </select>
+                onChange={(v) => setForm((s) => ({ ...s, parentId: v }))}
+                menuPortal
+                className="w-full"
+              />
             </AdminModalField>
 
             <AdminModalField label="Display order">

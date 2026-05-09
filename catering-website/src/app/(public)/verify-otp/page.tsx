@@ -5,6 +5,8 @@ import {
   obInputClass,
   obLabel,
   obPrimaryBtn,
+  obSecondaryOutlineBtn,
+  obTextLink,
 } from "@/components/auth/PartnerOnboardingAuthShell";
 import { FormFieldError } from "@/components/common/FormFieldError";
 import { OtpInput } from "@/components/common/OtpInput";
@@ -173,11 +175,7 @@ function VerifyOtpForm() {
         </div>
 
         <div className="flex flex-col gap-4 pt-2">
-          <button
-            type="submit"
-            disabled={submitting || code.length !== 6}
-            className={`group ${obPrimaryBtn}`}
-          >
+          <button type="submit" disabled={submitting || code.length !== 6} className={`group ${obPrimaryBtn}`}>
             <span>{submitting ? "Verifying…" : "Verify and continue"}</span>
             {!submitting ? (
               <ArrowRight
@@ -191,7 +189,7 @@ function VerifyOtpForm() {
             type="button"
             disabled={resending || submitting}
             onClick={onResend}
-            className="text-center text-sm font-semibold text-brand-red hover:underline disabled:opacity-50 sm:text-left"
+            className={`${obSecondaryOutlineBtn} py-2.5 text-sm`}
           >
             {resending ? "Sending…" : "Resend code"}
           </button>
@@ -199,11 +197,11 @@ function VerifyOtpForm() {
       </form>
 
       <p className="mt-10 text-center text-sm text-gray-600">
-        <Link href="/login" className="font-semibold text-brand-red hover:underline">
+        <Link href="/login" className={obTextLink}>
           Back to log in
         </Link>
         {" · "}
-        <Link href="/register" className="font-semibold text-brand-red hover:underline">
+        <Link href="/register" className={obTextLink}>
           Create an account
         </Link>
       </p>

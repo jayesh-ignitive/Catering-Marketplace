@@ -1,9 +1,10 @@
 "use client";
 
 import { AdminBreadcrumb } from "@/components/admin/AdminBreadcrumb";
+import { AdminTableSortArrows } from "@/components/admin/AdminTableSortArrows";
 import { useAuth } from "@/context/AuthContext";
 import { type AdminUserSortDir, type AdminUserSortField, fetchAdminUsersList } from "@/lib/admin-api";
-import { ArrowRight, CaretDown, CaretLeft, CaretRight, CaretUp, MagnifyingGlass } from "@phosphor-icons/react";
+import { ArrowRight, CaretLeft, CaretRight, MagnifyingGlass } from "@phosphor-icons/react";
 import { useQuery } from "@tanstack/react-query";
 import { ADMIN_SEARCH_DEBOUNCE_MS, useDebouncedValue } from "@/hooks/useDebouncedValue";
 import Link from "next/link";
@@ -79,17 +80,7 @@ function SortableTh({
         }`}
       >
         <span>{label}</span>
-        <span className="flex flex-col leading-none text-brand-text-muted group-hover:text-brand-text-dark">
-          {active ? (
-            sortDir === "asc" ? (
-              <CaretUp size={14} weight="bold" className="text-brand-red" aria-hidden />
-            ) : (
-              <CaretDown size={14} weight="bold" className="text-brand-red" aria-hidden />
-            )
-          ) : (
-            <CaretUp size={14} weight="bold" className="opacity-35" aria-hidden />
-          )}
-        </span>
+        <AdminTableSortArrows active={active} sortDir={sortDir} size={14} />
       </button>
     </th>
   );

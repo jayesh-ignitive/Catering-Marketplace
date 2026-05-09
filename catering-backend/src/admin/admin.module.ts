@@ -2,6 +2,12 @@ import { Module } from '@nestjs/common';
 import { TypeOrmModule } from '@nestjs/typeorm';
 import { AuthModule } from '../auth/auth.module';
 import { ContactSubmission } from '../contact/contact-submission.entity';
+import { AttributeTranslation } from '../catalog/attribute-translation.entity';
+import { Attribute } from '../catalog/attribute.entity';
+import { IngredientCategoryTranslation } from '../catalog/ingredient-category-translation.entity';
+import { IngredientCategory } from '../catalog/ingredient-category.entity';
+import { IngredientTranslation } from '../catalog/ingredient-translation.entity';
+import { Ingredient } from '../catalog/ingredient.entity';
 import { MenuCategoryTranslation } from '../catalog/menu-category-translation.entity';
 import { MenuCategory } from '../catalog/menu-category.entity';
 import { Language } from '../localization/language.entity';
@@ -15,6 +21,12 @@ import { AdminDashboardController } from './admin-dashboard.controller';
 import { AdminDashboardService } from './admin-dashboard.service';
 import { AdminLanguagesController } from './admin-languages.controller';
 import { AdminLanguagesService } from './admin-languages.service';
+import { AdminAttributesController } from './admin-attributes.controller';
+import { AdminAttributesService } from './admin-attributes.service';
+import { AdminIngredientCategoriesController } from './admin-ingredient-categories.controller';
+import { AdminIngredientCategoriesService } from './admin-ingredient-categories.service';
+import { AdminIngredientsController } from './admin-ingredients.controller';
+import { AdminIngredientsService } from './admin-ingredients.service';
 import { AdminMenuCategoriesController } from './admin-menu-categories.controller';
 import { AdminMenuCategoriesService } from './admin-menu-categories.service';
 import { AdminUsersController } from './admin-users.controller';
@@ -33,6 +45,12 @@ import { RolesGuard } from './roles.guard';
       Language,
       MenuCategory,
       MenuCategoryTranslation,
+      IngredientCategory,
+      IngredientCategoryTranslation,
+      Ingredient,
+      IngredientTranslation,
+      Attribute,
+      AttributeTranslation,
     ]),
   ],
   controllers: [
@@ -41,6 +59,9 @@ import { RolesGuard } from './roles.guard';
     AdminCaterersController,
     AdminLanguagesController,
     AdminMenuCategoriesController,
+    AdminIngredientCategoriesController,
+    AdminIngredientsController,
+    AdminAttributesController,
   ],
   providers: [
     AdminDashboardService,
@@ -48,6 +69,9 @@ import { RolesGuard } from './roles.guard';
     AdminCaterersService,
     AdminLanguagesService,
     AdminMenuCategoriesService,
+    AdminIngredientCategoriesService,
+    AdminIngredientsService,
+    AdminAttributesService,
     RolesGuard,
   ],
 })

@@ -29,7 +29,6 @@ export function AdminThemeLayout({ user, onLogout, children }: AdminThemeLayoutP
   return (
     <div className="flex h-[100dvh] overflow-hidden bg-brand-page font-sans text-brand-text-muted">
       <AdminSidebar
-        user={user}
         mobileOpen={mobileOpen}
         collapsed={collapsed}
         hoverExpanded={hoverExpanded}
@@ -40,7 +39,6 @@ export function AdminThemeLayout({ user, onLogout, children }: AdminThemeLayoutP
           if (collapsed) setHoverExpanded(false);
         }}
         onCloseMobile={() => setMobileOpen(false)}
-        onLogout={onLogout}
       />
       <div className="flex min-h-0 min-w-0 flex-1 flex-col overflow-hidden">
         <AdminHeader user={user} onToggleSidebar={handleToggleSidebar} onLogout={onLogout} />

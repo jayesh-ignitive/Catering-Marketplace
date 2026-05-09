@@ -1,0 +1,20 @@
+/** Maps to MySQL ENUM on `attributes.type` — keep in sync with migrations. */
+export enum AttributeType {
+  AUDIENCE = 'audience',
+  BEVERAGE_TYPE = 'beverage_type',
+  COUNTER_TYPE = 'counter_type',
+  COURSE = 'course',
+  CUISINE = 'cuisine',
+  DIETARY = 'dietary',
+  EVENT = 'event',
+  FOOD_CATEGORY = 'food_category',
+  MEAL_TIME = 'meal_time',
+  PACKAGE_TYPE = 'package_type',
+  PORTION = 'portion',
+  PREPARATION = 'preparation',
+  RECOMMENDATION = 'recommendation',
+  SEASON = 'season',
+  SERVICE = 'service',
+  SPICE = 'spice',
+  TEMPERATURE = 'temperature',
+}

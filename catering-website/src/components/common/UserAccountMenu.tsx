@@ -33,20 +33,25 @@ function UserAvatarButton({
       aria-expanded={expanded}
       aria-haspopup="menu"
       aria-label="Account menu"
-      className={`group flex items-center justify-center rounded-md p-1 transition-colors focus-visible:outline focus-visible:ring-2 focus-visible:ring-brand-red/20 ${
-        expanded ? "bg-stone-100" : "hover:bg-stone-100"
+      title="Account menu"
+      className={`group relative flex h-10 w-10 shrink-0 cursor-pointer items-center justify-center rounded-full border border-gray-200 bg-white p-0.5 shadow-sm transition-all duration-300 hover:scale-110 hover:border-brand-red hover:shadow-md focus-visible:outline focus-visible:ring-2 focus-visible:ring-brand-red/35 focus-visible:ring-offset-2 ${
+        expanded ? "border-brand-red ring-2 ring-brand-red/25" : ""
       }`}
     >
-      <div className="relative">
-        <div className="h-9 w-9 overflow-hidden rounded-md border border-stone-200 shadow-sm transition-transform group-hover:scale-105">
-          {/* eslint-disable-next-line @next/next/no-img-element -- ui-avatars external dynamic URL */}
-          <img src={avatarUrl} alt={user.fullName} className="h-full w-full object-cover" />
-        </div>
-        <div
-          className="absolute -bottom-1 -right-1 h-2.5 w-2.5 rounded-full bg-green-500 ring-2 ring-white"
-          title="Online"
+      <div className="relative h-full w-full overflow-hidden rounded-full">
+        {/* eslint-disable-next-line @next/next/no-img-element -- ui-avatars external dynamic URL */}
+        <img
+          src={avatarUrl}
+          alt=""
+          className="pointer-events-none h-full w-full object-cover"
         />
+        <span className="sr-only">{user.fullName}</span>
       </div>
+      <span
+        className="pointer-events-none absolute bottom-0 right-0 h-2.5 w-2.5 rounded-full bg-green-500 ring-2 ring-white"
+        aria-hidden
+        title="Online"
+      />
     </button>
   );
 }
@@ -110,7 +115,7 @@ export function UserAccountMenu({ user, onLogout, align = "right" }: Props) {
           <Link
             href={profileHref(user)}
             role="menuitem"
-            className="group/item flex items-center gap-3 px-4 py-2.5 text-sm font-semibold text-stone-700 transition hover:bg-stone-50 hover:text-brand-red"
+            className="group/item flex cursor-pointer items-center gap-3 px-4 py-2.5 text-sm font-semibold text-stone-700 transition hover:bg-stone-50 hover:text-brand-red"
             onClick={() => setMenuOpen(false)}
           >
             <UserCircle
@@ -124,7 +129,7 @@ export function UserAccountMenu({ user, onLogout, align = "right" }: Props) {
           <button
             type="button"
             role="menuitem"
-            className="group/item flex w-full items-center gap-3 border-t border-stone-50 px-4 py-2.5 text-left text-sm font-semibold text-stone-700 transition hover:bg-stone-50 hover:text-brand-red"
+            className="group/item flex w-full cursor-pointer items-center gap-3 border-t border-stone-50 px-4 py-2.5 text-left text-sm font-semibold text-stone-700 transition hover:bg-stone-50 hover:text-brand-red"
             onClick={() => {
               setMenuOpen(false);
               onLogout();

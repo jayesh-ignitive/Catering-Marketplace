@@ -75,7 +75,7 @@ export function AdminModal({
           <button
             type="button"
             onClick={onClose}
-            className="shrink-0 rounded-xl p-2 text-brand-text-muted transition hover:bg-brand-page hover:text-brand-red"
+            className="shrink-0 cursor-pointer rounded-xl p-2 text-brand-text-muted transition hover:bg-brand-page hover:text-brand-red focus-visible:outline focus-visible:ring-2 focus-visible:ring-brand-red/30 focus-visible:ring-offset-2"
             aria-label="Close dialog"
           >
             <X size={22} weight="bold" aria-hidden />

@@ -22,8 +22,17 @@ export function obInputClass(hasError: boolean): string {
   return hasError ? `${base} !border-brand-red` : `${base} border-[#E5E7EB]`;
 }
 
+/** Full-width primary CTA — clear hover, press, focus (login / register / verify). */
 export const obPrimaryBtn =
-  "inline-flex w-full items-center justify-center gap-2 rounded-sm bg-brand-red px-8 py-3 text-sm font-bold text-white shadow-md shadow-brand-red/25 transition-all hover:-translate-y-0.5 hover:bg-red-700 hover:shadow-lg hover:shadow-brand-red/30 disabled:cursor-not-allowed disabled:opacity-60 disabled:transform-none disabled:hover:shadow-md disabled:hover:shadow-brand-red/25";
+  "inline-flex w-full cursor-pointer items-center justify-center gap-2 rounded-sm bg-brand-red px-8 py-3 text-sm font-bold text-white shadow-md shadow-brand-red/25 transition-all hover:-translate-y-0.5 hover:bg-red-700 hover:shadow-lg hover:shadow-brand-red/30 active:scale-[0.98] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand-red focus-visible:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-60 disabled:hover:translate-y-0 disabled:hover:bg-brand-red disabled:hover:shadow-md disabled:hover:shadow-brand-red/25 disabled:active:scale-100";
+
+/** Outlined secondary action (e.g. resend code). */
+export const obSecondaryOutlineBtn =
+  "inline-flex w-full cursor-pointer items-center justify-center gap-2 rounded-sm border-2 border-brand-red bg-white px-8 py-3 text-sm font-bold text-brand-red shadow-sm transition-all hover:-translate-y-0.5 hover:bg-red-50 hover:shadow-md active:scale-[0.98] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand-red focus-visible:ring-offset-2 disabled:cursor-not-allowed disabled:border-brand-red/40 disabled:opacity-50 disabled:hover:translate-y-0 disabled:hover:bg-white disabled:hover:shadow-sm disabled:active:scale-100";
+
+/** Inline links in auth subtitles and footers. */
+export const obTextLink =
+  "cursor-pointer rounded-sm font-semibold text-brand-red underline-offset-2 outline-none transition-colors hover:text-red-700 hover:underline focus-visible:text-red-700 focus-visible:underline focus-visible:ring-2 focus-visible:ring-brand-red/40 focus-visible:ring-offset-2";
 
 export type PartnerOnboardingAuthShellProps = {
   title: string;

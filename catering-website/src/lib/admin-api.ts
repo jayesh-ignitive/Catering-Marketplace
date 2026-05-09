@@ -208,6 +208,67 @@ export type AdminMenuCategoryItem = {
   translations: AdminMenuCategoryTranslationItem[];
 };
 
+export type AdminIngredientCategoryTranslationItem = {
+  id: string;
+  languageId: string;
+  languageCode: string;
+  languageName: string;
+  name: string;
+};
+
+export type AdminIngredientCategoryItem = {
+  id: string;
+  parentId: string | null;
+  slug: string;
+  imageUrl: string | null;
+  iconUrl: string | null;
+  displayOrder: number;
+  categoryType: string | null;
+  isFeatured: boolean;
+  isActive: boolean;
+  createdAt: string;
+  updatedAt: string;
+  translations: AdminIngredientCategoryTranslationItem[];
+};
+
+export type AdminAttributeType =
+  | "audience"
+  | "beverage_type"
+  | "counter_type"
+  | "course"
+  | "cuisine"
+  | "dietary"
+  | "event"
+  | "food_category"
+  | "meal_time"
+  | "package_type"
+  | "portion"
+  | "preparation"
+  | "recommendation"
+  | "season"
+  | "service"
+  | "spice"
+  | "temperature";
+
+export type AdminAttributeTranslationItem = {
+  id: string;
+  languageId: string;
+  languageCode: string;
+  languageName: string;
+  name: string;
+};
+
+export type AdminAttributeItem = {
+  id: string;
+  type: AdminAttributeType;
+  image: string | null;
+  isSearchable: boolean;
+  isActive: boolean;
+  createdAt: string;
+  updatedAt: string;
+  translations: AdminAttributeTranslationItem[];
+};
+
 // --- Calls -----------------------------------------------------------------
 
 export async function fetchAdminDashboardOverview(accessToken: string): Promise<AdminDashboardOverview> {
@@ -442,4 +503,355 @@ export async function deleteAdminMenuCategoryTranslation(
     },
   );
   return parseJson<AdminMenuCategoryItem>(res);
+}
+
+export async function fetchAdminIngredientCategories(accessToken: string): Promise<AdminIngredientCategoryItem[]> {
+  const res = await fetch(`${getAdminApiBase()}/api/admin/ingredient-categories`, {
+    ...fetchOpts,
+    headers: bearer(accessToken),
+  });
+  return parseJson<AdminIngredientCategoryItem[]>(res);
+}
+
+export async function createAdminIngredientCategory(
+  accessToken: string,
+  payload: {
+    parentId?: number;
+    slug: string;
+    imageUrl?: string;
+    displayOrder?: number;
+    categoryType?: string;
+    isFeatured?: boolean;
+    isActive?: boolean;
+    englishName: string;
+    translations?: Array<{
+      languageId: number;
+      name: string;
+    }>;
+  },
+): Promise<AdminIngredientCategoryItem> {
+  const res = await fetch(`${getAdminApiBase()}/api/admin/ingredient-categories`, {
+    ...fetchOpts,
+    method: "POST",
+    headers: { ...bearer(accessToken), "Content-Type": "application/json" },
+    body: JSON.stringify(payload),
+  });
+  return parseJson<AdminIngredientCategoryItem>(res);
+}
+
+export async function updateAdminIngredientCategory(
+  accessToken: string,
+  categoryId: string,
+  payload: Partial<{
+    parentId: number | null;
+    slug: string;
+    imageUrl: string | null;
+    displayOrder: number;
+    categoryType: string | null;
+    isFeatured: boolean;
+    isActive: boolean;
+  }>,
+): Promise<AdminIngredientCategoryItem> {
+  const res = await fetch(`${getAdminApiBase()}/api/admin/ingredient-categories/${encodeURIComponent(categoryId)}`, {
+    ...fetchOpts,
+    method: "PATCH",
+    headers: { ...bearer(accessToken), "Content-Type": "application/json" },
+    body: JSON.stringify(payload),
+  });
+  return parseJson<AdminIngredientCategoryItem>(res);
+}
+
+export async function deleteAdminIngredientCategory(
+  accessToken: string,
+  categoryId: string,
+): Promise<{ success: true }> {
+  const res = await fetch(`${getAdminApiBase()}/api/admin/ingredient-categories/${encodeURIComponent(categoryId)}`, {
+    ...fetchOpts,
+    method: "DELETE",
+    headers: bearer(accessToken),
+  });
+  return parseJson<{ success: true }>(res);
+}
+
+export async function upsertAdminIngredientCategoryTranslation(
+  accessToken: string,
+  categoryId: string,
+  payload: {
+    languageId: number;
+    name: string;
+  },
+): Promise<AdminIngredientCategoryItem> {
+  const res = await fetch(
+    `${getAdminApiBase()}/api/admin/ingredient-categories/${encodeURIComponent(categoryId)}/translations`,
+    {
+      ...fetchOpts,
+      method: "POST",
+      headers: { ...bearer(accessToken), "Content-Type": "application/json" },
+      body: JSON.stringify(payload),
+    },
+  );
+  return parseJson<AdminIngredientCategoryItem>(res);
+}
+
+export async function deleteAdminIngredientCategoryTranslation(
+  accessToken: string,
+  categoryId: string,
+  languageId: string,
+): Promise<AdminIngredientCategoryItem> {
+  const res = await fetch(
+    `${getAdminApiBase()}/api/admin/ingredient-categories/${encodeURIComponent(categoryId)}/translations/${encodeURIComponent(languageId)}`,
+    {
+      ...fetchOpts,
+      method: "DELETE",
+      headers: bearer(accessToken),
+    },
+  );
+  return parseJson<AdminIngredientCategoryItem>(res);
+}
+
+export async function fetchAdminAttributes(accessToken: string): Promise<AdminAttributeItem[]> {
+  const res = await fetch(`${getAdminApiBase()}/api/admin/attributes`, {
+    ...fetchOpts,
+    headers: bearer(accessToken),
+  });
+  return parseJson<AdminAttributeItem[]>(res);
+}
+
+export async function createAdminAttribute(
+  accessToken: string,
+  payload: {
+    type: AdminAttributeType;
+    image?: string;
+    isSearchable?: boolean;
+    isActive?: boolean;
+    englishName: string;
+    translations?: Array<{ languageId: number; name: string }>;
+  },
+): Promise<AdminAttributeItem> {
+  const res = await fetch(`${getAdminApiBase()}/api/admin/attributes`, {
+    ...fetchOpts,
+    method: "POST",
+    headers: { ...bearer(accessToken), "Content-Type": "application/json" },
+    body: JSON.stringify(payload),
+  });
+  return parseJson<AdminAttributeItem>(res);
+}
+
+export async function updateAdminAttribute(
+  accessToken: string,
+  attributeId: string,
+  payload: Partial<{
+    type: AdminAttributeType;
+    image: string | null;
+    isSearchable: boolean;
+    isActive: boolean;
+  }>,
+): Promise<AdminAttributeItem> {
+  const res = await fetch(`${getAdminApiBase()}/api/admin/attributes/${encodeURIComponent(attributeId)}`, {
+    ...fetchOpts,
+    method: "PATCH",
+    headers: { ...bearer(accessToken), "Content-Type": "application/json" },
+    body: JSON.stringify(payload),
+  });
+  return parseJson<AdminAttributeItem>(res);
+}
+
+export async function deleteAdminAttribute(
+  accessToken: string,
+  attributeId: string,
+): Promise<{ success: true }> {
+  const res = await fetch(`${getAdminApiBase()}/api/admin/attributes/${encodeURIComponent(attributeId)}`, {
+    ...fetchOpts,
+    method: "DELETE",
+    headers: bearer(accessToken),
+  });
+  return parseJson<{ success: true }>(res);
+}
+
+export async function upsertAdminAttributeTranslation(
+  accessToken: string,
+  attributeId: string,
+  payload: { languageId: number; name: string },
+): Promise<AdminAttributeItem> {
+  const res = await fetch(
+    `${getAdminApiBase()}/api/admin/attributes/${encodeURIComponent(attributeId)}/translations`,
+    {
+      ...fetchOpts,
+      method: "POST",
+      headers: { ...bearer(accessToken), "Content-Type": "application/json" },
+      body: JSON.stringify(payload),
+    },
+  );
+  return parseJson<AdminAttributeItem>(res);
+}
+
+export async function deleteAdminAttributeTranslation(
+  accessToken: string,
+  attributeId: string,
+  languageId: string,
+): Promise<AdminAttributeItem> {
+  const res = await fetch(
+    `${getAdminApiBase()}/api/admin/attributes/${encodeURIComponent(attributeId)}/translations/${encodeURIComponent(languageId)}`,
+    {
+      ...fetchOpts,
+      method: "DELETE",
+      headers: bearer(accessToken),
+    },
+  );
+  return parseJson<AdminAttributeItem>(res);
+}
+
+export type AdminIngredientUnit =
+  | "KG"
+  | "GM"
+  | "LTR"
+  | "ML"
+  | "PCS"
+  | "BOX"
+  | "PACKET"
+  | "BOTTLE"
+  | "TRAY";
+
+export type AdminIngredientTranslationItem = {
+  id: string;
+  languageId: string;
+  languageCode: string;
+  languageName: string;
+  name: string;
+  shortName: string | null;
+  description: string | null;
+};
+
+export type AdminIngredientItem = {
+  id: string;
+  ingredientCategoryId: string | null;
+  ingredientCategorySlug: string | null;
+  ingredientCode: string;
+  sku: string | null;
+  slug: string;
+  image: string | null;
+  purchaseUnit: AdminIngredientUnit;
+  consumptionUnit: AdminIngredientUnit;
+  conversionFactor: number;
+  shelfLifeDays: number | null;
+  isActive: boolean;
+  createdAt: string;
+  updatedAt: string;
+  translations: AdminIngredientTranslationItem[];
+};
+
+export async function fetchAdminIngredients(accessToken: string): Promise<AdminIngredientItem[]> {
+  const res = await fetch(`${getAdminApiBase()}/api/admin/ingredients`, {
+    ...fetchOpts,
+    headers: bearer(accessToken),
+  });
+  return parseJson<AdminIngredientItem[]>(res);
+}
+
+export async function createAdminIngredient(
+  accessToken: string,
+  payload: {
+    ingredientCategoryId?: number;
+    ingredientCode?: string;
+    sku?: string;
+    slug?: string;
+    image?: string;
+    purchaseUnit?: AdminIngredientUnit;
+    consumptionUnit?: AdminIngredientUnit;
+    conversionFactor?: number;
+    shelfLifeDays?: number | null;
+    isActive?: boolean;
+    englishName: string;
+    englishShortName?: string;
+    englishDescription?: string;
+    translations?: Array<{
+      languageId: number;
+      name: string;
+      shortName?: string;
+      description?: string;
+    }>;
+  },
+): Promise<AdminIngredientItem> {
+  const res = await fetch(`${getAdminApiBase()}/api/admin/ingredients`, {
+    ...fetchOpts,
+    method: "POST",
+    headers: { ...bearer(accessToken), "Content-Type": "application/json" },
+    body: JSON.stringify(payload),
+  });
+  return parseJson<AdminIngredientItem>(res);
+}
+
+export async function updateAdminIngredient(
+  accessToken: string,
+  ingredientId: string,
+  payload: Partial<{
+    ingredientCategoryId: number | null;
+    ingredientCode: string;
+    sku: string | null;
+    slug: string;
+    image: string | null;
+    purchaseUnit: AdminIngredientUnit;
+    consumptionUnit: AdminIngredientUnit;
+    conversionFactor: number;
+    shelfLifeDays: number | null;
+    isActive: boolean;
+  }>,
+): Promise<AdminIngredientItem> {
+  const res = await fetch(`${getAdminApiBase()}/api/admin/ingredients/${encodeURIComponent(ingredientId)}`, {
+    ...fetchOpts,
+    method: "PATCH",
+    headers: { ...bearer(accessToken), "Content-Type": "application/json" },
+    body: JSON.stringify(payload),
+  });
+  return parseJson<AdminIngredientItem>(res);
+}
+
+export async function deleteAdminIngredient(
+  accessToken: string,
+  ingredientId: string,
+): Promise<{ success: true }> {
+  const res = await fetch(`${getAdminApiBase()}/api/admin/ingredients/${encodeURIComponent(ingredientId)}`, {
+    ...fetchOpts,
+    method: "DELETE",
+    headers: bearer(accessToken),
+  });
+  return parseJson<{ success: true }>(res);
+}
+
+export async function upsertAdminIngredientTranslation(
+  accessToken: string,
+  ingredientId: string,
+  payload: {
+    languageId: number;
+    name: string;
+    shortName?: string;
+    description?: string;
+  },
+): Promise<AdminIngredientItem> {
+  const res = await fetch(
+    `${getAdminApiBase()}/api/admin/ingredients/${encodeURIComponent(ingredientId)}/translations`,
+    {
+      ...fetchOpts,
+      method: "POST",
+      headers: { ...bearer(accessToken), "Content-Type": "application/json" },
+      body: JSON.stringify(payload),
+    },
+  );
+  return parseJson<AdminIngredientItem>(res);
+}
+
+export async function deleteAdminIngredientTranslation(
+  accessToken: string,
+  ingredientId: string,
+  languageId: string,
+): Promise<AdminIngredientItem> {
+  const res = await fetch(
+    `${getAdminApiBase()}/api/admin/ingredients/${encodeURIComponent(ingredientId)}/translations/${encodeURIComponent(languageId)}`,
+    {
+      ...fetchOpts,
+      method: "DELETE",
+      headers: bearer(accessToken),
+    },
+  );
+  return parseJson<AdminIngredientItem>(res);
 }

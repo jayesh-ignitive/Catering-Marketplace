@@ -124,7 +124,7 @@ export function OtpInput({
   const boxBase =
     "h-12 w-full min-w-0 rounded-lg border text-center text-lg font-semibold tabular-nums outline-none transition sm:h-14 sm:text-xl";
   const boxOk =
-    "border-gray-300 bg-white text-brand-dark focus:z-10 focus:border-brand-red focus:ring-1 focus:ring-brand-red";
+    "border-gray-300 bg-white text-brand-dark hover:border-brand-red/60 focus:z-10 focus:border-brand-red focus:ring-2 focus:ring-brand-red";
   const boxErr =
     "border-red-500 bg-red-50/50 text-brand-dark focus:z-10 focus:border-red-500 focus:ring-1 focus:ring-red-500";
   const boxDisabled = "cursor-not-allowed opacity-60";
@@ -155,7 +155,7 @@ export function OtpInput({
             onFocus={(e) => e.target.select()}
             aria-label={`Digit ${index + 1} of ${LENGTH}`}
             aria-invalid={hasError || undefined}
-            className={`${boxBase} ${disabled ? boxDisabled : ""} ${hasError ? boxErr : boxOk}`}
+            className={`${boxBase} ${disabled ? boxDisabled : "cursor-pointer"} ${hasError ? boxErr : boxOk}`}
           />
         ))}
       </div>

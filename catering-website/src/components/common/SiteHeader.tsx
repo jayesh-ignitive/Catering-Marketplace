@@ -7,6 +7,7 @@ import {
   BowlFood,
   List,
   MagnifyingGlass,
+  SignIn,
   SignOut,
   UserCircle,
   X,
@@ -23,6 +24,10 @@ function initialsFromName(name: string) {
   if (parts.length === 1) return parts[0]!.slice(0, 2).toUpperCase();
   return `${parts[0]![0] ?? ""}${parts[parts.length - 1]![0] ?? ""}`.toUpperCase() || "?";
 }
+
+/** Circular icon actions (search, log in) — matches hover/focus affordance */
+const headerIconActionClass =
+  "flex h-10 w-10 shrink-0 cursor-pointer items-center justify-center rounded-full border border-gray-200 text-brand-dark shadow-sm transition-all duration-300 hover:scale-110 hover:border-brand-red hover:bg-brand-red hover:text-white focus-visible:outline focus-visible:ring-2 focus-visible:ring-brand-red/35 focus-visible:ring-offset-2";
 
 export function SiteHeader() {
   const [open, setOpen] = useState(false);
@@ -137,7 +142,7 @@ export function SiteHeader() {
           <div className="flex items-center gap-2 sm:gap-4">
             <Link
               href="/caterers"
-              className="hidden h-10 w-10 items-center justify-center rounded-full border border-gray-200 text-brand-dark shadow-sm transition-all duration-300 hover:scale-110 hover:border-brand-red hover:bg-brand-red hover:text-white md:flex"
+              className={`hidden md:flex ${headerIconActionClass}`}
               aria-label="Search caterers"
             >
               <MagnifyingGlass className="text-lg" aria-hidden />
@@ -150,13 +155,15 @@ export function SiteHeader() {
               <>
                 <Link
                   href="/login"
-                  className="hidden text-sm font-semibold hover:text-brand-red md:inline-block"
+                  className={`hidden md:flex ${headerIconActionClass}`}
+                  aria-label="Log in"
+                  title="Log in"
                 >
-                  Log in
+                  <SignIn className="text-lg" weight="bold" aria-hidden />
                 </Link>
                 <Link
                   href="/register"
-                  className="rounded-md bg-brand-red px-4 py-2.5 text-sm font-semibold text-white shadow-lg shadow-red-500/30 transition-all duration-300 hover:-translate-y-1 hover:bg-red-700 hover:shadow-xl sm:px-5"
+                  className="cursor-pointer rounded-md bg-brand-red px-4 py-2.5 text-sm font-semibold text-white shadow-lg shadow-red-500/30 transition-all duration-300 hover:-translate-y-1 hover:bg-red-700 hover:shadow-xl sm:px-5"
                 >
                   Create an account
                 </Link>
@@ -165,7 +172,7 @@ export function SiteHeader() {
 
             <button
               type="button"
-              className="flex h-10 w-10 items-center justify-center rounded-md border border-gray-200 text-brand-dark md:hidden"
+              className="flex h-10 w-10 cursor-pointer items-center justify-center rounded-full border border-gray-200 text-brand-dark shadow-sm transition-all duration-300 hover:scale-105 hover:border-brand-red hover:bg-brand-red hover:text-white focus-visible:outline focus-visible:ring-2 focus-visible:ring-brand-red/35 focus-visible:ring-offset-2 md:hidden"
               aria-expanded={open}
               aria-label={open ? "Close menu" : "Open menu"}
               onClick={() => setOpen((v) => !v)}

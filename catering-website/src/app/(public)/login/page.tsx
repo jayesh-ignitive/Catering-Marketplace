@@ -5,6 +5,7 @@ import {
   obInputClass,
   obLabel,
   obPrimaryBtn,
+  obTextLink,
 } from "@/components/auth/PartnerOnboardingAuthShell";
 import { FormFieldError } from "@/components/common/FormFieldError";
 import { useAuth } from "@/context/AuthContext";
@@ -90,7 +91,7 @@ export default function LoginPage() {
       subtitle={
         <p>
           New here?{" "}
-          <Link href="/register" className="font-semibold text-brand-red hover:underline">
+          <Link href="/register" className={obTextLink}>
             Create an account
           </Link>{" "}
           and list your business.
@@ -156,7 +157,7 @@ export default function LoginPage() {
           <FormFieldError id="login-password-error" message={errors.password} />
         </div>
 
-        <button type="submit" disabled={submitting} className={`group ${obPrimaryBtn} mt-2`}>
+        <button type="submit" disabled={submitting} className={`group mt-2 ${obPrimaryBtn}`}>
           <span>{submitting ? "Signing in…" : "Sign in"}</span>
           {!submitting ? (
             <ArrowRight
@@ -169,7 +170,7 @@ export default function LoginPage() {
       </form>
 
       <p className="mt-8 text-center text-sm text-[#6B7280]">
-        <Link href="/verify-otp" className="font-semibold text-brand-red hover:underline">
+        <Link href="/verify-otp" className={obTextLink}>
           Have a verification code?
         </Link>
       </p>

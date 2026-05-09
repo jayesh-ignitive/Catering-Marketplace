@@ -4,6 +4,7 @@ import { List, UserCircle, SignOut } from "@phosphor-icons/react";
 import type { AuthUser } from "@/lib/auth-api";
 import { BrandLogoLink } from "@/components/common/BrandLogoLink";
 import Image from "next/image";
+import Link from "next/link";
 import { useState, useRef, useEffect } from "react";
 import { useAuth } from "@/context/AuthContext";
 
@@ -46,7 +47,7 @@ export function WorkspaceHeader({ user, onToggleSidebar }: WorkspaceHeaderProps)
         <button
           type="button"
           onClick={onToggleSidebar}
-          className="grid h-10 w-10 shrink-0 place-items-center rounded-xl bg-stone-100 text-stone-600 transition hover:bg-brand-red/10 hover:text-brand-red"
+          className="grid h-10 w-10 shrink-0 cursor-pointer place-items-center rounded-xl bg-stone-100 text-stone-600 transition hover:bg-brand-red/10 hover:text-brand-red focus-visible:outline focus-visible:ring-2 focus-visible:ring-brand-red/30 focus-visible:ring-offset-2"
           aria-label="Toggle workspace navigation"
         >
           <List size={22} weight="bold" aria-hidden />
@@ -66,24 +67,33 @@ export function WorkspaceHeader({ user, onToggleSidebar }: WorkspaceHeaderProps)
 
       <div className="flex items-center gap-3 sm:gap-5">
         <div className="relative" ref={menuRef}>
-          <button 
-            type="button" 
+          <button
+            type="button"
             onClick={() => setMenuOpen(!menuOpen)}
-            className={`group flex items-center justify-center rounded-md p-1 transition-colors focus-visible:outline focus-visible:ring-2 focus-visible:ring-brand-red/20 ${menuOpen ? 'bg-stone-100' : 'hover:bg-stone-100'}`}
+            aria-expanded={menuOpen}
+            aria-haspopup="menu"
+            aria-label="Account menu"
+            title="Account menu"
+            className={`group relative flex h-10 w-10 shrink-0 cursor-pointer items-center justify-center rounded-full border border-gray-200 bg-white p-0.5 shadow-sm transition-all duration-300 hover:scale-110 hover:border-brand-red hover:shadow-md focus-visible:outline focus-visible:ring-2 focus-visible:ring-brand-red/35 focus-visible:ring-offset-2 ${
+              menuOpen ? "border-brand-red ring-2 ring-brand-red/25" : ""
+            }`}
           >
-            <div className="relative">
-              <div className="relative h-9 w-9 overflow-hidden rounded-md border border-stone-200 shadow-sm transition-transform group-hover:scale-105">
-                <Image
-                  src={avatarUrl}
-                  alt={user.fullName}
-                  fill
-                  sizes="36px"
-                  className="object-cover"
-                  unoptimized
-                />
-              </div>
-              <div className="absolute -bottom-1 -right-1 h-2.5 w-2.5 rounded-full bg-green-500 ring-2 ring-white" title="Online"></div>
+            <div className="relative h-full w-full overflow-hidden rounded-full">
+              <Image
+                src={avatarUrl}
+                alt=""
+                fill
+                sizes="36px"
+                className="pointer-events-none object-cover"
+                unoptimized
+              />
+              <span className="sr-only">{user.fullName}</span>
             </div>
+            <span
+              className="pointer-events-none absolute bottom-0 right-0 h-2.5 w-2.5 rounded-full bg-green-500 ring-2 ring-white"
+              aria-hidden
+              title="Online"
+            />
           </button>
 
           {menuOpen && (
@@ -95,16 +105,17 @@ export function WorkspaceHeader({ user, onToggleSidebar }: WorkspaceHeaderProps)
                   {user.role === 'admin' ? 'Administrator' : 'Caterer Profile'}
                 </span>
               </div>
-              <button
-                type="button"
-                className="group/item flex w-full items-center gap-3 px-4 py-2.5 text-left text-sm font-semibold text-stone-700 transition hover:bg-stone-50 hover:text-brand-red"
+              <Link
+                href="/workspace/profile"
+                className="group/item flex w-full cursor-pointer items-center gap-3 px-4 py-2.5 text-left text-sm font-semibold text-stone-700 transition hover:bg-stone-50 hover:text-brand-red"
+                onClick={() => setMenuOpen(false)}
               >
-                <UserCircle className="text-stone-400 transition-colors group-hover/item:text-brand-red" size={18} weight="bold" />
+                <UserCircle className="text-stone-400 transition-colors group-hover/item:text-brand-red" size={18} weight="bold" aria-hidden />
                 Profile Settings
-              </button>
+              </Link>
               <button
                 type="button"
-                className="group/item flex w-full items-center gap-3 px-4 py-2.5 text-left text-sm font-semibold text-stone-700 transition hover:bg-stone-50 hover:text-brand-red border-t border-stone-50"
+                className="group/item flex w-full cursor-pointer items-center gap-3 border-t border-stone-50 px-4 py-2.5 text-left text-sm font-semibold text-stone-700 transition hover:bg-stone-50 hover:text-brand-red"
                 onClick={() => {
                   setMenuOpen(false);
                   logout();

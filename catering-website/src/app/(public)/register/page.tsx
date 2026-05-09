@@ -5,6 +5,7 @@ import {
   obInputClass,
   obLabel,
   obPrimaryBtn,
+  obTextLink,
 } from "@/components/auth/PartnerOnboardingAuthShell";
 import { FormFieldError } from "@/components/common/FormFieldError";
 import { useAuth } from "@/context/AuthContext";
@@ -135,7 +136,7 @@ export default function RegisterPage() {
         <p>
           Let&apos;s start with the basics — then we&apos;ll email you a code to verify your address. Already
           registered?{" "}
-          <Link href="/login" className="font-semibold text-brand-red hover:underline">
+          <Link href="/login" className={obTextLink}>
             Log in
           </Link>
         </p>
@@ -284,7 +285,7 @@ export default function RegisterPage() {
           <FormFieldError id="reg-password-error" message={errors.password} />
         </div>
 
-        <button type="submit" disabled={submitting} className={`group ${obPrimaryBtn} mt-4`}>
+        <button type="submit" disabled={submitting} className={`group mt-4 ${obPrimaryBtn}`}>
           <span>{submitting ? "Creating your workspace…" : "Continue — verify email next"}</span>
           {!submitting ? (
             <ArrowRight

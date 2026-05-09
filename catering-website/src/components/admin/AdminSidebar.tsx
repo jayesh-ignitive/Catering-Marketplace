@@ -1,35 +1,44 @@
 "use client";
 
-import type { AuthUser } from "@/lib/auth-api";
-import { ADMIN_NAV_SECTIONS, isAdminNavActive } from "@/components/admin/admin-nav";
-import { ChefHat, SignOut } from "@phosphor-icons/react";
+import {
+  ADMIN_NAV_SECTIONS,
+  isAdminNavActive,
+  isAdminNavSubmenu,
+  isAdminSubmenuActive,
+} from "@/components/admin/admin-nav";
+import { CaretDown, ChefHat } from "@phosphor-icons/react";
 import Link from "next/link";
-import { usePathname, useRouter } from "next/navigation";
+import { usePathname } from "next/navigation";
+import { useEffect, useState } from "react";
 
 type AdminSidebarProps = {
-  user: AuthUser;
   mobileOpen: boolean;
   collapsed: boolean;
   hoverExpanded: boolean;
   onDesktopHoverStart: () => void;
   onDesktopHoverEnd: () => void;
   onCloseMobile: () => void;
-  onLogout: () => void;
 };
 
 export function AdminSidebar({
-  user,
   mobileOpen,
   collapsed,
   hoverExpanded,
   onDesktopHoverStart,
   onDesktopHoverEnd,
   onCloseMobile,
-  onLogout,
 }: AdminSidebarProps) {
   const pathname = usePathname();
-  const router = useRouter();
   const compact = collapsed && !hoverExpanded;
+  const [catalogSubmenuOpen, setCatalogSubmenuOpen] = useState(true);
+
+  const catalogGroup = ADMIN_NAV_SECTIONS.find((s) => s.label === "Catalog")?.items.find(isAdminNavSubmenu);
+
+  useEffect(() => {
+    if (catalogGroup && isAdminSubmenuActive(pathname, catalogGroup)) {
+      setCatalogSubmenuOpen(true);
+    }
+  }, [pathname, catalogGroup]);
 
   return (
     <>
@@ -37,14 +46,14 @@ export function AdminSidebar({
         type="button"
         aria-label="Close admin menu overlay"
         className={`fixed inset-0 z-30 bg-black/50 transition md:hidden ${
-          mobileOpen ? "opacity-100" : "pointer-events-none opacity-0"
+          mobileOpen ? "cursor-pointer opacity-100" : "pointer-events-none cursor-default opacity-0"
         }`}
         onClick={onCloseMobile}
       />
       <aside
         onMouseEnter={onDesktopHoverStart}
         onMouseLeave={onDesktopHoverEnd}
-        className={`fixed inset-y-0 left-0 z-40 flex h-[100dvh] w-64 max-w-[86vw] shrink-0 flex-col justify-between border-r border-gray-100 bg-white shadow-[0_2px_15px_-3px_rgba(0,0,0,0.07),0_4px_6px_-2px_rgba(0,0,0,0.05)] transition-all duration-300 md:static md:max-w-none md:translate-x-0 ${
+        className={`fixed inset-y-0 left-0 z-40 flex h-[100dvh] w-64 max-w-[86vw] shrink-0 flex-col border-r border-gray-100 bg-white shadow-[0_2px_15px_-3px_rgba(0,0,0,0.07),0_4px_6px_-2px_rgba(0,0,0,0.05)] transition-all duration-300 md:static md:max-w-none md:translate-x-0 ${
           compact ? "md:w-20" : "md:w-64"
         } ${mobileOpen ? "translate-x-0" : "-translate-x-full md:translate-x-0"}`}
       >
@@ -75,8 +84,8 @@ export function AdminSidebar({
           </div>
 
           <nav
-            className={`admin-shell-scroll flex-1 space-y-1 overflow-y-auto transition-all duration-300 ${
-              compact ? "max-h-[calc(100dvh-180px)] p-2" : "max-h-[calc(100dvh-220px)] p-4"
+            className={`admin-shell-scroll flex-1 min-h-0 space-y-1 overflow-y-auto transition-all duration-300 ${
+              compact ? "p-2" : "p-4"
             }`}
           >
             {ADMIN_NAV_SECTIONS.map((section) => (
@@ -89,6 +98,103 @@ export function AdminSidebar({
                   <div className="my-2 border-t border-gray-100 first:mt-0 first:border-t-0" aria-hidden />
                 )}
                 {section.items.map((item) => {
+                  if (isAdminNavSubmenu(item)) {
+                    const submenuActive = isAdminSubmenuActive(pathname, item);
+                    if (compact) {
+                      return (
+                        <div key={item.label} className="space-y-1">
+                          {item.children.map((child) => {
+                            const active = isAdminNavActive(pathname, child.href);
+                            const Icon = child.icon;
+                            return (
+                              <Link
+                                key={child.href}
+                                href={child.href}
+                                onClick={onCloseMobile}
+                                title={child.label}
+                                className={`nav-link group flex items-center gap-3 rounded-xl py-3 transition-all duration-300 ${
+                                  compact ? "justify-center px-2" : "px-3"
+                                } ${
+                                  active
+                                    ? "bg-brand-red-light font-bold text-brand-red shadow-sm"
+                                    : "text-brand-text-muted hover:translate-x-1 hover:bg-brand-red-light hover:text-brand-red"
+                                }`}
+                              >
+                                <Icon
+                                  size={20}
+                                  weight={active ? "fill" : "regular"}
+                                  className={`shrink-0 transition-transform ${active ? "" : "group-hover:scale-110"}`}
+                                  aria-hidden
+                                />
+                              </Link>
+                            );
+                          })}
+                        </div>
+                      );
+                    }
+                    const SubmenuParentIcon = item.icon;
+                    return (
+                      <div key={item.label} className="space-y-0.5">
+                        <button
+                          type="button"
+                          onClick={() => setCatalogSubmenuOpen((o) => !o)}
+                          aria-expanded={catalogSubmenuOpen}
+                          className={`nav-link flex w-full items-center gap-3 rounded-xl px-3 py-3 text-left text-sm font-medium transition-all duration-300 ${
+                            submenuActive
+                              ? "bg-brand-red-light/70 font-semibold text-brand-red"
+                              : "text-brand-text-muted hover:bg-brand-red-light hover:text-brand-red"
+                          }`}
+                        >
+                          <SubmenuParentIcon
+                            size={20}
+                            weight={submenuActive ? "fill" : "regular"}
+                            className="shrink-0"
+                            aria-hidden
+                          />
+                          <span className="min-w-0 flex-1">{item.label}</span>
+                          <CaretDown
+                            size={16}
+                            weight="bold"
+                            className={`shrink-0 text-brand-text-muted transition-transform ${catalogSubmenuOpen ? "" : "-rotate-90"}`}
+                            aria-hidden
+                          />
+                        </button>
+                        <div
+                          className={`space-y-0.5 overflow-hidden border-l border-gray-100 pl-2 ml-4 transition-all duration-200 ${
+                            catalogSubmenuOpen ? "max-h-[280px] opacity-100" : "max-h-0 opacity-0"
+                          }`}
+                        >
+                          {catalogSubmenuOpen
+                            ? item.children.map((child) => {
+                                const active = isAdminNavActive(pathname, child.href);
+                                const Icon = child.icon;
+                                return (
+                                  <Link
+                                    key={child.href}
+                                    href={child.href}
+                                    onClick={onCloseMobile}
+                                    className={`nav-link group flex items-center gap-3 rounded-xl py-2.5 pl-2 pr-3 text-sm transition-all duration-300 ${
+                                      active
+                                        ? "bg-brand-red-light font-bold text-brand-red shadow-sm"
+                                        : "text-brand-text-muted hover:translate-x-0.5 hover:bg-brand-red-light/80 hover:text-brand-red"
+                                    }`}
+                                  >
+                                    <Icon
+                                      size={18}
+                                      weight={active ? "fill" : "regular"}
+                                      className={`shrink-0 transition-transform ${active ? "" : "group-hover:scale-110"}`}
+                                      aria-hidden
+                                    />
+                                    <span className="font-medium">{child.label}</span>
+                                  </Link>
+                                );
+                              })
+                            : null}
+                        </div>
+                      </div>
+                    );
+                  }
+
                   const active = isAdminNavActive(pathname, item.href);
                   const Icon = item.icon;
                   return (
@@ -117,46 +223,6 @@ export function AdminSidebar({
               </div>
             ))}
           </nav>
-        </div>
-
-        <div className={`shrink-0 border-t border-gray-50 transition-all duration-300 ${compact ? "p-2" : "p-4"}`}>
-          {!compact ? (
-            <>
-              <p className="truncate text-sm font-semibold text-brand-text-dark" title={user.fullName}>
-                {user.fullName}
-              </p>
-              <p className="truncate text-xs text-brand-text-muted" title={user.email}>
-                {user.email}
-              </p>
-            </>
-          ) : null}
-          <div className={`mt-3 flex flex-wrap items-center gap-2 ${compact ? "justify-center" : ""}`}>
-            <button
-              type="button"
-              onClick={() => {
-                onLogout();
-                onCloseMobile();
-              }}
-              className={`inline-flex items-center gap-2 rounded-xl border border-gray-200 bg-brand-page py-2 text-xs font-semibold text-brand-text-dark transition hover:border-brand-red hover:bg-brand-red-light hover:text-brand-red ${
-                compact ? "px-2" : "px-3"
-              }`}
-            >
-              <SignOut size={16} aria-hidden />
-              {!compact ? <span>Sign out</span> : null}
-            </button>
-            {!compact ? (
-              <button
-                type="button"
-                onClick={() => {
-                  router.push("/");
-                  onCloseMobile();
-                }}
-                className="rounded-xl px-2 py-2 text-xs font-semibold text-brand-text-muted transition hover:bg-brand-page hover:text-brand-red"
-              >
-                Public site
-              </button>
-            ) : null}
-          </div>
         </div>
       </aside>
     </>

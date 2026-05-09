@@ -52,11 +52,14 @@ function VerifyEmailInner() {
         <div className="mt-6 flex flex-col gap-3 text-sm font-semibold">
           <Link
             href="/login"
-            className="rounded-xl bg-gradient-to-r from-[var(--primary)] to-[var(--orange-deep)] py-3 text-center text-white shadow-md"
+            className="inline-flex cursor-pointer items-center justify-center rounded-xl bg-gradient-to-r from-[var(--primary)] to-[var(--orange-deep)] py-3 text-center text-white shadow-md transition-all hover:-translate-y-0.5 hover:shadow-lg active:scale-[0.98] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[var(--primary)] focus-visible:ring-offset-2"
           >
             Go to log in
           </Link>
-          <Link href="/register" className="text-center text-[var(--primary)] underline-offset-2 hover:underline">
+          <Link
+            href="/register"
+            className="cursor-pointer rounded-sm py-2 text-center text-[var(--primary)] underline-offset-2 outline-none transition-colors hover:text-[var(--orange-deep)] hover:underline focus-visible:underline focus-visible:ring-2 focus-visible:ring-[var(--primary)]/40 focus-visible:ring-offset-2"
+          >
             Create a new account
           </Link>
         </div>
