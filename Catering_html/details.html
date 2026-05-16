@@ -1,0 +1,276 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Dariapur Heritage Catering - Bharat Caterers</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script>
+        tailwind.config = {
+            theme: {
+                extend: {
+                    colors: {
+                        brand: {
+                            red: '#E53935',
+                            dark: '#1C1C1C',
+                            yellow: '#FFC107',
+                            green: '#4CAF50',
+                            gray: '#F5F5F5',
+                        }
+                    },
+                    fontFamily: {
+                        sans: ['Inter', 'sans-serif'],
+                        heading: ['Outfit', 'sans-serif'],
+                    }
+                }
+            }
+        }
+    </script>
+    <link rel="stylesheet" href="style.css">
+    <!-- Phosphor Icons -->
+    <script src="https://unpkg.com/@phosphor-icons/web"></script>
+    <style>
+        .sticky-form {
+            position: sticky;
+            top: 100px;
+        }
+        .tab-active {
+            border-bottom: 3px solid #E53935;
+            color: #E53935;
+        }
+    </style>
+</head>
+<body class="bg-white text-gray-800">
+
+    <!-- Header -->
+    <header class="bg-white shadow-sm sticky top-0 z-50">
+        <div class="max-w-7xl mx-auto px-6 py-4 flex justify-between items-center">
+            <a href="index.html" class="flex items-center gap-2">
+                <div class="flex flex-col relative pl-2">
+                    <i class="ph-fill ph-chef-hat text-3xl text-[#d4af37] absolute -top-4 -left-2 rotate-[-10deg]"></i>
+                    <span class="font-logo text-4xl text-brand-dark leading-none tracking-tight translate-y-1">Bharat</span>
+                    <span class="bg-brand-red text-white text-[9px] uppercase tracking-[0.3em] font-bold px-2 py-0.5 rounded-sm -rotate-2 -mt-1 shadow-sm relative z-10">Catering</span>
+                </div>
+            </a>
+            <div class="flex items-center gap-4">
+                <a href="listing.html" class="text-sm font-bold text-gray-600 hover:text-brand-red transition-colors flex items-center gap-1">
+                    <i class="ph ph-arrow-left"></i> Back to Listing
+                </a>
+                <button class="bg-brand-red text-white px-5 py-2.5 rounded-md font-semibold text-sm hover:bg-red-700 transition-all shadow-lg shadow-red-500/30">Get Quote</button>
+            </div>
+        </div>
+    </header>
+
+    <!-- Hero Section -->
+    <section class="relative h-[400px]">
+        <img src="assets/images/caterer_banner.png" alt="Cover" class="w-full h-full object-cover">
+        <div class="absolute inset-0 bg-gradient-to-t from-black/70 to-transparent"></div>
+        
+        <div class="absolute -bottom-24 left-0 w-full px-6">
+            <div class="max-w-7xl mx-auto bg-white rounded-2xl shadow-2xl p-8 flex flex-col md:flex-row items-center gap-8 border border-gray-100">
+                <!-- Profile Image -->
+                <div class="w-40 h-40 rounded-2xl overflow-hidden shadow-xl border-4 border-white -mt-20 md:-mt-32 shrink-0 bg-white">
+                    <img src="assets/images/caterer_banner.png" alt="Logo" class="w-full h-full object-cover">
+                </div>
+                
+                <!-- Info -->
+                <div class="flex-1 text-center md:text-left">
+                    <div class="flex flex-col md:flex-row md:items-center gap-3 mb-2">
+                        <h1 class="text-3xl font-heading font-bold text-brand-dark">Dariapur Heritage Catering</h1>
+                        <span class="bg-brand-green/10 text-brand-green text-[10px] font-bold px-3 py-1 rounded-full uppercase tracking-wider flex items-center gap-1 w-fit mx-auto md:mx-0">
+                            <i class="ph-fill ph-seal-check"></i> Verified
+                        </span>
+                    </div>
+                    <p class="text-gray-500 font-medium mb-4 italic">"Live counters, hygienic prep, on-time service in Hatkeshwar."</p>
+                    
+                    <div class="flex flex-wrap justify-center md:justify-start gap-6 text-sm font-semibold text-gray-600">
+                        <div class="flex items-center gap-2">
+                            <i class="ph-fill ph-star text-brand-yellow text-lg"></i>
+                            <span>4.7 (3 Reviews)</span>
+                        </div>
+                        <div class="flex items-center gap-2">
+                            <i class="ph-fill ph-map-pin text-brand-red text-lg"></i>
+                            <span>Maninagar Station Road, Ahmedabad</span>
+                        </div>
+                        <div class="flex items-center gap-2">
+                            <i class="ph-fill ph-calendar text-blue-500 text-lg"></i>
+                            <span>6+ Years Experience</span>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Action Buttons -->
+                <div class="flex gap-3 shrink-0">
+                    <button class="w-12 h-12 rounded-xl border border-gray-200 flex items-center justify-center text-gray-600 hover:bg-gray-50 transition-all">
+                        <i class="ph ph-share-network text-xl"></i>
+                    </button>
+                    <button class="w-12 h-12 rounded-xl border border-gray-200 flex items-center justify-center text-gray-600 hover:bg-gray-50 transition-all">
+                        <i class="ph ph-heart text-xl"></i>
+                    </button>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- Content Section -->
+    <main class="max-w-7xl mx-auto px-6 pt-36 pb-20">
+        <div class="flex flex-col lg:flex-row gap-12">
+            
+            <!-- Left Column: Details -->
+            <div class="flex-1 space-y-12">
+                
+                <!-- Navigation Tabs -->
+                <div class="flex border-b border-gray-100 overflow-x-auto no-scrollbar">
+                    <button class="px-6 py-4 font-bold text-sm tab-active whitespace-nowrap">About</button>
+                    <button class="px-6 py-4 font-bold text-sm text-gray-500 hover:text-brand-red transition-colors whitespace-nowrap">Menu & Pricing</button>
+                    <button class="px-6 py-4 font-bold text-sm text-gray-500 hover:text-brand-red transition-colors whitespace-nowrap">Gallery</button>
+                    <button class="px-6 py-4 font-bold text-sm text-gray-500 hover:text-brand-red transition-colors whitespace-nowrap">Reviews</button>
+                </div>
+
+                <!-- About Section -->
+                <section>
+                    <h2 class="text-2xl font-heading font-bold text-brand-dark mb-6 flex items-center gap-3">
+                        <span class="w-1.5 h-8 bg-brand-red rounded-full"></span> About the Caterer
+                    </h2>
+                    <div class="text-gray-600 leading-relaxed space-y-4">
+                        <p>
+                            Operates from Hatkeshwar, Ahmedabad, with over 6 years of experience specializing in live grill and BBQ experiences. We pride ourselves on delivering a sensory culinary experience that combines theatrical cooking with exceptional taste.
+                        </p>
+                        <p>
+                            Dariapur Heritage Catering handles full event planning including menus, staffing, and logistics for various locations like Navrangpura and Maninagar. We are known for maintaining high hygienic preparation standards and punctuality.
+                        </p>
+                        <p>
+                            Ideal for Receptions, corporate lunches, and family functions, our team ensures every guest is treated to fresh, piping hot delicacies straight from our live counters.
+                        </p>
+                    </div>
+                </section>
+
+                <!-- Specialties Grid -->
+                <section>
+                    <h2 class="text-2xl font-heading font-bold text-brand-dark mb-6 flex items-center gap-3">
+                        <span class="w-1.5 h-8 bg-brand-green rounded-full"></span> Our Specialties
+                    </h2>
+                    <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                        <div class="bg-gray-50 p-4 rounded-xl flex items-center gap-4">
+                            <div class="w-12 h-12 bg-white rounded-lg flex items-center justify-center shadow-sm">
+                                <i class="ph ph-fire text-2xl text-orange-500"></i>
+                            </div>
+                            <div>
+                                <h4 class="font-bold text-brand-dark">BBQ & Live Grill</h4>
+                                <p class="text-xs text-gray-500">Signature live counter experience</p>
+                            </div>
+                        </div>
+                        <div class="bg-gray-50 p-4 rounded-xl flex items-center gap-4">
+                            <div class="w-12 h-12 bg-white rounded-lg flex items-center justify-center shadow-sm">
+                                <i class="ph ph-cooking-pot text-2xl text-brand-red"></i>
+                            </div>
+                            <div>
+                                <h4 class="font-bold text-brand-dark">Live Dosa Counter</h4>
+                                <p class="text-xs text-gray-500">Freshly made crispy dosas</p>
+                            </div>
+                        </div>
+                        <div class="bg-gray-50 p-4 rounded-xl flex items-center gap-4">
+                            <div class="w-12 h-12 bg-white rounded-lg flex items-center justify-center shadow-sm">
+                                <i class="ph ph-hamburger text-2xl text-brand-yellow"></i>
+                            </div>
+                            <div>
+                                <h4 class="font-bold text-brand-dark">Pav Bhaji Stall</h4>
+                                <p class="text-xs text-gray-500">Authentic street food flavors</p>
+                            </div>
+                        </div>
+                        <div class="bg-gray-50 p-4 rounded-xl flex items-center gap-4">
+                            <div class="w-12 h-12 bg-white rounded-lg flex items-center justify-center shadow-sm">
+                                <i class="ph ph-ice-cream text-2xl text-blue-400"></i>
+                            </div>
+                            <div>
+                                <h4 class="font-bold text-brand-dark">Ice Cream Cart</h4>
+                                <p class="text-xs text-gray-500">Perfect end to a great meal</p>
+                            </div>
+                        </div>
+                    </div>
+                </section>
+
+                <!-- Gallery Section (Preview) -->
+                <section>
+                    <div class="flex justify-between items-end mb-6">
+                        <h2 class="text-2xl font-heading font-bold text-brand-dark flex items-center gap-3">
+                            <span class="w-1.5 h-8 bg-brand-yellow rounded-full"></span> Photo Gallery
+                        </h2>
+                        <a href="#" class="text-brand-red font-bold text-sm hover:underline">View All Photos</a>
+                    </div>
+                    <div class="grid grid-cols-2 md:grid-cols-3 gap-4">
+                        <div class="h-48 rounded-2xl overflow-hidden">
+                            <img src="https://images.unsplash.com/photo-1555244162-803834f70033?auto=format&fit=crop&w=400&q=80" alt="Food 1" class="w-full h-full object-cover hover:scale-110 transition duration-500">
+                        </div>
+                        <div class="h-48 rounded-2xl overflow-hidden">
+                            <img src="https://images.unsplash.com/photo-1504674900247-0877df9cc836?auto=format&fit=crop&w=400&q=80" alt="Food 2" class="w-full h-full object-cover hover:scale-110 transition duration-500">
+                        </div>
+                        <div class="h-48 rounded-2xl overflow-hidden">
+                            <img src="https://images.unsplash.com/photo-1476514525535-07fb3b4ae5f1?auto=format&fit=crop&w=400&q=80" alt="Food 3" class="w-full h-full object-cover hover:scale-110 transition duration-500">
+                        </div>
+                    </div>
+                </section>
+            </div>
+
+            <!-- Right Column: Inquiry Form -->
+            <aside class="w-full lg:w-96">
+                <div class="sticky-form bg-white rounded-3xl shadow-2xl border border-gray-100 overflow-hidden">
+                    <div class="bg-brand-dark p-6 text-white text-center">
+                        <h3 class="text-xl font-heading font-bold mb-1">Check Availability</h3>
+                        <p class="text-gray-400 text-xs uppercase tracking-widest font-semibold">Get a free quote today</p>
+                    </div>
+                    <div class="p-8 space-y-5">
+                        <div>
+                            <label class="block text-xs font-bold text-gray-500 uppercase tracking-wider mb-2">Event Date</label>
+                            <input type="date" class="w-full px-4 py-3 bg-gray-50 border border-gray-100 rounded-xl focus:outline-none focus:border-brand-red transition-all">
+                        </div>
+                        <div>
+                            <label class="block text-xs font-bold text-gray-500 uppercase tracking-wider mb-2">Guest Count</label>
+                            <select class="w-full px-4 py-3 bg-gray-50 border border-gray-100 rounded-xl focus:outline-none focus:border-brand-red transition-all">
+                                <option>150 - 300 Guests</option>
+                                <option>300 - 500 Guests</option>
+                                <option>500+ Guests</option>
+                            </select>
+                        </div>
+                        <div>
+                            <label class="block text-xs font-bold text-gray-500 uppercase tracking-wider mb-2">Event Type</label>
+                            <select class="w-full px-4 py-3 bg-gray-50 border border-gray-100 rounded-xl focus:outline-none focus:border-brand-red transition-all">
+                                <option>Wedding Reception</option>
+                                <option>Corporate Event</option>
+                                <option>Birthday Party</option>
+                                <option>Other</option>
+                            </select>
+                        </div>
+                        <div class="pt-4">
+                            <button class="w-full bg-brand-red text-white py-4 rounded-2xl font-bold text-lg hover:bg-red-700 hover:-translate-y-1 transition-all shadow-xl shadow-red-500/30">
+                                Send Inquiry
+                            </button>
+                        </div>
+                        <p class="text-center text-[10px] text-gray-400">
+                            By clicking send, you agree to our <a href="#" class="underline">Terms</a> & <a href="#" class="underline">Privacy Policy</a>
+                        </p>
+                    </div>
+                    <div class="bg-gray-50 p-6 border-t border-gray-100 flex items-center justify-between">
+                        <div class="flex -space-x-3">
+                            <div class="w-8 h-8 rounded-full bg-brand-red border-2 border-white flex items-center justify-center text-[10px] text-white font-bold">A</div>
+                            <div class="w-8 h-8 rounded-full bg-brand-green border-2 border-white flex items-center justify-center text-[10px] text-white font-bold">M</div>
+                            <div class="w-8 h-8 rounded-full bg-brand-dark border-2 border-white flex items-center justify-center text-[10px] text-white font-bold">+5</div>
+                        </div>
+                        <span class="text-[11px] font-bold text-gray-500 uppercase">Trusted by 50+ clients</span>
+                    </div>
+                </div>
+            </aside>
+        </div>
+    </main>
+
+    <!-- Footer Reused -->
+    <footer class="bg-[#111] text-gray-400 pt-20 pb-10 zig-zag-border mt-20">
+        <div class="max-w-7xl mx-auto px-6">
+            <div class="border-t border-white/10 pt-8 text-center text-sm">
+                <p>&copy; 2024 Bharat Caterers. All rights reserved.</p>
+            </div>
+        </div>
+    </footer>
+
+</body>
+</html>

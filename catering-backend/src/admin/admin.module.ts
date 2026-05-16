@@ -15,8 +15,10 @@ import { MenuItemIngredient } from '../catalog/menu-item-ingredient.entity';
 import { MenuItemTranslation } from '../catalog/menu-item-translation.entity';
 import { MenuItem } from '../catalog/menu-item.entity';
 import { Language } from '../localization/language.entity';
+import { Category } from '../marketplace/category.entity';
 import { CatererMarketplaceListing } from '../marketplace/caterer-marketplace-listing.entity';
 import { CatererReview } from '../marketplace/caterer-review.entity';
+import { ServiceCategoriesModule } from '../marketplace/service-categories.module';
 import { Tenant } from '../tenant/tenant.entity';
 import { User } from '../user/user.entity';
 import { AdminCaterersController } from './admin-caterers.controller';
@@ -35,6 +37,8 @@ import { AdminMenuCategoriesController } from './admin-menu-categories.controlle
 import { AdminMenuCategoriesService } from './admin-menu-categories.service';
 import { AdminMenuItemsController } from './admin-menu-items.controller';
 import { AdminMenuItemsService } from './admin-menu-items.service';
+import { AdminServiceCategoriesController } from './admin-service-categories.controller';
+import { AdminServiceCategoriesService } from './admin-service-categories.service';
 import { AdminUsersController } from './admin-users.controller';
 import { AdminUsersService } from './admin-users.service';
 import { RolesGuard } from './roles.guard';
@@ -42,10 +46,12 @@ import { RolesGuard } from './roles.guard';
 @Module({
   imports: [
     AuthModule,
+    ServiceCategoriesModule,
     TypeOrmModule.forFeature([
       User,
       Tenant,
       ContactSubmission,
+      Category,
       CatererMarketplaceListing,
       CatererReview,
       Language,
@@ -73,6 +79,7 @@ import { RolesGuard } from './roles.guard';
     AdminIngredientsController,
     AdminMenuItemsController,
     AdminAttributesController,
+    AdminServiceCategoriesController,
   ],
   providers: [
     AdminDashboardService,
@@ -84,6 +91,7 @@ import { RolesGuard } from './roles.guard';
     AdminIngredientsService,
     AdminMenuItemsService,
     AdminAttributesService,
+    AdminServiceCategoriesService,
     RolesGuard,
   ],
 })

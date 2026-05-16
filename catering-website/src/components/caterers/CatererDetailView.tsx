@@ -1,0 +1,617 @@
+"use client";
+
+import {
+  ArrowLeft,
+  Calendar,
+  Fire,
+  Hamburger,
+  Heart,
+  IceCream,
+  MapPin,
+  CookingPot,
+  SealCheck,
+  ShareNetwork,
+  Star,
+} from "@phosphor-icons/react";
+import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
+import Link from "next/link";
+import { useParams } from "next/navigation";
+import { useCallback, useMemo, useState } from "react";
+import { toast } from "react-toastify";
+import {
+  fetchMarketplaceCaterer,
+  formatMarketplaceCapacityRange,
+  formatMarketplacePriceFromInr,
+  postCatererReview,
+  type MarketplaceDetail,
+} from "@/lib/catering-api";
+import { RemoteContentImage } from "@/components/common/RemoteContentImage";
+import { getCatererCardBadge } from "@/lib/caterer-listing-utils";
+import { publicSiteConfig } from "@/lib/site-config";
+import { CatererDetailGallery } from "@/components/caterers/CatererDetailGallery";
+
+const nf = new Intl.NumberFormat("en-IN");
+
+type DetailTab = "about" | "menu" | "gallery" | "reviews";
+
+const SPECIALTY_ICONS = [Fire, CookingPot, Hamburger, IceCream] as const;
+
+function locationDisplay(d: MarketplaceDetail): string {
+  if (d.streetAddress?.trim()) {
+    return [d.streetAddress, d.city].filter(Boolean).join(", ");
+  }
+  return [d.city, d.state, d.country].filter(Boolean).join(", ") || "Location on request";
+}
+
+function WriteReviewForm({ slug }: { slug: string }) {
+  const qc = useQueryClient();
+  const [authorName, setAuthorName] = useState("");
+  const [rating, setRating] = useState(5);
+  const [title, setTitle] = useState("");
+  const [comment, setComment] = useState("");
+
+  const m = useMutation({
+    mutationFn: () =>
+      postCatererReview(slug, {
+        authorName: authorName.trim(),
+        rating,
+        title: title.trim() || undefined,
+        comment: comment.trim(),
+      }),
+    onSuccess: () => {
+      toast.success("Thanks — your review was posted.");
+      setAuthorName("");
+      setTitle("");
+      setComment("");
+      setRating(5);
+      void qc.invalidateQueries({ queryKey: ["marketplace", "caterer", slug] });
+    },
+    onError: (err: Error) => toast.error(err.message),
+  });
+
+  return (
+    <form
+      className="mt-8 rounded-2xl border border-gray-100 bg-gray-50/80 p-6"
+      onSubmit={(e) => {
+        e.preventDefault();
+        m.mutate();
+      }}
+    >
+      <h3 className="font-heading text-base font-bold text-brand-dark">Write a review</h3>
+      <p className="mt-1 text-xs text-gray-500">Share your experience (public, not verified purchases).</p>
+      <div className="mt-4 grid gap-4 sm:grid-cols-2">
+        <label className="block text-xs font-bold uppercase tracking-wider text-gray-500">
+          Your name
+          <input
+            required
+            maxLength={120}
+            value={authorName}
+            onChange={(e) => setAuthorName(e.target.value)}
+            className="mt-2 w-full rounded-xl border border-gray-100 bg-white px-3 py-2.5 text-sm outline-none focus:border-brand-red"
+            placeholder="e.g. Priya S."
+          />
+        </label>
+        <label className="block text-xs font-bold uppercase tracking-wider text-gray-500">
+          Rating
+          <select
+            value={rating}
+            onChange={(e) => setRating(Number(e.target.value))}
+            className="mt-2 w-full rounded-xl border border-gray-100 bg-white px-3 py-2.5 text-sm outline-none focus:border-brand-red"
+          >
+            {[5, 4, 3, 2, 1].map((n) => (
+              <option key={n} value={n}>
+                {n} stars
+              </option>
+            ))}
+          </select>
+        </label>
+      </div>
+      <label className="mt-4 block text-xs font-bold uppercase tracking-wider text-gray-500">
+        Short title (optional)
+        <input
+          maxLength={200}
+          value={title}
+          onChange={(e) => setTitle(e.target.value)}
+          className="mt-2 w-full rounded-xl border border-gray-100 bg-white px-3 py-2.5 text-sm outline-none focus:border-brand-red"
+        />
+      </label>
+      <label className="mt-4 block text-xs font-bold uppercase tracking-wider text-gray-500">
+        Your review
+        <textarea
+          required
+          minLength={10}
+          maxLength={2000}
+          rows={4}
+          value={comment}
+          onChange={(e) => setComment(e.target.value)}
+          className="mt-2 w-full resize-y rounded-xl border border-gray-100 bg-white px-3 py-2.5 text-sm outline-none focus:border-brand-red"
+        />
+      </label>
+      <button
+        type="submit"
+        disabled={m.isPending}
+        className="mt-5 cursor-pointer rounded-2xl bg-brand-red px-6 py-3 text-sm font-bold text-white hover:bg-red-700 disabled:opacity-60"
+      >
+        {m.isPending ? "Posting…" : "Post review"}
+      </button>
+    </form>
+  );
+}
+
+function InquiryForm({ businessName }: { businessName: string }) {
+  const [eventDate, setEventDate] = useState("");
+  const [guests, setGuests] = useState("");
+  const [eventType, setEventType] = useState("Wedding Reception");
+
+  const onSubmit = (e: React.FormEvent) => {
+    e.preventDefault();
+    const subject = encodeURIComponent(`Availability: ${businessName}`);
+    const body = encodeURIComponent(
+      `Event date: ${eventDate || "—"}\nGuests: ${guests || "—"}\nEvent type: ${eventType}`
+    );
+    window.location.href = `mailto:${publicSiteConfig.contactEmail}?subject=${subject}&body=${body}`;
+  };
+
+  return (
+    <aside className="w-full lg:w-96">
+      <div className="overflow-hidden rounded-2xl border border-gray-100 bg-white shadow-xl sm:rounded-3xl sm:shadow-2xl lg:sticky lg:top-24">
+        <div className="bg-brand-dark p-4 text-center text-white sm:p-6">
+          <h3 className="font-heading text-lg font-bold sm:text-xl">Check Availability</h3>
+          <p className="text-xs font-semibold uppercase tracking-widest text-gray-400">
+            Get a free quote today
+          </p>
+        </div>
+        <form id="inquiry" className="space-y-4 p-5 sm:space-y-5 sm:p-8" onSubmit={onSubmit}>
+          <label className="block">
+            <span className="mb-2 block text-xs font-bold uppercase tracking-wider text-gray-500">
+              Event Date
+            </span>
+            <input
+              type="date"
+              value={eventDate}
+              onChange={(e) => setEventDate(e.target.value)}
+              className="w-full rounded-xl border border-gray-100 bg-gray-50 px-4 py-3 outline-none focus:border-brand-red"
+            />
+          </label>
+          <label className="block">
+            <span className="mb-2 block text-xs font-bold uppercase tracking-wider text-gray-500">
+              Guest Count
+            </span>
+            <select
+              value={guests}
+              onChange={(e) => setGuests(e.target.value)}
+              className="w-full rounded-xl border border-gray-100 bg-gray-50 px-4 py-3 outline-none focus:border-brand-red"
+            >
+              <option value="">Select range</option>
+              <option>150 – 300 Guests</option>
+              <option>300 – 500 Guests</option>
+              <option>500+ Guests</option>
+            </select>
+          </label>
+          <label className="block">
+            <span className="mb-2 block text-xs font-bold uppercase tracking-wider text-gray-500">
+              Event Type
+            </span>
+            <select
+              value={eventType}
+              onChange={(e) => setEventType(e.target.value)}
+              className="w-full rounded-xl border border-gray-100 bg-gray-50 px-4 py-3 outline-none focus:border-brand-red"
+            >
+              <option>Wedding Reception</option>
+              <option>Corporate Event</option>
+              <option>Birthday Party</option>
+              <option>Other</option>
+            </select>
+          </label>
+          <button
+            type="submit"
+            className="w-full cursor-pointer rounded-2xl bg-brand-red py-3 text-base font-bold text-white shadow-xl shadow-red-500/30 transition hover:-translate-y-0.5 hover:bg-red-700 sm:py-4 sm:text-lg"
+          >
+            Send Inquiry
+          </button>
+          <p className="text-center text-[10px] text-gray-400">
+            By clicking send, you agree to our{" "}
+            <Link href="/terms" className="underline">
+              Terms
+            </Link>{" "}
+            &{" "}
+            <Link href="/privacy" className="underline">
+              Privacy Policy
+            </Link>
+          </p>
+        </form>
+        <div className="flex items-center justify-between border-t border-gray-100 bg-gray-50 p-6">
+          <div className="flex -space-x-3">
+            <span className="flex h-8 w-8 items-center justify-center rounded-full border-2 border-white bg-brand-red text-[10px] font-bold text-white">
+              A
+            </span>
+            <span className="flex h-8 w-8 items-center justify-center rounded-full border-2 border-white bg-brand-green text-[10px] font-bold text-white">
+              M
+            </span>
+            <span className="flex h-8 w-8 items-center justify-center rounded-full border-2 border-white bg-brand-dark text-[10px] font-bold text-white">
+              +5
+            </span>
+          </div>
+          <span className="text-[11px] font-bold uppercase text-gray-500">Trusted by clients</span>
+        </div>
+      </div>
+    </aside>
+  );
+}
+
+function ProfileBody({ d, slug }: { d: MarketplaceDetail; slug: string }) {
+  const [tab, setTab] = useState<DetailTab>("about");
+  const badge = getCatererCardBadge(d);
+  const priceLine = formatMarketplacePriceFromInr(d.priceFrom);
+  const capacityLine = formatMarketplaceCapacityRange(d.capacityGuestMin, d.capacityGuestMax);
+  const specialties = useMemo(() => {
+    const fromServices = d.servicesOffered.slice(0, 4);
+    if (fromServices.length >= 2) {
+      return fromServices.map((name, i) => ({
+        name,
+        hint: d.keywords[i]?.label ?? "Popular with our guests",
+        Icon: SPECIALTY_ICONS[i % SPECIALTY_ICONS.length]!,
+      }));
+    }
+    return (d.keywords ?? []).slice(0, 4).map((k, i) => ({
+      name: k.label,
+      hint: "Signature offering",
+      Icon: SPECIALTY_ICONS[i % SPECIALTY_ICONS.length]!,
+    }));
+  }, [d]);
+
+  const scrollTo = useCallback((id: DetailTab) => {
+    setTab(id);
+    const el = document.getElementById(`caterer-${id}`);
+    el?.scrollIntoView({ behavior: "smooth", block: "start" });
+  }, []);
+
+  const tabs: { id: DetailTab; label: string }[] = [
+    { id: "about", label: "About" },
+    { id: "menu", label: "Menu & Pricing" },
+    { id: "gallery", label: "Gallery" },
+    { id: "reviews", label: "Reviews" },
+  ];
+
+  return (
+    <>
+      <section className="relative h-[220px] sm:h-[300px] md:h-[400px]">
+        {d.heroImageUrl ? (
+          <RemoteContentImage
+            src={d.heroImageUrl}
+            alt=""
+            fill
+            sizes="100vw"
+            priority
+            className="object-cover"
+          />
+        ) : (
+          <div className="h-full w-full bg-gradient-to-br from-brand-dark to-brand-red/50" aria-hidden />
+        )}
+        <div className="absolute inset-0 bg-gradient-to-t from-black/70 to-transparent" aria-hidden />
+
+        <div className="absolute -bottom-14 left-0 w-full px-4 sm:-bottom-20 sm:px-6 md:-bottom-24">
+          <div className="mx-auto flex max-w-7xl flex-col items-center gap-4 rounded-2xl border border-gray-100 bg-white p-4 shadow-2xl sm:gap-6 sm:p-6 md:flex-row md:gap-8 md:p-8">
+            <div className="relative -mt-12 h-24 w-24 shrink-0 overflow-hidden rounded-xl border-4 border-white bg-white shadow-xl sm:-mt-16 sm:h-32 sm:w-32 sm:rounded-2xl md:-mt-32 md:h-40 md:w-40">
+              {d.heroImageUrl ? (
+                <RemoteContentImage
+                  src={d.heroImageUrl}
+                  alt=""
+                  fill
+                  sizes="160px"
+                  className="object-cover"
+                />
+              ) : (
+                <div className="flex h-full items-center justify-center bg-brand-red/10 font-logo text-5xl text-brand-red/40">
+                  {d.businessName.slice(0, 1)}
+                </div>
+              )}
+            </div>
+
+            <div className="min-w-0 flex-1 text-center md:text-left">
+              <div className="mb-2 flex flex-col items-center gap-2 md:flex-row md:gap-3">
+                <h1 className="font-heading text-xl font-bold leading-tight text-brand-dark sm:text-2xl md:text-3xl">
+                  {d.businessName}
+                </h1>
+                {badge?.kind === "verified" || badge?.kind === "top-rated" ? (
+                  <span className="flex w-fit items-center gap-1 rounded-full bg-brand-green/10 px-3 py-1 text-[10px] font-bold uppercase tracking-wider text-brand-green">
+                    <SealCheck weight="fill" aria-hidden />
+                    {badge.kind === "top-rated" ? "Top rated" : "Verified"}
+                  </span>
+                ) : null}
+              </div>
+              {d.tagline ? (
+                <p className="mb-3 line-clamp-2 text-sm font-medium italic text-gray-500 sm:mb-4 sm:text-base">
+                  &ldquo;{d.tagline}&rdquo;
+                </p>
+              ) : null}
+
+              <div className="flex flex-col items-center gap-2 text-xs font-semibold text-gray-600 sm:flex-row sm:flex-wrap sm:justify-center sm:gap-4 sm:text-sm md:justify-start md:gap-6">
+                <span className="flex items-center gap-2">
+                  <Star className="text-base text-brand-yellow sm:text-lg" weight="fill" aria-hidden />
+                  {d.avgRating.toFixed(1)} ({nf.format(d.reviewCount)} Reviews)
+                </span>
+                <span className="flex max-w-full items-start gap-2 text-center sm:items-center md:text-left">
+                  <MapPin className="mt-0.5 shrink-0 text-base text-brand-red sm:mt-0 sm:text-lg" weight="fill" aria-hidden />
+                  <span className="line-clamp-2 sm:line-clamp-none">{locationDisplay(d)}</span>
+                </span>
+                {d.yearsInBusiness != null ? (
+                  <span className="flex items-center gap-2">
+                    <Calendar className="text-lg text-blue-500" weight="fill" aria-hidden />
+                    {d.yearsInBusiness}+ Years Experience
+                  </span>
+                ) : null}
+              </div>
+            </div>
+
+            <div className="flex shrink-0 gap-2 sm:gap-3">
+              <button
+                type="button"
+                aria-label="Share profile"
+                className="flex h-10 w-10 cursor-pointer items-center justify-center rounded-xl border border-gray-200 text-gray-600 transition hover:bg-gray-50 sm:h-12 sm:w-12"
+                onClick={() => {
+                  const url = window.location.href;
+                  if (navigator.share) {
+                    void navigator.share({ title: d.businessName, url });
+                  } else {
+                    void navigator.clipboard.writeText(url);
+                    toast.success("Link copied");
+                  }
+                }}
+              >
+                <ShareNetwork className="text-xl" aria-hidden />
+              </button>
+              <button
+                type="button"
+                aria-label="Save to favorites"
+                className="flex h-10 w-10 cursor-pointer items-center justify-center rounded-xl border border-gray-200 text-gray-600 transition hover:bg-gray-50 sm:h-12 sm:w-12"
+                onClick={() => toast.info("Favorites coming soon")}
+              >
+                <Heart className="text-xl" aria-hidden />
+              </button>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      <main className="mx-auto max-w-7xl px-4 pb-16 pt-24 sm:px-6 sm:pb-20 sm:pt-32 md:pt-36">
+        <div className="flex flex-col gap-8 lg:flex-row lg:gap-12">
+          <div className="order-2 flex-1 space-y-8 sm:space-y-12 lg:order-1">
+            <div className="no-scrollbar -mx-4 flex overflow-x-auto border-b border-gray-100 px-4 sm:mx-0 sm:px-0">
+              {tabs.map((t) => (
+                <button
+                  key={t.id}
+                  type="button"
+                  onClick={() => scrollTo(t.id)}
+                  className={[
+                    "cursor-pointer whitespace-nowrap px-4 py-3 text-sm font-bold transition-colors sm:px-6 sm:py-4",
+                    tab === t.id
+                      ? "border-b-[3px] border-brand-red text-brand-red"
+                      : "text-gray-500 hover:text-brand-red",
+                  ].join(" ")}
+                >
+                  {t.label}
+                </button>
+              ))}
+            </div>
+
+            <section id="caterer-about">
+              <h2 className="mb-6 flex items-center gap-3 font-heading text-2xl font-bold text-brand-dark">
+                <span className="h-8 w-1.5 rounded-full bg-brand-red" aria-hidden />
+                About the Caterer
+              </h2>
+              <div className="space-y-4 leading-relaxed text-gray-600">
+                <p className="whitespace-pre-line">
+                  {d.about ||
+                    `${d.businessName} is a catering partner on Bharat Catering. Complete your profile in the workspace to add a full story here.`}
+                </p>
+              </div>
+            </section>
+
+            {specialties.length > 0 ? (
+              <section id="caterer-menu">
+                <h2 className="mb-6 flex items-center gap-3 font-heading text-2xl font-bold text-brand-dark">
+                  <span className="h-8 w-1.5 rounded-full bg-brand-green" aria-hidden />
+                  Our Specialties
+                </h2>
+                <div className="grid grid-cols-1 gap-4 md:grid-cols-2">
+                  {specialties.map(({ name, hint, Icon }) => (
+                    <div
+                      key={name}
+                      className="flex items-center gap-4 rounded-xl bg-gray-50 p-4"
+                    >
+                      <div className="flex h-12 w-12 items-center justify-center rounded-lg bg-white shadow-sm">
+                        <Icon className="text-2xl text-brand-red" aria-hidden />
+                      </div>
+                      <div>
+                        <h4 className="font-bold text-brand-dark">{name}</h4>
+                        <p className="text-xs text-gray-500">{hint}</p>
+                      </div>
+                    </div>
+                  ))}
+                </div>
+                {(priceLine || capacityLine || d.primaryCategoryName) && (
+                  <div className="mt-8 rounded-2xl border border-gray-100 bg-white p-6 shadow-sm">
+                    <h3 className="font-heading text-lg font-bold text-brand-dark">Menu &amp; pricing</h3>
+                    <dl className="mt-4 space-y-3 text-sm">
+                      {d.primaryCategoryName ? (
+                        <div className="flex justify-between gap-4">
+                          <dt className="text-gray-500">Service focus</dt>
+                          <dd className="font-bold text-brand-dark">{d.primaryCategoryName}</dd>
+                        </div>
+                      ) : null}
+                      {priceLine ? (
+                        <div className="flex justify-between gap-4">
+                          <dt className="text-gray-500">Indicative price</dt>
+                          <dd className="font-bold text-brand-dark">{priceLine}</dd>
+                        </div>
+                      ) : null}
+                      {capacityLine ? (
+                        <div className="flex justify-between gap-4">
+                          <dt className="text-gray-500">Guest capacity</dt>
+                          <dd className="font-bold text-brand-dark">{capacityLine}</dd>
+                        </div>
+                      ) : null}
+                    </dl>
+                    {(d.cuisines ?? []).length > 0 ? (
+                      <div className="mt-4 flex flex-wrap gap-2">
+                        {(d.cuisines ?? []).map((c) => (
+                          <span
+                            key={c}
+                            className="rounded-lg bg-gray-50 px-3 py-1 text-xs font-semibold text-gray-700"
+                          >
+                            {c}
+                          </span>
+                        ))}
+                      </div>
+                    ) : null}
+                  </div>
+                )}
+              </section>
+            ) : (priceLine || capacityLine || d.primaryCategoryName) ? (
+              <section id="caterer-menu">
+                <h2 className="mb-6 flex items-center gap-3 font-heading text-2xl font-bold text-brand-dark">
+                  <span className="h-8 w-1.5 rounded-full bg-brand-green" aria-hidden />
+                  Menu &amp; Pricing
+                </h2>
+                <div className="rounded-2xl border border-gray-100 bg-white p-6 shadow-sm">
+                  <dl className="space-y-3 text-sm">
+                    {d.primaryCategoryName ? (
+                      <div className="flex justify-between gap-4">
+                        <dt className="text-gray-500">Service focus</dt>
+                        <dd className="font-bold text-brand-dark">{d.primaryCategoryName}</dd>
+                      </div>
+                    ) : null}
+                    {priceLine ? (
+                      <div className="flex justify-between gap-4">
+                        <dt className="text-gray-500">Indicative price</dt>
+                        <dd className="font-bold text-brand-dark">{priceLine}</dd>
+                      </div>
+                    ) : null}
+                    {capacityLine ? (
+                      <div className="flex justify-between gap-4">
+                        <dt className="text-gray-500">Guest capacity</dt>
+                        <dd className="font-bold text-brand-dark">{capacityLine}</dd>
+                      </div>
+                    ) : null}
+                  </dl>
+                </div>
+              </section>
+            ) : null}
+
+            {d.galleryImages.length > 0 ? (
+              <section id="caterer-gallery">
+                <CatererDetailGallery images={d.galleryImages} businessName={d.businessName} />
+              </section>
+            ) : null}
+
+            <section id="caterer-reviews">
+              <h2 className="mb-6 flex items-center gap-3 font-heading text-2xl font-bold text-brand-dark">
+                <span className="h-8 w-1.5 rounded-full bg-brand-yellow" aria-hidden />
+                Reviews
+              </h2>
+              {d.reviews.length === 0 ? (
+                <p className="text-sm text-gray-500">No reviews yet — be the first.</p>
+              ) : (
+                <ul className="space-y-6">
+                  {d.reviews.map((r) => (
+                    <li key={r.id} className="border-b border-gray-100 pb-6 last:border-0">
+                      <div className="flex flex-wrap items-center gap-2">
+                        <span className="font-bold text-brand-dark">{r.authorName}</span>
+                        <span className="text-brand-yellow text-sm" aria-hidden>
+                          {"★".repeat(r.rating)}
+                        </span>
+                        <time dateTime={r.createdAt} className="text-xs text-gray-500">
+                          {new Date(r.createdAt).toLocaleDateString("en-IN", {
+                            day: "numeric",
+                            month: "short",
+                            year: "numeric",
+                          })}
+                        </time>
+                      </div>
+                      {r.title ? <p className="mt-2 font-semibold text-brand-dark">{r.title}</p> : null}
+                      <p className="mt-2 text-sm leading-relaxed text-gray-600">{r.comment}</p>
+                    </li>
+                  ))}
+                </ul>
+              )}
+              <WriteReviewForm slug={slug} />
+            </section>
+          </div>
+
+          <div className="order-1 lg:order-2">
+            <InquiryForm businessName={d.businessName} />
+          </div>
+        </div>
+      </main>
+    </>
+  );
+}
+
+export function CatererDetailView() {
+  const params = useParams();
+  const slug = typeof params.slug === "string" ? params.slug : "";
+
+  const q = useQuery({
+    queryKey: ["marketplace", "caterer", slug],
+    queryFn: () => fetchMarketplaceCaterer(slug),
+    enabled: Boolean(slug),
+  });
+
+  if (!slug) {
+    return (
+      <div className="mx-auto max-w-7xl px-6 py-20 text-center text-gray-600">Invalid profile link.</div>
+    );
+  }
+
+  if (q.isPending) {
+    return (
+      <div className="min-h-screen bg-white">
+        <div className="h-[400px] animate-pulse bg-gray-200" />
+        <div className="mx-auto -mt-16 h-48 max-w-4xl animate-pulse rounded-2xl bg-gray-100 px-6" />
+      </div>
+    );
+  }
+
+  if (q.isError || !q.data) {
+    return (
+      <div className="mx-auto max-w-7xl px-6 py-24 text-center">
+        <h1 className="font-heading text-2xl font-bold text-brand-dark">Profile not found</h1>
+        <p className="mt-3 text-gray-500">This caterer may be unpublished or the link is incorrect.</p>
+        <Link
+          href="/caterers"
+          className="mt-8 inline-flex items-center gap-2 rounded-lg bg-brand-red px-6 py-3 text-sm font-bold text-white hover:bg-red-700"
+        >
+          Browse all caterers
+        </Link>
+      </div>
+    );
+  }
+
+  return (
+    <div className="min-h-screen bg-white">
+      <div className="border-b border-gray-100 bg-white shadow-sm">
+        <div className="mx-auto flex max-w-7xl items-center justify-between gap-3 px-4 py-3 sm:px-6 sm:py-4">
+          <Link
+            href="/caterers"
+            className="flex min-w-0 items-center gap-1 text-xs font-bold text-gray-600 transition hover:text-brand-red sm:text-sm"
+          >
+            <ArrowLeft className="shrink-0" aria-hidden />
+            <span className="truncate">Back to Listing</span>
+          </Link>
+          <a
+            href="#inquiry"
+            className="shrink-0 rounded-md bg-brand-red px-4 py-2 text-xs font-semibold text-white shadow-lg shadow-red-500/30 transition hover:bg-red-700 sm:px-5 sm:py-2.5 sm:text-sm"
+            onClick={(e) => {
+              e.preventDefault();
+              document.getElementById("inquiry")?.scrollIntoView({ behavior: "smooth" });
+            }}
+          >
+            Get Quote
+          </a>
+        </div>
+      </div>
+      <ProfileBody d={q.data} slug={slug} />
+    </div>
+  );
+}

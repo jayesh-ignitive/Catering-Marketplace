@@ -31,6 +31,22 @@ export class ListMarketplaceQueryDto {
   @IsIn(PRICE_BANDS)
   priceBand?: (typeof PRICE_BANDS)[number];
 
+  /** Minimum `price_from` (INR per guest/plate), inclusive. */
+  @IsOptional()
+  @Type(() => Number)
+  @IsInt()
+  @Min(0)
+  @Max(1_000_000)
+  priceMin?: number;
+
+  /** Maximum `price_from` (INR per guest/plate), inclusive. */
+  @IsOptional()
+  @Type(() => Number)
+  @IsInt()
+  @Min(0)
+  @Max(1_000_000)
+  priceMax?: number;
+
   /** Filter by keyword `slug` (exact match; indexed). */
   @IsOptional()
   @IsString()

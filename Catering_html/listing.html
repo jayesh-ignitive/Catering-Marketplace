@@ -1,0 +1,421 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Find Best Caterers - Bharat Caterers</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script>
+        tailwind.config = {
+            theme: {
+                extend: {
+                    colors: {
+                        brand: {
+                            red: '#E53935',
+                            dark: '#1C1C1C',
+                            yellow: '#FFC107',
+                            green: '#4CAF50',
+                            gray: '#F5F5F5',
+                        }
+                    },
+                    fontFamily: {
+                        sans: ['Inter', 'sans-serif'],
+                        heading: ['Outfit', 'sans-serif'],
+                    }
+                }
+            }
+        }
+    </script>
+    <link rel="stylesheet" href="style.css">
+    <!-- Phosphor Icons -->
+    <script src="https://unpkg.com/@phosphor-icons/web"></script>
+    <style>
+        #listing-container.grid-view {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
+            gap: 1.25rem;
+        }
+        #listing-container.grid-view > * {
+            margin-top: 0 !important;
+        }
+        #listing-container.grid-view .caterer-card {
+            flex-direction: column !important;
+            height: 100%;
+        }
+        #listing-container.grid-view .card-image-wrapper {
+            width: 100% !important;
+            height: 150px !important;
+        }
+        #listing-container.grid-view .card-content {
+            padding: 1rem !important;
+        }
+        #listing-container.grid-view h2 {
+            font-size: 1rem !important;
+        }
+        #listing-container.grid-view .grid-hide {
+            display: none !important;
+        }
+        .caterer-card {
+            box-shadow: 0 4px 20px -5px rgba(0,0,0,0.05);
+        }
+        .caterer-card:hover {
+            box-shadow: 0 20px 40px -10px rgba(0,0,0,0.1);
+        }
+    </style>
+</head>
+<body class="bg-gray-50 text-gray-800">
+
+    <!-- Top Bar -->
+    <div class="bg-black text-gray-300 text-[11px] py-2 px-6 flex justify-between items-center tracking-wide font-medium">
+        <div>Sales & Support: +91 0123456789</div>
+        <div>India's Trusted Catering Directory · 10,000+ Happy Customers</div>
+    </div>
+
+    <!-- Header -->
+    <header class="bg-white shadow-sm sticky top-0 z-50">
+        <div class="max-w-7xl mx-auto px-6 py-4 flex justify-between items-center">
+            <!-- Logo -->
+            <a href="index.html" class="flex items-center gap-2">
+                <div class="flex flex-col relative pl-2">
+                    <i class="ph-fill ph-chef-hat text-3xl text-[#d4af37] absolute -top-4 -left-2 rotate-[-10deg]"></i>
+                    <span class="font-logo text-4xl text-brand-dark leading-none tracking-tight translate-y-1">Bharat</span>
+                    <span class="bg-brand-red text-white text-[9px] uppercase tracking-[0.3em] font-bold px-2 py-0.5 rounded-sm -rotate-2 -mt-1 shadow-sm relative z-10">Catering</span>
+                </div>
+            </a>
+
+            <!-- Navigation -->
+            <nav class="hidden md:flex items-center">
+                <div class="flex flex-col px-6 border-l border-gray-200 cursor-pointer group relative">
+                    <span class="text-[9px] text-brand-red uppercase font-bold tracking-widest mb-0.5">Catering Services</span>
+                    <div class="font-heading font-medium text-brand-dark flex items-center gap-1">
+                        Service Categories <i class="ph ph-caret-down text-sm text-gray-400"></i>
+                    </div>
+                </div>
+                <div class="flex flex-col px-6 border-l border-gray-200 cursor-pointer group">
+                    <span class="text-[9px] text-brand-red uppercase font-bold tracking-widest mb-0.5">Pricing Plans</span>
+                    <div class="font-heading font-medium text-brand-dark">Packages</div>
+                </div>
+            </nav>
+
+            <!-- Actions -->
+            <div class="flex items-center gap-4">
+                <button class="w-10 h-10 rounded-full border border-gray-200 flex items-center justify-center text-brand-dark hover:bg-brand-red hover:text-white transition-all">
+                    <i class="ph ph-magnifying-glass text-lg"></i>
+                </button>
+                <a href="#" class="bg-brand-red text-white px-5 py-2.5 rounded-md font-semibold text-sm hover:bg-red-700 transition-all shadow-lg shadow-red-500/30">Create an account</a>
+            </div>
+        </div>
+    </header>
+
+    <!-- Main Content -->
+    <main class="max-w-7xl mx-auto px-6 py-10">
+        <!-- Breadcrumb & Title -->
+        <div class="mb-8">
+            <div class="flex items-center gap-2 text-xs font-medium text-gray-500 mb-2">
+                <a href="index.html" class="hover:text-brand-red">Home</a>
+                <i class="ph ph-caret-right"></i>
+                <span>Caterers in Ahmedabad</span>
+            </div>
+            <h1 class="text-3xl font-heading font-bold text-brand-dark">Top Rated Caterers in Ahmedabad</h1>
+            <p class="text-gray-500 mt-1">Showing 124 caterers found for your search</p>
+        </div>
+
+        <div class="flex flex-col lg:flex-row gap-8">
+            <!-- Sidebar Filters -->
+            <aside class="w-full lg:w-72 shrink-0">
+                <div class="bg-white rounded-2xl shadow-sm border border-gray-100 overflow-hidden sticky top-24">
+                    <div class="p-5 border-b border-gray-100 flex justify-between items-center bg-gray-50/50">
+                        <h3 class="font-heading font-bold text-brand-dark">Filters</h3>
+                        <button class="text-xs font-bold text-brand-red hover:underline">Reset All</button>
+                    </div>
+                    
+                    <div class="p-5 space-y-8">
+                        <!-- Location Filter -->
+                        <div>
+                            <h4 class="text-sm font-bold text-brand-dark mb-3 uppercase tracking-wider">Location</h4>
+                            <div class="relative">
+                                <i class="ph ph-map-pin absolute left-3 top-1/2 -translate-y-1/2 text-gray-400"></i>
+                                <input type="text" placeholder="Search area..." class="w-full pl-9 pr-4 py-2 bg-gray-50 border border-gray-200 rounded-lg text-sm focus:outline-none focus:border-brand-red transition-all">
+                            </div>
+                        </div>
+
+                        <!-- Category Filter -->
+                        <div>
+                            <h4 class="text-sm font-bold text-brand-dark mb-3 uppercase tracking-wider">Service Category</h4>
+                            <div class="space-y-2">
+                                <label class="flex items-center gap-3 cursor-pointer group">
+                                    <input type="checkbox" class="w-4 h-4 rounded border-gray-300 text-brand-red focus:ring-brand-red" checked>
+                                    <span class="text-sm text-gray-600 group-hover:text-brand-dark transition-colors">Wedding Catering</span>
+                                </label>
+                                <label class="flex items-center gap-3 cursor-pointer group">
+                                    <input type="checkbox" class="w-4 h-4 rounded border-gray-300 text-brand-red focus:ring-brand-red">
+                                    <span class="text-sm text-gray-600 group-hover:text-brand-dark transition-colors">Corporate Events</span>
+                                </label>
+                                <label class="flex items-center gap-3 cursor-pointer group">
+                                    <input type="checkbox" class="w-4 h-4 rounded border-gray-300 text-brand-red focus:ring-brand-red">
+                                    <span class="text-sm text-gray-600 group-hover:text-brand-dark transition-colors">Birthday Parties</span>
+                                </label>
+                                <label class="flex items-center gap-3 cursor-pointer group">
+                                    <input type="checkbox" class="w-4 h-4 rounded border-gray-300 text-brand-red focus:ring-brand-red">
+                                    <span class="text-sm text-gray-600 group-hover:text-brand-dark transition-colors">House Warming</span>
+                                </label>
+                            </div>
+                        </div>
+
+                        <!-- Price Range -->
+                        <div>
+                            <h4 class="text-sm font-bold text-brand-dark mb-3 uppercase tracking-wider">Price (Per Plate)</h4>
+                            <div class="space-y-4">
+                                <input type="range" class="w-full h-1.5 bg-gray-200 rounded-lg appearance-none cursor-pointer accent-brand-red">
+                                <div class="flex justify-between text-xs font-bold text-gray-500">
+                                    <span>₹200</span>
+                                    <span>₹2000+</span>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Rating -->
+                        <div>
+                            <h4 class="text-sm font-bold text-brand-dark mb-3 uppercase tracking-wider">Customer Rating</h4>
+                            <div class="space-y-2">
+                                <label class="flex items-center gap-3 cursor-pointer group">
+                                    <input type="radio" name="rating" class="w-4 h-4 border-gray-300 text-brand-red focus:ring-brand-red">
+                                    <span class="flex items-center gap-1 text-sm text-gray-600">
+                                        4.5 <i class="ph-fill ph-star text-brand-yellow"></i> & Up
+                                    </span>
+                                </label>
+                                <label class="flex items-center gap-3 cursor-pointer group">
+                                    <input type="radio" name="rating" class="w-4 h-4 border-gray-300 text-brand-red focus:ring-brand-red">
+                                    <span class="flex items-center gap-1 text-sm text-gray-600">
+                                        4.0 <i class="ph-fill ph-star text-brand-yellow"></i> & Up
+                                    </span>
+                                </label>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="p-5 bg-brand-dark">
+                        <button class="w-full bg-brand-red text-white py-3 rounded-xl font-bold hover:bg-red-700 transition-all shadow-lg shadow-red-500/20">Apply Filters</button>
+                    </div>
+                </div>
+            </aside>
+
+            <!-- Listing Cards -->
+            <div class="flex-1">
+                <!-- Sorting Bar -->
+                <div class="bg-white p-4 rounded-xl shadow-sm border border-gray-100 flex flex-col md:flex-row justify-between items-center gap-4 mb-6">
+                    <div class="flex items-center gap-4">
+                        <span class="text-sm text-gray-500">Sort By:</span>
+                        <select class="bg-gray-50 border border-gray-200 rounded-lg px-3 py-1.5 text-sm font-bold text-brand-dark focus:outline-none focus:border-brand-red">
+                            <option>Popularity</option>
+                            <option>Rating (High to Low)</option>
+                            <option>Price (Low to High)</option>
+                            <option>Price (High to Low)</option>
+                        </select>
+                    </div>
+                    <div class="flex items-center gap-2">
+                        <button id="btn-list" class="w-9 h-9 rounded-lg bg-brand-red text-white flex items-center justify-center transition-all"><i class="ph-fill ph-rows"></i></button>
+                        <button id="btn-grid" class="w-9 h-9 rounded-lg bg-gray-50 text-gray-400 hover:text-brand-red flex items-center justify-center transition-all"><i class="ph-fill ph-squares-four"></i></button>
+                    </div>
+                </div>
+
+                <div id="listing-container" class="space-y-6">
+                    <!-- Caterer Card 1 (The Demo One) -->
+                    <div class="caterer-card bg-white rounded-2xl shadow-sm hover:shadow-xl transition-all duration-500 border border-gray-100 overflow-hidden group flex flex-col md:flex-row">
+                        <div class="card-image-wrapper md:w-64 h-56 md:h-auto overflow-hidden relative shrink-0">
+                            <img src="assets/images/caterer_banner.png" alt="Dariapur Heritage" class="w-full h-full object-cover group-hover:scale-110 transition-transform duration-700">
+                            <div class="absolute top-3 left-3">
+                                <span class="bg-brand-green text-white text-[9px] font-bold px-2 py-0.5 rounded-full uppercase tracking-wider flex items-center gap-1 shadow-lg">
+                                    <i class="ph-fill ph-seal-check"></i> Verified
+                                </span>
+                            </div>
+                        </div>
+                        <div class="card-content flex-1 p-5 flex flex-col">
+                            <div class="flex justify-between items-start mb-1">
+                                <div>
+                                    <h2 class="text-xl font-heading font-bold text-brand-dark group-hover:text-brand-red transition-colors leading-tight">
+                                        <a href="details.html">Dariapur Heritage Catering</a>
+                                    </h2>
+                                    <div class="flex items-center gap-2 text-gray-400 text-[11px] mt-0.5">
+                                        <i class="ph ph-map-pin text-brand-red"></i> Hatkeshwar, Ahmedabad
+                                    </div>
+                                </div>
+                                <div class="bg-brand-yellow/10 text-brand-yellow px-1.5 py-0.5 rounded-lg flex items-center gap-1 text-sm">
+                                    <span class="font-bold">4.7</span>
+                                    <i class="ph-fill ph-star"></i>
+                                </div>
+                            </div>
+
+                            <p class="text-gray-500 text-xs mb-4 line-clamp-2 leading-relaxed">
+                                Live counters, hygienic prep, and on-time service. Specialized in BBQ & Live Grill experiences for over 6 years.
+                            </p>
+
+                            <div class="grid grid-cols-2 md:grid-cols-3 gap-3 mb-4">
+                                <div class="flex items-center gap-2 text-[10px] font-semibold text-gray-600 bg-gray-50 px-2.5 py-1.5 rounded-lg">
+                                    <i class="ph ph-users text-brand-red text-sm"></i> 150-800
+                                </div>
+                                <div class="flex items-center gap-2 text-[10px] font-semibold text-gray-600 bg-gray-50 px-2.5 py-1.5 rounded-lg">
+                                    <i class="ph ph-bowl-food text-brand-red text-sm"></i> Veg & Non
+                                </div>
+                                <div class="flex items-center gap-2 text-[10px] font-semibold text-gray-600 bg-gray-50 px-2.5 py-1.5 rounded-lg">
+                                    <i class="ph ph-currency-inr text-brand-red text-sm"></i> ₹350 - ₹800
+                                </div>
+                            </div>
+
+                            <div class="mt-auto flex items-center justify-between pt-4 border-t border-gray-50">
+                                <div class="text-[10px] text-gray-400 italic grid-hide">"Excellent food and live counter setup!"</div>
+                                <a href="details.html" class="bg-brand-dark text-white px-4 py-2 rounded-lg font-bold text-xs hover:bg-brand-red transition-all shadow-md">View Details</a>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Caterer Card 2 -->
+                    <div class="caterer-card bg-white rounded-2xl shadow-sm hover:shadow-xl transition-all duration-500 border border-gray-100 overflow-hidden group flex flex-col md:flex-row">
+                        <div class="card-image-wrapper md:w-64 h-56 md:h-auto overflow-hidden relative shrink-0">
+                            <img src="assets/images/caterer_banner.png" alt="Royal Feast" class="w-full h-full object-cover group-hover:scale-110 transition-transform duration-700">
+                            <div class="absolute top-3 left-3">
+                                <span class="bg-brand-yellow text-brand-dark text-[9px] font-bold px-2 py-0.5 rounded-full uppercase tracking-wider flex items-center gap-1 shadow-lg">
+                                    <i class="ph-fill ph-crown"></i> Top Rated
+                                </span>
+                            </div>
+                        </div>
+                        <div class="card-content flex-1 p-5 flex flex-col">
+                            <div class="flex justify-between items-start mb-1">
+                                <div>
+                                    <h2 class="text-xl font-heading font-bold text-brand-dark group-hover:text-brand-red transition-colors leading-tight">
+                                        <a href="#">Royal Feast Premium Catering</a>
+                                    </h2>
+                                    <div class="flex items-center gap-2 text-gray-400 text-[11px] mt-0.5">
+                                        <i class="ph ph-map-pin text-brand-red"></i> Bodakdev, Ahmedabad
+                                    </div>
+                                </div>
+                                <div class="bg-brand-yellow/10 text-brand-yellow px-1.5 py-0.5 rounded-lg flex items-center gap-1 text-sm">
+                                    <span class="font-bold">4.9</span>
+                                    <i class="ph-fill ph-star"></i>
+                                </div>
+                            </div>
+
+                            <p class="text-gray-500 text-xs mb-4 line-clamp-2 leading-relaxed">
+                                Specializing in large scale wedding events and royal thematic dinners. Over 15 years of culinary excellence.
+                            </p>
+
+                            <div class="grid grid-cols-2 md:grid-cols-3 gap-3 mb-4">
+                                <div class="flex items-center gap-2 text-[10px] font-semibold text-gray-600 bg-gray-50 px-2.5 py-1.5 rounded-lg">
+                                    <i class="ph ph-users text-brand-red text-sm"></i> 500-3000
+                                </div>
+                                <div class="flex items-center gap-2 text-[10px] font-semibold text-gray-600 bg-gray-50 px-2.5 py-1.5 rounded-lg">
+                                    <i class="ph ph-bowl-food text-brand-red text-sm"></i> Multi-Cuisine
+                                </div>
+                                <div class="flex items-center gap-2 text-[10px] font-semibold text-gray-600 bg-gray-50 px-2.5 py-1.5 rounded-lg">
+                                    <i class="ph ph-currency-inr text-brand-red text-sm"></i> ₹800 - ₹2500
+                                </div>
+                            </div>
+
+                            <div class="mt-auto flex items-center justify-between pt-4 border-t border-gray-50">
+                                <div class="text-[10px] text-gray-400 italic grid-hide">"The most professional team in the city."</div>
+                                <a href="#" class="bg-brand-dark text-white px-4 py-2 rounded-lg font-bold text-xs hover:bg-brand-red transition-all shadow-md">View Details</a>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Pagination -->
+                <div class="pt-8 flex justify-center">
+                    <div class="flex items-center gap-2">
+                        <button class="w-10 h-10 rounded-xl border border-gray-200 flex items-center justify-center text-gray-400 hover:bg-brand-red hover:text-white transition-all"><i class="ph ph-caret-left"></i></button>
+                        <button class="w-10 h-10 rounded-xl bg-brand-red text-white flex items-center justify-center font-bold">1</button>
+                        <button class="w-10 h-10 rounded-xl border border-gray-200 flex items-center justify-center text-gray-600 hover:bg-brand-red hover:text-white transition-all font-bold">2</button>
+                        <button class="w-10 h-10 rounded-xl border border-gray-200 flex items-center justify-center text-gray-600 hover:bg-brand-red hover:text-white transition-all font-bold">3</button>
+                        <button class="w-10 h-10 rounded-xl border border-gray-200 flex items-center justify-center text-gray-400 hover:bg-brand-red hover:text-white transition-all"><i class="ph ph-caret-right"></i></button>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </main>
+
+    <!-- Footer -->
+    <footer class="bg-[#111] text-gray-400 pt-20 pb-10 zig-zag-border">
+        <div class="max-w-7xl mx-auto px-6">
+            <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-12 mb-16">
+                <div>
+                    <a href="index.html" class="flex items-center gap-2 mb-6">
+                        <div class="w-10 h-10 bg-brand-red rounded-full flex items-center justify-center text-white">
+                            <i class="ph ph-chef-hat text-2xl"></i>
+                        </div>
+                        <div class="flex flex-col text-white">
+                            <span class="font-heading font-bold text-xl leading-none tracking-tight">BHARAT</span>
+                            <span class="text-[10px] uppercase tracking-widest text-brand-red font-semibold">Caterers</span>
+                        </div>
+                    </a>
+                    <p class="text-sm mb-6 leading-relaxed">
+                        India's trusted directory for finding top-rated catering services. We bring the best flavors to your special occasions.
+                    </p>
+                </div>
+                <div>
+                    <h4 class="text-white font-heading font-bold text-lg mb-6">Quick Links</h4>
+                    <ul class="space-y-3 text-sm">
+                        <li><a href="index.html" class="hover:text-brand-yellow transition">Home</a></li>
+                        <li><a href="#" class="hover:text-brand-yellow transition">About Us</a></li>
+                        <li><a href="#" class="hover:text-brand-yellow transition">Catering Services</a></li>
+                        <li><a href="#" class="hover:text-brand-yellow transition">Contact Us</a></li>
+                    </ul>
+                </div>
+                <div>
+                    <h4 class="text-white font-heading font-bold text-lg mb-6">Services</h4>
+                    <ul class="space-y-3 text-sm">
+                        <li><a href="#" class="hover:text-brand-yellow transition">Wedding Catering</a></li>
+                        <li><a href="#" class="hover:text-brand-yellow transition">Corporate Events</a></li>
+                        <li><a href="#" class="hover:text-brand-yellow transition">Birthday Parties</a></li>
+                    </ul>
+                </div>
+                <div>
+                    <h4 class="text-white font-heading font-bold text-lg mb-6">Get In Touch</h4>
+                    <ul class="space-y-4 text-sm">
+                        <li class="flex items-start gap-3">
+                            <i class="ph ph-map-pin text-brand-red text-xl"></i>
+                            <span>123 Catering Hub, Mumbai, MH 400001</span>
+                        </li>
+                        <li class="flex items-center gap-3">
+                            <i class="ph ph-phone text-brand-red text-xl"></i>
+                            <span>+91 0123456789</span>
+                        </li>
+                    </ul>
+                </div>
+            </div>
+            <div class="border-t border-white/10 pt-8 text-center text-sm">
+                <p>&copy; 2024 Bharat Caterers. All rights reserved.</p>
+            </div>
+        </div>
+    </footer>
+
+    <script>
+        const btnList = document.getElementById('btn-list');
+        const btnGrid = document.getElementById('btn-grid');
+        const listingContainer = document.getElementById('listing-container');
+
+        btnList.addEventListener('click', () => {
+            listingContainer.classList.remove('grid-view');
+            listingContainer.classList.add('space-y-6');
+            
+            // Update button styles
+            btnList.classList.add('bg-brand-red', 'text-white');
+            btnList.classList.remove('bg-gray-50', 'text-gray-400');
+            
+            btnGrid.classList.remove('bg-brand-red', 'text-white');
+            btnGrid.classList.add('bg-gray-50', 'text-gray-400');
+        });
+
+        btnGrid.addEventListener('click', () => {
+            listingContainer.classList.add('grid-view');
+            listingContainer.classList.remove('space-y-6');
+            
+            // Update button styles
+            btnGrid.classList.add('bg-brand-red', 'text-white');
+            btnGrid.classList.remove('bg-gray-50', 'text-gray-400');
+            
+            btnList.classList.remove('bg-brand-red', 'text-white');
+            btnList.classList.add('bg-gray-50', 'text-gray-400');
+        });
+    </script>
+</body>
+</html>

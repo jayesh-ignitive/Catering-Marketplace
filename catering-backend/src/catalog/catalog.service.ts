@@ -1,12 +1,11 @@
 import { Injectable } from '@nestjs/common';
+import {
+  PublicServiceCategory,
+  ServiceCategoriesService,
+} from '../marketplace/service-categories.service';
 
 export type City = { id: string; name: string; slug: string };
-export type ServiceCategory = {
-  id: string;
-  name: string;
-  slug: string;
-  shortDescription: string;
-};
+export type ServiceCategory = PublicServiceCategory;
 export type TrustStats = {
   verifiedReviews: number;
   cateringServicesListed: number;
@@ -26,6 +25,8 @@ export type CatererListing = {
 
 @Injectable()
 export class CatalogService {
+  constructor(private readonly serviceCategories: ServiceCategoriesService) {}
+
   private readonly cities: City[] = [
     { id: '1', name: 'Mumbai', slug: 'mumbai' },
     { id: '2', name: 'Delhi', slug: 'delhi' },
@@ -37,58 +38,6 @@ export class CatalogService {
     { id: '8', name: 'Pune', slug: 'pune' },
     { id: '9', name: 'Surat', slug: 'surat' },
     { id: '10', name: 'Jaipur', slug: 'jaipur' },
-  ];
-
-  private readonly categories: ServiceCategory[] = [
-    {
-      id: 'c1',
-      name: 'Marriage & Wedding Catering',
-      slug: 'marriage-wedding-catering',
-      shortDescription:
-        'Full-service wedding menus, live counters, and buffet setups.',
-    },
-    {
-      id: 'c2',
-      name: 'Birthday Party Catering',
-      slug: 'birthday-party-catering',
-      shortDescription: 'Kid-friendly spreads, snacks, and celebration cakes.',
-    },
-    {
-      id: 'c3',
-      name: 'Corporate & Office Catering',
-      slug: 'corporate-office-catering',
-      shortDescription: 'Box lunches, working lunches, and large team events.',
-    },
-    {
-      id: 'c4',
-      name: 'Buffet Catering',
-      slug: 'buffet-catering',
-      shortDescription: 'Multi-cuisine buffets with service staff.',
-    },
-    {
-      id: 'c5',
-      name: 'Outdoor Catering',
-      slug: 'outdoor-catering',
-      shortDescription: 'Tents, grills, and on-location kitchen support.',
-    },
-    {
-      id: 'c6',
-      name: 'Home Catering',
-      slug: 'home-catering',
-      shortDescription: 'Intimate gatherings at your residence.',
-    },
-    {
-      id: 'c7',
-      name: 'Engagement Catering',
-      slug: 'engagement-catering',
-      shortDescription: 'Ring ceremonies and family functions.',
-    },
-    {
-      id: 'c8',
-      name: 'BBQ & Live Grill',
-      slug: 'bbq-catering',
-      shortDescription: 'Live grills, skewers, and outdoor dining.',
-    },
   ];
 
   private readonly listings: CatererListing[] = [
@@ -148,8 +97,8 @@ export class CatalogService {
     return this.cities;
   }
 
-  getServiceCategories(): ServiceCategory[] {
-    return this.categories;
+  getServiceCategories(): Promise<ServiceCategory[]> {
+    return this.serviceCategories.listPublicActive();
   }
 
   getStats(): TrustStats {
@@ -161,14 +110,14 @@ export class CatalogService {
     };
   }
 
-  search(
+  async search(
     cityId?: string,
     categoryId?: string,
-  ): {
+  ): Promise<{
     caterers: CatererListing[];
     city?: City;
     category?: ServiceCategory;
-  } {
+  }> {
     const c = cityId?.trim() || undefined;
     const cat = categoryId?.trim() || undefined;
 
@@ -181,8 +130,9 @@ export class CatalogService {
     }
 
     const city = c ? this.cities.find((x) => x.id === c) : undefined;
+    const categories = await this.serviceCategories.listPublicActive();
     const category = cat
-      ? this.categories.find((x) => x.id === cat)
+      ? categories.find((x) => x.id === cat || x.code === cat)
       : undefined;
 
     return { caterers, city, category };

@@ -27,7 +27,7 @@ export function AdminThemeLayout({ user, onLogout, children }: AdminThemeLayoutP
   }
 
   return (
-    <div className="flex h-[100dvh] overflow-hidden bg-brand-page font-sans text-brand-text-muted">
+    <div className="fixed inset-0 z-0 flex overflow-hidden bg-brand-page font-sans text-brand-text-muted">
       <AdminSidebar
         mobileOpen={mobileOpen}
         collapsed={collapsed}
@@ -42,7 +42,7 @@ export function AdminThemeLayout({ user, onLogout, children }: AdminThemeLayoutP
       />
       <div className="flex min-h-0 min-w-0 flex-1 flex-col overflow-hidden bg-brand-page">
         <AdminHeader user={user} onToggleSidebar={handleToggleSidebar} onLogout={onLogout} />
-        <main className="admin-shell-scroll min-h-0 flex-1 overflow-y-auto bg-brand-page p-4 md:p-8">
+        <main className="admin-shell-scroll min-h-0 flex-1 overflow-y-auto overscroll-y-contain bg-brand-page px-4 pt-4 pb-4 md:px-8 md:pt-8 md:pb-6">
           {children}
         </main>
         <AdminFooter />

@@ -1,4 +1,4 @@
-import { CaterersListingPageContent } from "@/components/caterers/CaterersListingPageContent";
+import { CaterersListingLazy } from "@/components/caterers/CaterersListingLazy";
 import { fetchServiceCategories } from "@/lib/catering-api";
 import { notFound } from "next/navigation";
 
@@ -10,6 +10,6 @@ export default async function CaterersByCategoryPage({ params }: Props) {
   const cat = cats.find((c) => c.slug.toLowerCase() === categorySlug.toLowerCase());
   if (!cat) notFound();
   return (
-    <CaterersListingPageContent key={`svc-${categorySlug}`} presetCategoryId={cat.id} />
+    <CaterersListingLazy key={`svc-${categorySlug}`} presetCategoryId={cat.id} />
   );
 }

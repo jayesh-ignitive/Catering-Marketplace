@@ -398,6 +398,112 @@ export async function deleteAdminLanguage(accessToken: string, languageId: strin
   return parseJson<{ success: true }>(res);
 }
 
+export type AdminServiceCategoryItem = {
+  id: string;
+  code: string;
+  name: string;
+  slug: string;
+  shortDescription: string;
+  iconKey: string;
+  iconUrl: string | null;
+  borderClass: string;
+  iconWrapClass: string;
+  titleHoverClass: string;
+  displayOrder: number;
+  isActive: boolean;
+  profileLinkCount: number;
+  createdAt: string;
+  updatedAt: string;
+};
+
+export async function fetchAdminServiceCategories(
+  accessToken: string,
+): Promise<AdminServiceCategoryItem[]> {
+  const res = await fetch(`${getAdminApiBase()}/api/admin/service-categories`, {
+    ...fetchOpts,
+    headers: bearer(accessToken),
+  });
+  return parseJson<AdminServiceCategoryItem[]>(res);
+}
+
+export async function createAdminServiceCategory(
+  accessToken: string,
+  payload: {
+    code: string;
+    name: string;
+    slug?: string;
+    shortDescription: string;
+    iconKey?: string;
+    iconUrl?: string | null;
+    borderClass?: string;
+    iconWrapClass?: string;
+    titleHoverClass?: string;
+    displayOrder?: number;
+    isActive?: boolean;
+  },
+): Promise<AdminServiceCategoryItem> {
+  const res = await fetch(`${getAdminApiBase()}/api/admin/service-categories`, {
+    ...fetchOpts,
+    method: "POST",
+    headers: { ...bearer(accessToken), "Content-Type": "application/json" },
+    body: JSON.stringify(payload),
+  });
+  if (!res.ok) {
+    throw new Error(`API error ${res.status}`);
+  }
+  return parseJson<AdminServiceCategoryItem>(res);
+}
+
+export async function updateAdminServiceCategory(
+  accessToken: string,
+  id: string,
+  payload: Partial<{
+    code: string;
+    name: string;
+    slug: string;
+    shortDescription: string;
+    iconKey: string;
+    iconUrl: string | null;
+    borderClass: string;
+    iconWrapClass: string;
+    titleHoverClass: string;
+    displayOrder: number;
+    isActive: boolean;
+  }>,
+): Promise<AdminServiceCategoryItem> {
+  const res = await fetch(
+    `${getAdminApiBase()}/api/admin/service-categories/${encodeURIComponent(id)}`,
+    {
+      ...fetchOpts,
+      method: "PATCH",
+      headers: { ...bearer(accessToken), "Content-Type": "application/json" },
+      body: JSON.stringify(payload),
+    },
+  );
+  if (!res.ok) {
+    throw new Error(`API error ${res.status}`);
+  }
+  return parseJson<AdminServiceCategoryItem>(res);
+}
+
+export async function deleteAdminServiceCategory(
+  accessToken: string,
+  id: string,
+): Promise<{ success: true }> {
+  const res = await fetch(
+    `${getAdminApiBase()}/api/admin/service-categories/${encodeURIComponent(id)}`,
+    {
+      ...fetchOpts,
+      method: "DELETE",
+      headers: bearer(accessToken),
+    },
+  );
+  if (!res.ok) {
+    throw new Error(`API error ${res.status}`);
+  }
+  return parseJson<{ success: true }>(res);
+}
+
 export async function fetchAdminMenuCategories(accessToken: string): Promise<AdminMenuCategoryItem[]> {
   const res = await fetch(`${getAdminApiBase()}/api/admin/menu-categories`, {
     ...fetchOpts,

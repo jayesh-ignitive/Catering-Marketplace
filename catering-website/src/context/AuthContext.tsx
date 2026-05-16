@@ -99,9 +99,9 @@ export function AuthProvider({ children }: { children: ReactNode }) {
       const u = await fetchCurrentUser(t);
       setUser(u);
     } catch {
-      logout();
+      /* Keep the session — a transient /me failure after a successful save should not sign the user out. */
     }
-  }, [logout]);
+  }, []);
 
   const value = useMemo(
     () => ({

@@ -1,4 +1,4 @@
-import { CaterersListingPageContent } from "@/components/caterers/CaterersListingPageContent";
+import { CaterersListingLazy } from "@/components/caterers/CaterersListingLazy";
 import { fetchCities, fetchMarketplaceCities, fetchServiceCategories } from "@/lib/catering-api";
 import { resolveListingCityNameFromSlug } from "@/lib/caterers-url";
 import { notFound } from "next/navigation";
@@ -16,7 +16,7 @@ export default async function CaterersByCityAndCategoryPage({ params }: Props) {
   const cat = cats.find((c) => c.slug.toLowerCase() === categorySlug.toLowerCase());
   if (!cityName || !cat) notFound();
   return (
-    <CaterersListingPageContent
+    <CaterersListingLazy
       key={`${citySlug}-${categorySlug}`}
       presetCityName={cityName}
       presetCategoryId={cat.id}

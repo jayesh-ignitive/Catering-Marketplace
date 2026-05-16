@@ -360,11 +360,15 @@ export default function ContactPage() {
           <div className="rounded-2xl border border-brand-red/20 bg-gradient-to-br from-brand-red/5 to-white p-6 shadow-sm">
             <h3 className="text-xs font-bold uppercase tracking-wider text-brand-red">Office</h3>
             <p className="mt-3 text-sm leading-relaxed text-gray-700">
-              123 Catering Hub, Food Street,
+              {publicSiteConfig.contactAddressLine1}
               <br />
-              Mumbai, Maharashtra 400001
+              {publicSiteConfig.contactAddressLine2}
             </p>
-            <p className="mt-4 text-sm font-semibold text-brand-dark">+91 0123456789</p>
+            <p className="mt-4 text-sm font-semibold text-brand-dark">
+              <a href={`tel:${publicSiteConfig.supportPhoneTel}`} className="hover:text-brand-red">
+                {publicSiteConfig.supportPhoneDisplay}
+              </a>
+            </p>
           </div>
         </aside>
       </div>

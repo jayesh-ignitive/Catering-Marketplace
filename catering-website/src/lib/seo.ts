@@ -10,6 +10,21 @@ export const seoConfig = {
   defaultOgImage: publicSiteConfig.defaultOgImage,
 };
 
+/** Admin, workspace, and other authenticated areas — keep out of search indexes. */
+export const privateAreaRobots: Metadata["robots"] = {
+  index: false,
+  follow: false,
+  nocache: true,
+  googleBot: {
+    index: false,
+    follow: false,
+    noimageindex: true,
+    "max-video-preview": -1,
+    "max-image-preview": "none",
+    "max-snippet": -1,
+  },
+};
+
 export function buildPageMetadata({
   title,
   description,
@@ -76,6 +91,9 @@ export const routeSeo = {
   workspace: {
     title: { default: "Workspace", template: "%s · My business" },
     description: "Manage your catering business profile, gallery, and listings.",
-    robots: { index: false, follow: false },
+    robots: privateAreaRobots,
   } satisfies Metadata,
 } as const;
+
+/** Paths that must not appear in robots.txt sitemap or search crawlers. */
+export const seoDisallowedPaths = ["/admin", "/workspace", "/api"] as const;

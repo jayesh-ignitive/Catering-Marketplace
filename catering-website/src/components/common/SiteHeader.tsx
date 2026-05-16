@@ -1,21 +1,19 @@
 "use client";
 
-import {
-  Buildings,
-  Cake,
-  CaretDown,
-  BowlFood,
-  List,
-  MagnifyingGlass,
-  SignIn,
-  SignOut,
-  UserCircle,
-  X,
-} from "@phosphor-icons/react";
+import { CaretDown, List, MagnifyingGlass, SignIn, SignOut, UserCircle, X } from "@phosphor-icons/react";
+import { useQuery } from "@tanstack/react-query";
 import Link from "next/link";
 import { useAuth } from "@/context/AuthContext";
 import { BrandLogoLink } from "@/components/common/BrandLogoLink";
 import { profileHref, UserAccountMenu } from "@/components/common/UserAccountMenu";
+import { fetchServiceCategories, type ServiceCategory } from "@/lib/catering-api";
+import { caterersListingPath } from "@/lib/caterers-url";
+import { publicSiteConfig } from "@/lib/site-config";
+import {
+  getCategoryIconHoverClasses,
+  getCategoryIconWrapBase,
+  getServiceCategoryIcon,
+} from "@/lib/service-category-icons";
 import { useState } from "react";
 
 function initialsFromName(name: string) {
@@ -29,14 +27,51 @@ function initialsFromName(name: string) {
 const headerIconActionClass =
   "flex h-10 w-10 shrink-0 cursor-pointer items-center justify-center rounded-full border border-gray-200 text-brand-dark shadow-sm transition-all duration-300 hover:scale-110 hover:border-brand-red hover:bg-brand-red hover:text-white focus-visible:outline focus-visible:ring-2 focus-visible:ring-brand-red/35 focus-visible:ring-offset-2";
 
+function headerTitleHoverClass(titleHoverClass: string): string {
+  return titleHoverClass.replace(/group-hover:/g, "group-hover/link:");
+}
+
+function HeaderCategoryLink({
+  cat,
+  onNavigate,
+}: {
+  cat: ServiceCategory;
+  onNavigate?: () => void;
+}) {
+  const Icon = getServiceCategoryIcon(cat.iconKey);
+  return (
+    <Link
+      href={caterersListingPath({ categorySlug: cat.slug })}
+      className="group/link flex items-center gap-3 rounded-md px-4 py-3 transition hover:bg-gray-50"
+      onClick={onNavigate}
+    >
+      <div
+        className={`flex h-8 w-8 items-center justify-center rounded transition ${getCategoryIconWrapBase(cat.iconWrapClass)} ${getCategoryIconHoverClasses(cat.iconWrapClass)}`}
+      >
+        <Icon weight="fill" className="text-lg" aria-hidden />
+      </div>
+      <span
+        className={`font-heading font-semibold text-brand-dark transition-colors ${headerTitleHoverClass(cat.titleHoverClass)}`}
+      >
+        {cat.name}
+      </span>
+    </Link>
+  );
+}
+
 export function SiteHeader() {
   const [open, setOpen] = useState(false);
   const { user, ready, logout } = useAuth();
+  const categoriesQ = useQuery({
+    queryKey: ["catalog", "service-categories"],
+    queryFn: fetchServiceCategories,
+  });
+  const categories = categoriesQ.data ?? [];
 
   return (
     <>
       <div className="flex items-center justify-between bg-black px-6 py-2 text-[11px] font-medium tracking-wide text-gray-300">
-        <div>Sales &amp; Support: +91 0123456789</div>
+        <div>Sales &amp; Support: {publicSiteConfig.supportPhoneDisplay}</div>
         <div className="hidden sm:block">
           India&apos;s Trusted Catering Directory · 10,000+ Happy Customers
         </div>
@@ -58,41 +93,15 @@ export function SiteHeader() {
                   aria-hidden
                 />
               </div>
-              <div className="invisible absolute left-0 top-full z-50 mt-4 w-64 translate-y-2 overflow-hidden rounded-lg border border-gray-100 bg-white opacity-0 shadow-2xl transition-all duration-300 group-hover:visible group-hover:translate-y-0 group-hover:opacity-100">
+              <div className="invisible absolute left-0 top-full z-50 mt-4 max-h-[min(24rem,70vh)] w-72 translate-y-2 overflow-hidden overflow-y-auto rounded-lg border border-gray-100 bg-white opacity-0 shadow-2xl transition-all duration-300 group-hover:visible group-hover:translate-y-0 group-hover:opacity-100">
                 <div className="p-2">
-                  <Link
-                    href="/caterers"
-                    className="group/link flex items-center gap-3 rounded-md px-4 py-3 transition hover:bg-gray-50"
-                  >
-                    <div className="flex h-8 w-8 items-center justify-center rounded bg-red-50 text-brand-red transition group-hover/link:bg-brand-red group-hover/link:text-white">
-                      <BowlFood weight="fill" className="text-lg" />
-                    </div>
-                    <span className="font-heading font-semibold text-brand-dark group-hover/link:text-brand-red">
-                      Wedding Catering
-                    </span>
-                  </Link>
-                  <Link
-                    href="/caterers"
-                    className="group/link flex items-center gap-3 rounded-md px-4 py-3 transition hover:bg-gray-50"
-                  >
-                    <div className="flex h-8 w-8 items-center justify-center rounded bg-green-50 text-brand-green transition group-hover/link:bg-brand-green group-hover/link:text-white">
-                      <Cake weight="fill" className="text-lg" />
-                    </div>
-                    <span className="font-heading font-semibold text-brand-dark group-hover/link:text-brand-green">
-                      Birthday Parties
-                    </span>
-                  </Link>
-                  <Link
-                    href="/caterers"
-                    className="group/link flex items-center gap-3 rounded-md px-4 py-3 transition hover:bg-gray-50"
-                  >
-                    <div className="flex h-8 w-8 items-center justify-center rounded bg-yellow-50 text-brand-yellow transition group-hover/link:bg-brand-yellow group-hover/link:text-white">
-                      <Buildings weight="fill" className="text-lg" />
-                    </div>
-                    <span className="font-heading font-semibold text-brand-dark group-hover/link:text-brand-yellow">
-                      Corporate Events
-                    </span>
-                  </Link>
+                  {categoriesQ.isPending ? (
+                    <p className="px-4 py-3 text-sm text-gray-500">Loading categories…</p>
+                  ) : categories.length === 0 ? (
+                    <p className="px-4 py-3 text-sm text-gray-500">No categories available</p>
+                  ) : (
+                    categories.map((cat) => <HeaderCategoryLink key={cat.uuid} cat={cat} />)
+                  )}
                 </div>
                 <div className="border-t border-gray-100 bg-gray-50 p-4 text-center">
                   <Link href="/caterers" className="text-sm font-bold text-brand-red hover:text-red-700">
@@ -192,12 +201,26 @@ export function SiteHeader() {
               >
                 Browse caterers
               </Link>
+              <p className="px-4 pt-2 text-[10px] font-bold uppercase tracking-widest text-brand-red">
+                Service categories
+              </p>
+              {categoriesQ.isPending ? (
+                <p className="px-4 py-2 text-sm text-gray-500">Loading…</p>
+              ) : (
+                categories.map((cat) => (
+                  <HeaderCategoryLink
+                    key={cat.uuid}
+                    cat={cat}
+                    onNavigate={() => setOpen(false)}
+                  />
+                ))
+              )}
               <Link
-                href="/#service-categories"
-                className="rounded-lg px-4 py-3 text-sm font-semibold text-brand-dark hover:bg-gray-50"
+                href="/caterers"
+                className="mx-4 mb-2 rounded-lg py-2 text-center text-sm font-bold text-brand-red hover:text-red-700"
                 onClick={() => setOpen(false)}
               >
-                Service categories
+                View all services →
               </Link>
               <Link
                 href="/packages"

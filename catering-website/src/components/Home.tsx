@@ -32,6 +32,11 @@ import {
   fetchTrustStats,
 } from "@/lib/catering-api";
 import { caterersListingPath } from "@/lib/caterers-url";
+import {
+  getCategoryIconHoverClasses,
+  getCategoryIconWrapBase,
+  getServiceCategoryIcon,
+} from "@/lib/service-category-icons";
 
 const nf = new Intl.NumberFormat("en-IN");
 
@@ -42,58 +47,6 @@ const IMG = {
     "https://images.unsplash.com/photo-1565299624946-b28f40a0ae38?auto=format&fit=crop&w=1200&q=80",
   blog: "https://images.unsplash.com/photo-1546069901-ba9599a7e63c?auto=format&fit=crop&w=400&q=80",
 };
-
-/** Visual rotation for catalog-driven category cards */
-const CATEGORY_CARD_STYLES = [
-  {
-    border: "border-brand-red",
-    hoverTitle: "group-hover:text-brand-red",
-    iconWrap:
-      "bg-red-50 text-brand-red group-hover:bg-brand-red group-hover:text-white",
-    Icon: BowlFood,
-  },
-  {
-    border: "border-brand-green",
-    hoverTitle: "group-hover:text-brand-green",
-    iconWrap:
-      "bg-green-50 text-brand-green group-hover:bg-brand-green group-hover:text-white",
-    Icon: Cake,
-  },
-  {
-    border: "border-brand-yellow",
-    hoverTitle: "group-hover:text-brand-yellow",
-    iconWrap:
-      "bg-yellow-50 text-brand-yellow group-hover:bg-brand-yellow group-hover:text-white",
-    Icon: Buildings,
-  },
-  {
-    border: "border-blue-500",
-    hoverTitle: "group-hover:text-blue-500",
-    iconWrap: "bg-blue-50 text-blue-500 group-hover:bg-blue-500 group-hover:text-white",
-    Icon: Martini,
-  },
-  {
-    border: "border-purple-500",
-    hoverTitle: "group-hover:text-purple-500",
-    iconWrap:
-      "bg-purple-50 text-purple-500 group-hover:bg-purple-500 group-hover:text-white",
-    Icon: Plant,
-  },
-  {
-    border: "border-orange-500",
-    hoverTitle: "group-hover:text-orange-500",
-    iconWrap:
-      "bg-orange-50 text-orange-500 group-hover:bg-orange-500 group-hover:text-white",
-    Icon: Hamburger,
-  },
-  {
-    border: "border-teal-500",
-    hoverTitle: "group-hover:text-teal-500",
-    iconWrap:
-      "bg-teal-50 text-teal-500 group-hover:bg-teal-500 group-hover:text-white",
-    Icon: Coffee,
-  },
-] as const;
 
 export default function Home() {
   const router = useRouter();
@@ -199,54 +152,6 @@ export default function Home() {
               </button>
             </div>
 
-            <nav
-              className="mt-8 flex flex-wrap items-center justify-center gap-x-1 gap-y-2 text-sm font-semibold text-white/80"
-              aria-label="Quick links"
-            >
-              <Link
-                href="/caterers"
-                className="rounded-full px-3 py-1.5 transition hover:bg-white/10 hover:text-brand-yellow"
-              >
-                Browse caterers
-              </Link>
-              <span className="px-1 text-white/35" aria-hidden>
-                ·
-              </span>
-              <Link
-                href="/packages"
-                className="rounded-full px-3 py-1.5 transition hover:bg-white/10 hover:text-brand-yellow"
-              >
-                Packages
-              </Link>
-              <span className="px-1 text-white/35" aria-hidden>
-                ·
-              </span>
-              <Link
-                href="/#service-categories"
-                className="rounded-full px-3 py-1.5 transition hover:bg-white/10 hover:text-brand-yellow"
-              >
-                Categories
-              </Link>
-              <span className="px-1 text-white/35" aria-hidden>
-                ·
-              </span>
-              <Link
-                href="/#how-it-works"
-                className="rounded-full px-3 py-1.5 transition hover:bg-white/10 hover:text-brand-yellow"
-              >
-                How it works
-              </Link>
-              <span className="px-1 text-white/35" aria-hidden>
-                ·
-              </span>
-              <Link
-                href="/blog"
-                className="rounded-full px-3 py-1.5 transition hover:bg-white/10 hover:text-brand-yellow"
-              >
-                Insights
-              </Link>
-            </nav>
-
             {(citiesQ.isError || categoriesQ.isError) && (
               <p className="mt-4 text-sm text-amber-200">
                 Catalog API unavailable — ensure Nest is running on port 4000.
@@ -300,22 +205,21 @@ export default function Home() {
                   />
                 ))}
               {!categoriesQ.isPending &&
-                categories.slice(0, 7).map((cat, i) => {
-                  const style = CATEGORY_CARD_STYLES[i % CATEGORY_CARD_STYLES.length]!;
-                  const Icon = style.Icon;
+                categories.slice(0, 7).map((cat) => {
+                  const Icon = getServiceCategoryIcon(cat.iconKey);
                   return (
                     <Link
-                      key={cat.id}
+                      key={cat.uuid}
                       href={caterersListingPath({ categorySlug: cat.slug })}
-                      className={`group flex flex-col items-center rounded-xl border-b-4 bg-white p-6 text-center shadow-sm transition-all duration-300 hover:-translate-y-2 hover:shadow-2xl ${style.border}`}
+                      className={`group flex flex-col items-center rounded-xl border-b-4 bg-white p-6 text-center shadow-sm transition-all duration-300 hover:-translate-y-2 hover:shadow-2xl ${cat.borderClass}`}
                     >
                       <div
-                        className={`mb-4 flex h-16 w-16 items-center justify-center rounded-full text-3xl transition-all duration-300 group-hover:scale-110 ${style.iconWrap}`}
+                        className={`mb-4 flex h-16 w-16 items-center justify-center rounded-full text-3xl transition-all duration-300 group-hover:scale-110 ${getCategoryIconWrapBase(cat.iconWrapClass)} ${getCategoryIconHoverClasses(cat.iconWrapClass)}`}
                       >
-                        <Icon className="text-3xl" />
+                        <Icon className="text-3xl" aria-hidden />
                       </div>
                       <h3
-                        className={`font-heading mb-2 text-xl font-bold text-brand-dark transition-colors ${style.hoverTitle}`}
+                        className={`font-heading mb-2 text-xl font-bold text-brand-dark transition-colors ${cat.titleHoverClass}`}
                       >
                         {cat.name}
                       </h3>
@@ -347,7 +251,7 @@ export default function Home() {
         <section className="relative bg-white py-24" id="how-it-works">
           <div className="mx-auto max-w-7xl px-6 text-center">
             <div className="mb-4 inline-block">
-              <span className="paint-stroke-bg font-heading text-sm font-bold uppercase tracking-widest text-white">
+              <span className="paint-stroke-bg px-4 py-1 font-heading text-sm font-bold uppercase tracking-widest text-brand-dark">
                 How It Works
               </span>
             </div>

@@ -8,7 +8,7 @@ import {
 } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { randomBytes, randomUUID } from 'crypto';
-import { In, Repository, SelectQueryBuilder } from 'typeorm';
+import { In, QueryFailedError, Repository, SelectQueryBuilder } from 'typeorm';
 import { ImagePublicUrlService } from '../storage/image-public-url.service';
 import { TenantProvisioningService } from '../tenant-provisioning/tenant-provisioning.service';
 import {
@@ -67,6 +67,8 @@ export type MarketplaceListItem = {
   /** Indicative minimum price per guest in INR; `null` when unknown or custom-quote-only. */
   priceFrom: number | null;
   tagline: string | null;
+  /** Short business description for listing cards (truncated in UI). */
+  about: string | null;
   avgRating: number;
   reviewCount: number;
   heroImageUrl: string | null;
@@ -448,6 +450,7 @@ export class MarketplaceService {
       priceBand: m.priceBand,
       priceFrom: this.decimalToNumberOrNull(m.priceFrom),
       tagline: m.tagline,
+      about: m.about,
       avgRating: Number(m.avgRating),
       reviewCount: m.reviewCount,
       heroImageUrl: this.imageUrls.resolveToPublicUrl(m.heroImageUrl),
@@ -572,6 +575,16 @@ export class MarketplaceService {
     if (dto.priceBand) {
       countQb.andWhere('m.priceBand = :pb', { pb: dto.priceBand });
     }
+    if (dto.priceMin != null) {
+      countQb.andWhere('m.priceFrom IS NOT NULL AND m.priceFrom >= :pmin', {
+        pmin: dto.priceMin,
+      });
+    }
+    if (dto.priceMax != null) {
+      countQb.andWhere('m.priceFrom IS NOT NULL AND m.priceFrom <= :pmax', {
+        pmax: dto.priceMax,
+      });
+    }
     const kw = dto.keyword?.trim().toLowerCase();
     if (kw) {
       this.applyListingKeywordSlugFilter(countQb, kw);
@@ -607,6 +620,16 @@ export class MarketplaceService {
     }
     if (dto.priceBand) {
       rowQb.andWhere('m.priceBand = :pb', { pb: dto.priceBand });
+    }
+    if (dto.priceMin != null) {
+      rowQb.andWhere('m.priceFrom IS NOT NULL AND m.priceFrom >= :pmin', {
+        pmin: dto.priceMin,
+      });
+    }
+    if (dto.priceMax != null) {
+      rowQb.andWhere('m.priceFrom IS NOT NULL AND m.priceFrom <= :pmax', {
+        pmax: dto.priceMax,
+      });
     }
     if (kw) {
       this.applyListingKeywordSlugFilter(rowQb, kw);
@@ -1220,6 +1243,22 @@ export class MarketplaceService {
       priceFrom: null,
       published: false,
     });
-    await this.listings.save(m);
+    try {
+      await this.listings.save(m);
+    } catch (err) {
+      if (this.isDuplicateTenantListingError(err)) {
+        return;
+      }
+      throw err;
+    }
+  }
+
+  /** Concurrent verify + profile GET can both try to insert the same tenant row. */
+  private isDuplicateTenantListingError(err: unknown): boolean {
+    if (!(err instanceof QueryFailedError)) {
+      return false;
+    }
+    const driver = err.driverError as { code?: string; errno?: number };
+    return driver?.code === 'ER_DUP_ENTRY' || driver?.errno === 1062;
   }
 }

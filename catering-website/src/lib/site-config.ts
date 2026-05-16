@@ -14,12 +14,21 @@ export const publicSiteConfig = {
     process.env.NEXT_PUBLIC_SEO_DESCRIPTION,
     "Find the best catering service providers near you. India's trusted catering directory with 10,000+ happy customers.",
   ),
+  /** Platform contact — footer, header bar, contact page, legal pages. Override via `.env` (see `.env.example`). */
   contactEmail: trimOrFallback(process.env.NEXT_PUBLIC_CONTACT_EMAIL, "hello@bharatcaterers.in"),
   supportPhoneDisplay: trimOrFallback(
     process.env.NEXT_PUBLIC_SUPPORT_PHONE_DISPLAY,
     "+91 0123456789",
   ),
   supportPhoneTel: trimOrFallback(process.env.NEXT_PUBLIC_SUPPORT_PHONE_TEL, "+910123456789"),
+  contactAddressLine1: trimOrFallback(
+    process.env.NEXT_PUBLIC_CONTACT_ADDRESS_LINE1,
+    "123 Catering Hub, Food Street,",
+  ),
+  contactAddressLine2: trimOrFallback(
+    process.env.NEXT_PUBLIC_CONTACT_ADDRESS_LINE2,
+    "Mumbai, Maharashtra 400001",
+  ),
   /** Path or absolute URL for default Open Graph / Twitter image */
   defaultOgImage: trimOrFallback(process.env.NEXT_PUBLIC_OG_IMAGE_PATH, "/favicon.svg"),
 } as const;

@@ -2,10 +2,19 @@
 
 import { BrandLogoLink } from "@/components/common/BrandLogoLink";
 import { Envelope, FacebookLogo, InstagramLogo, MapPin, Phone, TwitterLogo } from "@phosphor-icons/react";
-import { publicSiteConfig } from "@/lib/site-config";
+import { useQuery } from "@tanstack/react-query";
 import Link from "next/link";
+import { fetchServiceCategories } from "@/lib/catering-api";
+import { caterersListingPath } from "@/lib/caterers-url";
+import { publicSiteConfig } from "@/lib/site-config";
 
 export function SiteFooter() {
+  const categoriesQ = useQuery({
+    queryKey: ["catalog", "service-categories"],
+    queryFn: fetchServiceCategories,
+  });
+  const categories = categoriesQ.data ?? [];
+
   return (
     <footer className="zig-zag-border bg-[#111] pb-10 pt-20 text-gray-400">
       <div className="mx-auto max-w-7xl px-6">
@@ -90,31 +99,26 @@ export function SiteFooter() {
           <div>
             <h4 className="mb-6 font-heading text-lg font-bold text-white">Services</h4>
             <ul className="space-y-3 text-sm">
-              <li>
-                <Link href="/caterers" className="transition hover:text-brand-yellow">
-                  Wedding Catering
-                </Link>
-              </li>
-              <li>
-                <Link href="/caterers" className="transition hover:text-brand-yellow">
-                  Corporate Events
-                </Link>
-              </li>
-              <li>
-                <Link href="/caterers" className="transition hover:text-brand-yellow">
-                  Birthday Parties
-                </Link>
-              </li>
-              <li>
-                <Link href="/caterers" className="transition hover:text-brand-yellow">
-                  House Warming
-                </Link>
-              </li>
-              <li>
-                <Link href="/caterers" className="transition hover:text-brand-yellow">
-                  Festival Catering
-                </Link>
-              </li>
+              {categoriesQ.isPending ? (
+                <li className="text-gray-500">Loading…</li>
+              ) : categories.length === 0 ? (
+                <li>
+                  <Link href="/caterers" className="transition hover:text-brand-yellow">
+                    Browse caterers
+                  </Link>
+                </li>
+              ) : (
+                categories.map((cat) => (
+                  <li key={cat.uuid}>
+                    <Link
+                      href={caterersListingPath({ categorySlug: cat.slug })}
+                      className="transition hover:text-brand-yellow"
+                    >
+                      {cat.name}
+                    </Link>
+                  </li>
+                ))
+              )}
             </ul>
           </div>
 
@@ -124,18 +128,28 @@ export function SiteFooter() {
               <li className="flex items-start gap-3">
                 <MapPin className="mt-0.5 shrink-0 text-xl text-brand-red" aria-hidden />
                 <span>
-                  123 Catering Hub, Food Street,
+                  {publicSiteConfig.contactAddressLine1}
                   <br />
-                  Mumbai, Maharashtra 400001
+                  {publicSiteConfig.contactAddressLine2}
                 </span>
               </li>
               <li className="flex items-center gap-3">
                 <Phone className="text-xl text-brand-red" aria-hidden />
-                <span>{publicSiteConfig.supportPhoneDisplay}</span>
+                <a
+                  href={`tel:${publicSiteConfig.supportPhoneTel}`}
+                  className="transition hover:text-brand-yellow"
+                >
+                  {publicSiteConfig.supportPhoneDisplay}
+                </a>
               </li>
               <li className="flex items-center gap-3">
                 <Envelope className="text-xl text-brand-red" aria-hidden />
-                <span>{publicSiteConfig.contactEmail}</span>
+                <a
+                  href={`mailto:${publicSiteConfig.contactEmail}`}
+                  className="transition hover:text-brand-yellow"
+                >
+                  {publicSiteConfig.contactEmail}
+                </a>
               </li>
             </ul>
           </div>

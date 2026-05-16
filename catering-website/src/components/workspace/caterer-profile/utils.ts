@@ -133,3 +133,28 @@ export function inferPricePresetFromProfile(band: string | null | undefined, pf:
   if (b === "custom" || (pf != null && Number.isFinite(pf))) return "price-custom";
   return "";
 }
+
+/** Omit from PATCH when blank — avoids sending `0` which fails backend `@Min(1)` on capacity. */
+export function optionalPositiveIntFromField(raw: string): number | undefined {
+  const t = raw.trim();
+  if (t === "") return undefined;
+  const n = Number(t);
+  if (!Number.isFinite(n) || !Number.isInteger(n) || n < 1) return undefined;
+  return n;
+}
+
+export function optionalNonNegativeIntFromField(raw: string): number | undefined {
+  const t = raw.trim();
+  if (t === "") return undefined;
+  const n = Number(t);
+  if (!Number.isFinite(n) || !Number.isInteger(n) || n < 0) return undefined;
+  return n;
+}
+
+export function optionalPriceFromField(raw: string): number | undefined {
+  const t = raw.trim();
+  if (t === "") return undefined;
+  const n = Number(t);
+  if (!Number.isFinite(n) || n < 0) return undefined;
+  return n;
+}

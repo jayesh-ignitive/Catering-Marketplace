@@ -6,7 +6,7 @@ import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { toast } from "react-toastify";
 import { useRouter, useSearchParams } from "next/navigation";
 import { useAuth } from "@/context/AuthContext";
-import { patchAccountProfile, type AuthUser } from "@/lib/auth-api";
+import { getStoredToken, patchAccountProfile, type AuthUser } from "@/lib/auth-api";
 import {
   type CatererWorkspaceProfile,
   fetchMarketplaceKeywordSuggestions,
@@ -61,6 +61,9 @@ import {
   inferPricePresetFromProfile,
   isValidBannerSource,
   isValidGallerySource,
+  optionalNonNegativeIntFromField,
+  optionalPositiveIntFromField,
+  optionalPriceFromField,
   parsePriceBand,
   parseStreetParts,
   PRICE_PER_GUEST_PRESETS,
@@ -170,6 +173,7 @@ export function WorkspaceBusinessWizard({
   const [bannerDragging, setBannerDragging] = useState(false);
   const [galleryDragging, setGalleryDragging] = useState(false);
   const bannerFileInputRef = useRef<HTMLInputElement>(null);
+  const bannerUploadInFlightRef = useRef(false);
   const galleryFileInputRef = useRef<HTMLInputElement>(null);
 
   const keywords = useMemo(
@@ -416,15 +420,20 @@ export function WorkspaceBusinessWizard({
 
   const saveM = useMutation({
     mutationFn: async (saveStep: WizardStepIndex) => {
+      const accessToken = getStoredToken() ?? token;
+      if (!accessToken) {
+        throw new Error("Session expired. Sign in again and continue setup.");
+      }
+
       if (accountUser && saveStep === 0) {
-        await patchAccountProfile(token, {
+        await patchAccountProfile(accessToken, {
           fullName: contactFullName.trim(),
           businessName: businessName.trim(),
         });
       }
 
       if (saveStep === 3) {
-        return publishWorkspaceCatererProfile(token);
+        return publishWorkspaceCatererProfile(accessToken);
       }
 
       const streetCombined = [streetLine.trim(), pincode.trim()].filter(Boolean).join(", ").trim();
@@ -452,7 +461,7 @@ export function WorkspaceBusinessWizard({
           if (cmax !== "") body.capacityGuestMax = Number(cmax);
         }
 
-        return patchWorkspaceCatererProfileStep(token, 0, body);
+        return patchWorkspaceCatererProfileStep(accessToken, 0, body);
       }
 
       if (saveStep === 1) {
@@ -462,17 +471,21 @@ export function WorkspaceBusinessWizard({
           keywords,
         };
         if (uiVariant === "onboarding" || layout === "tabs") {
-          body.capacityGuestMin = Number(capacityGuestMin);
-          body.capacityGuestMax = Number(capacityGuestMax);
-          body.yearsInBusiness = Number(yearsInBusiness);
+          const capMin = optionalPositiveIntFromField(capacityGuestMin);
+          const capMax = optionalPositiveIntFromField(capacityGuestMax);
+          const years = optionalNonNegativeIntFromField(yearsInBusiness);
+          const pf = optionalPriceFromField(priceFrom);
+          if (capMin != null) body.capacityGuestMin = capMin;
+          if (capMax != null) body.capacityGuestMax = capMax;
+          if (years != null) body.yearsInBusiness = years;
           const pb = parsePriceBand(priceBand);
           if (pb) body.priceBand = pb;
-          body.priceFrom = Number(priceFrom);
+          if (pf != null) body.priceFrom = pf;
         }
-        return patchWorkspaceCatererProfileStep(token, 1, body);
+        return patchWorkspaceCatererProfileStep(accessToken, 1, body);
       }
 
-      return patchWorkspaceCatererProfileStep(token, 2, {
+      return patchWorkspaceCatererProfileStep(accessToken, 2, {
         galleryImageUrls,
         heroImageUrl,
       });
@@ -485,18 +498,30 @@ export function WorkspaceBusinessWizard({
   });
 
   const handleBannerFileUpload = async (file: File) => {
-    if (!file.type.startsWith("image/")) {
+    if (!file.type.startsWith("image/") || file.size === 0) {
       return;
     }
     if (file.size > MAX_GALLERY_UPLOAD_BYTES) {
+      toast.error("Image is too large. Use a file under 5 MB.");
       return;
     }
+    const accessToken = getStoredToken() ?? token;
+    if (!accessToken) {
+      toast.error("Session expired. Sign in again and retry the upload.");
+      return;
+    }
+    if (bannerUploadInFlightRef.current) {
+      return;
+    }
+    bannerUploadInFlightRef.current = true;
     try {
-      const { url } = await uploadCateringImage(token, file, "banner");
-      setHeroImageUrl(url);
+      const { url, key } = await uploadCateringImage(accessToken, file, "banner");
+      setHeroImageUrl(key || url);
       clearFieldError("banner");
     } catch (e) {
       toast.error(e instanceof Error ? e.message : "Could not upload banner.");
+    } finally {
+      bannerUploadInFlightRef.current = false;
     }
   };
 
@@ -514,8 +539,10 @@ export function WorkspaceBusinessWizard({
           continue;
         }
         try {
-          const { url } = await uploadCateringImage(token, file, "gallery");
-          accepted.push(url);
+          const accessToken = getStoredToken() ?? token;
+          if (!accessToken) continue;
+          const { url, key } = await uploadCateringImage(accessToken, file, "gallery");
+          accepted.push(key || url);
         } catch (e) {
           toast.error(e instanceof Error ? e.message : `Could not upload ${file.name}.`);
         }

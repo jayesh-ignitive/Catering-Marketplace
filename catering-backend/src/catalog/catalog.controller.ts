@@ -1,4 +1,4 @@
-import { Controller, Get, Query } from '@nestjs/common';
+import { Controller, Get, Header, Query } from '@nestjs/common';
 import { CatalogService } from './catalog.service';
 
 @Controller('catalog')
@@ -11,6 +11,7 @@ export class CatalogController {
   }
 
   @Get('service-categories')
+  @Header('Cache-Control', 'public, max-age=300, stale-while-revalidate=60')
   getCategories() {
     return this.catalog.getServiceCategories();
   }

@@ -6,10 +6,19 @@ export function getCateringApiBase(): string {
 
 export type City = { id: string; name: string; slug: string };
 export type ServiceCategory = {
+  /** Stable filter id (`code`, e.g. `c1`). */
   id: string;
+  code: string;
+  uuid: string;
   name: string;
   slug: string;
   shortDescription: string;
+  iconKey: string;
+  iconUrl: string | null;
+  borderClass: string;
+  iconWrapClass: string;
+  titleHoverClass: string;
+  displayOrder: number;
 };
 export type TrustStats = {
   verifiedReviews: number;
@@ -94,6 +103,7 @@ export type MarketplaceListItem = {
   /** Indicative minimum price per guest (INR), from DB `price_from`. */
   priceFrom: number | null;
   tagline: string | null;
+  about: string | null;
   avgRating: number;
   reviewCount: number;
   heroImageUrl: string | null;
@@ -131,6 +141,40 @@ export function formatMarketplaceCapacityRange(
     return `Up to ${inGuestCount.format(max)} guests`;
   }
   return null;
+}
+
+/** Compact guest range for listing cards (e.g. `150–800`). */
+export function formatMarketplaceCapacityShort(
+  min: number | null | undefined,
+  max: number | null | undefined
+): string | null {
+  if (min != null && max != null) {
+    return `${inGuestCount.format(min)}–${inGuestCount.format(max)}`;
+  }
+  if (min != null) {
+    return `${inGuestCount.format(min)}+`;
+  }
+  if (max != null) {
+    return `Up to ${inGuestCount.format(max)}`;
+  }
+  return null;
+}
+
+/** Per-plate price chip for listing cards. */
+export function formatMarketplacePriceChip(priceFrom: number | null | undefined): string | null {
+  if (priceFrom == null || !Number.isFinite(priceFrom)) {
+    return null;
+  }
+  const low = inrWhole.format(priceFrom).replace(/\s/g, "");
+  const high = inrWhole.format(Math.round(priceFrom * 2.2)).replace(/\s/g, "");
+  return `${low} – ${high}`;
+}
+
+export function formatCuisinesChip(cuisines: string[]): string | null {
+  if (!cuisines.length) return null;
+  if (cuisines.length === 1) return cuisines[0]!;
+  if (cuisines.length === 2) return cuisines.join(" & ");
+  return "Multi-Cuisine";
 }
 
 export type CatererReviewView = {
@@ -218,6 +262,8 @@ export async function fetchMarketplaceCaterers(params: {
   city?: string;
   categoryId?: string;
   priceBand?: string;
+  priceMin?: number;
+  priceMax?: number;
   keyword?: string;
   page?: number;
   limit?: number;
@@ -227,6 +273,8 @@ export async function fetchMarketplaceCaterers(params: {
   if (params.city?.trim()) sp.set("city", params.city.trim());
   if (params.categoryId?.trim()) sp.set("categoryId", params.categoryId.trim());
   if (params.priceBand?.trim()) sp.set("priceBand", params.priceBand.trim());
+  if (params.priceMin != null) sp.set("priceMin", String(params.priceMin));
+  if (params.priceMax != null) sp.set("priceMax", String(params.priceMax));
   if (params.keyword?.trim()) sp.set("keyword", params.keyword.trim().toLowerCase());
   if (params.page != null) sp.set("page", String(params.page));
   if (params.limit != null) sp.set("limit", String(params.limit));

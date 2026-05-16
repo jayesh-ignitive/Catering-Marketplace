@@ -5,6 +5,7 @@ import {
   FolderOpen,
   ForkKnife,
   ListBullets,
+  ListDashes,
   SquaresFour,
   Storefront,
   Tag,
@@ -48,6 +49,7 @@ export const ADMIN_NAV_SECTIONS: AdminNavSection[] = [
     label: "Catalog",
     items: [
       { href: "/admin/languages", label: "Languages", icon: Translate },
+      { href: "/admin/service-categories", label: "Service categories", icon: ListDashes },
       {
         label: "Categories and Attributes",
         icon: FolderOpen,

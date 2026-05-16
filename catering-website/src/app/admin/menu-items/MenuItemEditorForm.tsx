@@ -529,7 +529,7 @@ export function MenuItemEditorForm({ mode, menuItemId }: MenuItemEditorFormProps
       : "Update how this dish appears in your catalog. Saving applies everywhere this menu data is used.";
 
   return (
-    <section className="mx-auto max-w-[960px] pb-28">
+    <section className="mx-auto max-w-[960px]">
       <AdminBreadcrumb
         items={[
           { label: "Dashboard", href: "/admin" },
@@ -1091,7 +1091,7 @@ export function MenuItemEditorForm({ mode, menuItemId }: MenuItemEditorFormProps
           )}
         </EditorSectionCard>
 
-        <div className="sticky bottom-2 z-10 mt-2 rounded-2xl border border-gray-200/90 bg-white/95 px-4 py-4 shadow-[0_-10px_40px_-12px_rgba(35,45,66,0.18)] backdrop-blur-md sm:bottom-4 sm:px-6 sm:py-5">
+        <div className="mt-2 rounded-2xl border border-gray-200 bg-white px-4 py-4 shadow-[0_8px_24px_-12px_rgba(35,45,66,0.12)] sm:px-6 sm:py-5">
           <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
             <p className="text-xs leading-relaxed text-brand-text-muted sm:max-w-md">
               <span className="font-bold text-brand-text-dark">Required:</span> category and English name.

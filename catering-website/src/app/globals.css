@@ -212,3 +212,40 @@ a[href][aria-disabled="true"],
 [role="button"][aria-disabled="true"] {
   cursor: not-allowed;
 }
+
+/* Caterers listing — dual price range sliders */
+.listing-price-range-input {
+  height: 2rem;
+  pointer-events: none;
+}
+
+.listing-price-range-input::-webkit-slider-thumb {
+  -webkit-appearance: none;
+  pointer-events: auto;
+  height: 18px;
+  width: 18px;
+  border-radius: 9999px;
+  border: 2px solid #fff;
+  background: #e53935;
+  box-shadow: 0 1px 4px rgb(0 0 0 / 0.2);
+  cursor: grab;
+}
+
+.listing-price-range-input::-moz-range-thumb {
+  pointer-events: auto;
+  height: 18px;
+  width: 18px;
+  border-radius: 9999px;
+  border: 2px solid #fff;
+  background: #e53935;
+  box-shadow: 0 1px 4px rgb(0 0 0 / 0.2);
+  cursor: grab;
+}
+
+.listing-price-range-input::-webkit-slider-runnable-track {
+  background: transparent;
+}
+
+.listing-price-range-input::-moz-range-track {
+  background: transparent;
+}

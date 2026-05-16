@@ -40,7 +40,7 @@ export default function WorkspaceOnboardingPage() {
     <div className="w-full">
       {enabled && profile && citiesQ.data && categoriesQ.data && offeringsQ.data ? (
         <WorkspaceBusinessWizard
-          key={`${profile.cityId ?? "none"}-${profile.published}-${profile.completion.isComplete}`}
+          key={token}
           token={token!}
           profile={profile}
           cities={citiesQ.data}

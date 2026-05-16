@@ -25,6 +25,28 @@ export class Category {
   @Column({ name: 'short_description', type: 'varchar', length: 255 })
   shortDescription!: string;
 
+  /** Phosphor icon key for marketing cards (e.g. `bowl-food`). */
+  @Column({ name: 'icon_key', type: 'varchar', length: 40, default: 'bowl-food' })
+  iconKey!: string;
+
+  @Column({ name: 'image_url', type: 'varchar', length: 512, nullable: true })
+  imageUrl!: string | null;
+
+  @Column({ name: 'border_class', type: 'varchar', length: 64, default: 'border-brand-red' })
+  borderClass!: string;
+
+  @Column({ name: 'icon_wrap_class', type: 'varchar', length: 255, default: '' })
+  iconWrapClass!: string;
+
+  @Column({ name: 'title_hover_class', type: 'varchar', length: 64, default: '' })
+  titleHoverClass!: string;
+
+  @Column({ name: 'display_order', type: 'int', default: 0 })
+  displayOrder!: number;
+
+  @Column({ name: 'is_active', type: 'boolean', default: true })
+  isActive!: boolean;
+
   @CreateDateColumn({ name: 'created_at', type: 'datetime', precision: 6 })
   createdAt!: Date;
 
