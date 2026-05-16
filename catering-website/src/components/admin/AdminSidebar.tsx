@@ -66,7 +66,7 @@ export function AdminSidebar({
             <Link
               href="/admin"
               onClick={onCloseMobile}
-              className={`flex min-w-0 items-center gap-2 rounded-xl outline-none ring-brand-red/30 transition hover:bg-brand-red-light focus-visible:ring-2 ${
+              className={`flex min-w-0 cursor-pointer items-center gap-2 rounded-xl outline-none ring-brand-red/30 transition hover:bg-brand-red-light focus-visible:ring-2 ${
                 compact ? "justify-center p-2" : ""
               }`}
               aria-label="Admin home"
@@ -112,7 +112,7 @@ export function AdminSidebar({
                                 href={child.href}
                                 onClick={onCloseMobile}
                                 title={child.label}
-                                className={`nav-link group flex items-center gap-3 rounded-xl py-3 transition-all duration-300 ${
+                                className={`nav-link group flex cursor-pointer items-center gap-3 rounded-xl py-3 transition-all duration-300 ${
                                   compact ? "justify-center px-2" : "px-3"
                                 } ${
                                   active
@@ -139,7 +139,7 @@ export function AdminSidebar({
                           type="button"
                           onClick={() => setCatalogSubmenuOpen((o) => !o)}
                           aria-expanded={catalogSubmenuOpen}
-                          className={`nav-link flex w-full items-center gap-3 rounded-xl px-3 py-3 text-left text-sm font-medium transition-all duration-300 ${
+                          className={`nav-link flex w-full cursor-pointer items-center gap-3 rounded-xl px-3 py-3 text-left text-sm font-medium transition-all duration-300 ${
                             submenuActive
                               ? "bg-brand-red-light/70 font-semibold text-brand-red"
                               : "text-brand-text-muted hover:bg-brand-red-light hover:text-brand-red"
@@ -173,7 +173,7 @@ export function AdminSidebar({
                                     key={child.href}
                                     href={child.href}
                                     onClick={onCloseMobile}
-                                    className={`nav-link group flex items-center gap-3 rounded-xl py-2.5 pl-2 pr-3 text-sm transition-all duration-300 ${
+                                    className={`nav-link group flex cursor-pointer items-center gap-3 rounded-xl py-2.5 pl-2 pr-3 text-sm transition-all duration-300 ${
                                       active
                                         ? "bg-brand-red-light font-bold text-brand-red shadow-sm"
                                         : "text-brand-text-muted hover:translate-x-0.5 hover:bg-brand-red-light/80 hover:text-brand-red"
@@ -202,7 +202,7 @@ export function AdminSidebar({
                       key={item.href}
                       href={item.href}
                       onClick={onCloseMobile}
-                      className={`nav-link group flex items-center gap-3 rounded-xl py-3 transition-all duration-300 ${
+                      className={`nav-link group flex cursor-pointer items-center gap-3 rounded-xl py-3 transition-all duration-300 ${
                         compact ? "justify-center px-2" : "px-3"
                       } ${
                         active

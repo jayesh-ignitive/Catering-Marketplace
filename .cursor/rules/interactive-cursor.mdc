@@ -1,0 +1,11 @@
+---
+description: Pointer cursor on clickable UI; rely on globals.css for native controls
+alwaysApply: true
+---
+
+# Interactive cursor affordance
+
+- The catering site defines global pointer styles at the end of `catering-website/src/app/globals.css` for native interactive elements (`button`, `a[href]`, `[role="button"]`, `label[for]`, `summary`). Do not remove those rules.
+- For **custom clickable surfaces** that are not native links/buttons (e.g. `div`/`span` with `onClick`, draggable cards, toggles built from styled non-buttons), add `cursor-pointer` and appropriate keyboard support (`role`, `tabIndex`, handlers).
+- Disabled controls should show `not-allowed` (`disabled` on `<button>`, or `aria-disabled="true"` on `[role="button"]` / links when mimicking disabled state).
+- Avoid introducing `cursor-default` on full-screen overlay dismiss layers that are meant to be clicked to close; use `cursor-pointer` when the overlay is the hit target (see mobile menu backdrop pattern).

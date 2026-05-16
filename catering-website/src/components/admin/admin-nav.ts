@@ -3,6 +3,7 @@ import {
   Carrot,
   CookingPot,
   FolderOpen,
+  ForkKnife,
   ListBullets,
   SquaresFour,
   Storefront,
@@ -52,6 +53,7 @@ export const ADMIN_NAV_SECTIONS: AdminNavSection[] = [
         icon: FolderOpen,
         children: [
           { href: "/admin/menu-categories", label: "Menu categories", icon: ListBullets },
+          { href: "/admin/menu-items", label: "Menu items", icon: ForkKnife },
           { href: "/admin/ingredient-categories", label: "Ingredient categories", icon: Carrot },
           { href: "/admin/ingredients", label: "Ingredients", icon: CookingPot },
           { href: "/admin/attributes", label: "Attributes", icon: Tag },

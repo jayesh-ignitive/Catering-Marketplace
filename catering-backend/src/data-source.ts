@@ -10,6 +10,10 @@ import { IngredientTranslation } from './catalog/ingredient-translation.entity';
 import { Ingredient } from './catalog/ingredient.entity';
 import { MenuCategoryTranslation } from './catalog/menu-category-translation.entity';
 import { MenuCategory } from './catalog/menu-category.entity';
+import { MenuItemAttribute } from './catalog/menu-item-attribute.entity';
+import { MenuItemIngredient } from './catalog/menu-item-ingredient.entity';
+import { MenuItemTranslation } from './catalog/menu-item-translation.entity';
+import { MenuItem } from './catalog/menu-item.entity';
 import { ContactSubmission } from './contact/contact-submission.entity';
 import { Language } from './localization/language.entity';
 import { CatererMarketplaceListing } from './marketplace/caterer-marketplace-listing.entity';
@@ -44,6 +48,10 @@ const AppDataSource = new DataSource({
     BlogPost,
     MenuCategory,
     MenuCategoryTranslation,
+    MenuItem,
+    MenuItemTranslation,
+    MenuItemIngredient,
+    MenuItemAttribute,
     IngredientCategory,
     IngredientCategoryTranslation,
     Ingredient,

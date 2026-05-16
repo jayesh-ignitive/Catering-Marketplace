@@ -14,6 +14,9 @@ function adminSectionTitle(pathname: string): string {
   if (pathname.startsWith("/admin/menu-categories")) {
     return "Menu categories";
   }
+  if (pathname.startsWith("/admin/menu-items")) {
+    return "Menu items";
+  }
   if (pathname.startsWith("/admin/ingredient-categories")) {
     return "Ingredient categories";
   }
@@ -44,6 +47,9 @@ function adminSectionSubtitle(pathname: string): string {
   }
   if (pathname.startsWith("/admin/menu-categories")) {
     return "Manage catalog hierarchy, English source labels, and translations.";
+  }
+  if (pathname.startsWith("/admin/menu-items")) {
+    return "Dishes and packages with recipes, attributes, and translations.";
   }
   if (pathname.startsWith("/admin/ingredient-categories")) {
     return "Manage ingredient taxonomy, English names, and translations.";

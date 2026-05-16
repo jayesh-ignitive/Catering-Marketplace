@@ -271,7 +271,7 @@ export default function AdminIngredientsPage() {
 
   const saveM = useMutation({
     mutationFn: async (): Promise<{ mode: "create" | "edit" }> => {
-      if (!form.englishName.trim()) throw new Error("Name is required.");
+      if (!form.englishName.trim()) throw new Error("English name is required.");
       const enLang = languagesQ.data?.find((l) => l.code === "en");
       if (!enLang) throw new Error("English language missing.");
 
@@ -524,7 +524,7 @@ export default function AdminIngredientsPage() {
         </div>
 
         <div className="overflow-x-auto">
-          <table className="w-full min-w-[980px] border-collapse text-left">
+          <table className="w-full min-w-[1040px] border-collapse text-left">
             <thead className="admin-datatable-thead sticky top-0 z-[1]">
               <tr>
                 <th className="admin-datatable-th w-14">Img</th>
@@ -538,13 +538,13 @@ export default function AdminIngredientsPage() {
                     <AdminTableSortArrows active={sortBy === "code"} sortDir={sortDir} size={13} />
                   </button>
                 </th>
-                <th className="admin-datatable-th">
+                <th className="admin-datatable-th min-w-[200px]">
                   <button
                     type="button"
                     onClick={() => toggleSort("name")}
                     className="inline-flex cursor-pointer items-center gap-1 hover:bg-brand-page"
                   >
-                    Name
+                    Names
                     <AdminTableSortArrows active={sortBy === "name"} sortDir={sortDir} size={13} />
                   </button>
                 </th>
@@ -568,6 +568,7 @@ export default function AdminIngredientsPage() {
               ) : (
                 paginatedRows.map((row) => {
                   const en = row.translations.find((t) => t.languageCode === "en");
+                  const otherTranslations = row.translations.filter((t) => t.languageCode !== "en");
                   return (
                     <tr key={row.id}>
                       <td className="admin-datatable-cell">
@@ -581,7 +582,27 @@ export default function AdminIngredientsPage() {
                         </div>
                       </td>
                       <td className="admin-datatable-cell font-mono text-xs font-semibold">{row.ingredientCode}</td>
-                      <td className="admin-datatable-cell font-semibold text-brand-text-dark">{en?.name ?? "—"}</td>
+                      <td className="admin-datatable-cell max-w-[min(360px,40vw)]">
+                        <div className="space-y-1.5">
+                          <p className="font-semibold leading-snug text-brand-text-dark">{en?.name ?? "—"}</p>
+                          {otherTranslations.length > 0 ? (
+                            <div className="flex flex-wrap gap-1.5">
+                              {otherTranslations.map((t) => (
+                                <span
+                                  key={t.languageId}
+                                  title={`${t.languageName}: ${t.name}`}
+                                  className="inline-flex max-w-full items-center gap-1 rounded-lg border border-gray-200 bg-gray-50/90 px-2 py-0.5 text-[11px] font-medium text-brand-text-muted"
+                                >
+                                  <span className="shrink-0 font-mono font-bold uppercase tracking-wide text-brand-text-dark">
+                                    {t.languageCode}
+                                  </span>
+                                  <span className="min-w-0 truncate">{t.name}</span>
+                                </span>
+                              ))}
+                            </div>
+                          ) : null}
+                        </div>
+                      </td>
                       <td className="admin-datatable-cell text-sm text-brand-text-muted">
                         {row.ingredientCategorySlug ?? "—"}
                       </td>
@@ -754,7 +775,7 @@ export default function AdminIngredientsPage() {
             />
           </AdminModalField>
 
-          <AdminModalField label="Name (required)">
+          <AdminModalField label="English name (required)">
             <input
               value={form.englishName}
               onChange={(e) => setForm((s) => ({ ...s, englishName: e.target.value }))}

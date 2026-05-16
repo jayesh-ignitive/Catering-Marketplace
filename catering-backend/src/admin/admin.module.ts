@@ -10,6 +10,10 @@ import { IngredientTranslation } from '../catalog/ingredient-translation.entity'
 import { Ingredient } from '../catalog/ingredient.entity';
 import { MenuCategoryTranslation } from '../catalog/menu-category-translation.entity';
 import { MenuCategory } from '../catalog/menu-category.entity';
+import { MenuItemAttribute } from '../catalog/menu-item-attribute.entity';
+import { MenuItemIngredient } from '../catalog/menu-item-ingredient.entity';
+import { MenuItemTranslation } from '../catalog/menu-item-translation.entity';
+import { MenuItem } from '../catalog/menu-item.entity';
 import { Language } from '../localization/language.entity';
 import { CatererMarketplaceListing } from '../marketplace/caterer-marketplace-listing.entity';
 import { CatererReview } from '../marketplace/caterer-review.entity';
@@ -29,6 +33,8 @@ import { AdminIngredientsController } from './admin-ingredients.controller';
 import { AdminIngredientsService } from './admin-ingredients.service';
 import { AdminMenuCategoriesController } from './admin-menu-categories.controller';
 import { AdminMenuCategoriesService } from './admin-menu-categories.service';
+import { AdminMenuItemsController } from './admin-menu-items.controller';
+import { AdminMenuItemsService } from './admin-menu-items.service';
 import { AdminUsersController } from './admin-users.controller';
 import { AdminUsersService } from './admin-users.service';
 import { RolesGuard } from './roles.guard';
@@ -49,6 +55,10 @@ import { RolesGuard } from './roles.guard';
       IngredientCategoryTranslation,
       Ingredient,
       IngredientTranslation,
+      MenuItem,
+      MenuItemTranslation,
+      MenuItemIngredient,
+      MenuItemAttribute,
       Attribute,
       AttributeTranslation,
     ]),
@@ -61,6 +71,7 @@ import { RolesGuard } from './roles.guard';
     AdminMenuCategoriesController,
     AdminIngredientCategoriesController,
     AdminIngredientsController,
+    AdminMenuItemsController,
     AdminAttributesController,
   ],
   providers: [
@@ -71,6 +82,7 @@ import { RolesGuard } from './roles.guard';
     AdminMenuCategoriesService,
     AdminIngredientCategoriesService,
     AdminIngredientsService,
+    AdminMenuItemsService,
     AdminAttributesService,
     RolesGuard,
   ],

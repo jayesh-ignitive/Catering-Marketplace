@@ -1,16 +1,6 @@
 @import "tailwindcss";
 @import "./admin/admin.css";
 
-@layer base {
-  /** Explicit pointer affordance (some resets leave native button cursor ambiguous). */
-  button:enabled {
-    cursor: pointer;
-  }
-  button:disabled {
-    cursor: not-allowed;
-  }
-}
-
 :root {
   /* Core orange brand (existing) + extended warm scale */
   --primary: #c35529;
@@ -199,4 +189,26 @@ h6,
 ::selection {
   background: color-mix(in srgb, var(--primary) 28%, transparent);
   color: var(--foreground);
+}
+
+/**
+ * Pointer affordance for interactive controls.
+ * Placed after Tailwind imports so these rules win over layered preflight without
+ * repeating `cursor-pointer` on every `<button>` / `<Link>`.
+ */
+button:not(:disabled),
+a[href],
+[role="button"]:not([aria-disabled="true"]),
+label[for],
+summary {
+  cursor: pointer;
+}
+
+button:disabled {
+  cursor: not-allowed;
+}
+
+a[href][aria-disabled="true"],
+[role="button"][aria-disabled="true"] {
+  cursor: not-allowed;
 }

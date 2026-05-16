@@ -855,3 +855,285 @@ export async function deleteAdminIngredientTranslation(
   );
   return parseJson<AdminIngredientItem>(res);
 }
+
+export type AdminMenuItemTranslationItem = {
+  id: string;
+  languageId: string;
+  languageCode: string;
+  languageName: string;
+  name: string;
+  description: string | null;
+};
+
+export type AdminMenuItemIngredientRow = {
+  id: string;
+  ingredientId: string;
+  ingredientCode: string;
+  ingredientSlug: string;
+  quantity: number;
+  unit: AdminIngredientUnit;
+  isOptional: boolean;
+  notes: string | null;
+};
+
+export type AdminMenuItemAttributeRow = {
+  id: string;
+  attributeId: string;
+  attributeType: AdminAttributeType;
+};
+
+export type AdminMenuItemItem = {
+  id: string;
+  categoryId: string;
+  categorySlug: string;
+  subcategoryId: string | null;
+  subcategorySlug: string | null;
+  itemCode: string;
+  slug: string;
+  image: string | null;
+  gallery: string[] | null;
+  videoUrl: string | null;
+  preparationTime: number;
+  cookingTime: number;
+  shelfLifeHours: number | null;
+  baseCost: number;
+  isActive: boolean;
+  createdById: string | null;
+  updatedById: string | null;
+  createdAt: string;
+  updatedAt: string;
+  translations: AdminMenuItemTranslationItem[];
+  ingredients: AdminMenuItemIngredientRow[];
+  attributes: AdminMenuItemAttributeRow[];
+};
+
+export async function fetchAdminMenuItems(accessToken: string): Promise<AdminMenuItemItem[]> {
+  const res = await fetch(`${getAdminApiBase()}/api/admin/menu-items`, {
+    ...fetchOpts,
+    headers: bearer(accessToken),
+  });
+  return parseJson<AdminMenuItemItem[]>(res);
+}
+
+export async function fetchAdminMenuItem(
+  accessToken: string,
+  menuItemId: string,
+): Promise<AdminMenuItemItem> {
+  const res = await fetch(`${getAdminApiBase()}/api/admin/menu-items/${encodeURIComponent(menuItemId)}`, {
+    ...fetchOpts,
+    headers: bearer(accessToken),
+  });
+  return parseJson<AdminMenuItemItem>(res);
+}
+
+export async function createAdminMenuItem(
+  accessToken: string,
+  payload: {
+    categoryId: number;
+    subcategoryId?: number;
+    itemCode?: string;
+    slug?: string;
+    image?: string;
+    gallery?: string[];
+    videoUrl?: string;
+    preparationTime?: number;
+    cookingTime?: number;
+    shelfLifeHours?: number | null;
+    baseCost?: number;
+    isActive?: boolean;
+    englishName: string;
+    englishDescription?: string;
+    translations?: Array<{ languageId: number; name: string; description?: string }>;
+    ingredients?: Array<{
+      ingredientId: number;
+      quantity: number;
+      unit?: AdminIngredientUnit;
+      isOptional?: boolean;
+      notes?: string;
+    }>;
+    attributeIds?: number[];
+  },
+): Promise<AdminMenuItemItem> {
+  const res = await fetch(`${getAdminApiBase()}/api/admin/menu-items`, {
+    ...fetchOpts,
+    method: "POST",
+    headers: { ...bearer(accessToken), "Content-Type": "application/json" },
+    body: JSON.stringify(payload),
+  });
+  return parseJson<AdminMenuItemItem>(res);
+}
+
+export async function updateAdminMenuItem(
+  accessToken: string,
+  menuItemId: string,
+  payload: Partial<{
+    categoryId: number;
+    subcategoryId: number | null;
+    itemCode: string;
+    slug: string;
+    image: string | null;
+    gallery: string[] | null;
+    videoUrl: string | null;
+    preparationTime: number;
+    cookingTime: number;
+    shelfLifeHours: number | null;
+    baseCost: number;
+    isActive: boolean;
+    attributeIds: number[];
+    ingredients: Array<{
+      ingredientId: number;
+      quantity: number;
+      unit?: AdminIngredientUnit;
+      isOptional?: boolean;
+      notes?: string;
+    }>;
+  }>,
+): Promise<AdminMenuItemItem> {
+  const res = await fetch(`${getAdminApiBase()}/api/admin/menu-items/${encodeURIComponent(menuItemId)}`, {
+    ...fetchOpts,
+    method: "PATCH",
+    headers: { ...bearer(accessToken), "Content-Type": "application/json" },
+    body: JSON.stringify(payload),
+  });
+  return parseJson<AdminMenuItemItem>(res);
+}
+
+export async function deleteAdminMenuItem(
+  accessToken: string,
+  menuItemId: string,
+): Promise<{ success: true }> {
+  const res = await fetch(`${getAdminApiBase()}/api/admin/menu-items/${encodeURIComponent(menuItemId)}`, {
+    ...fetchOpts,
+    method: "DELETE",
+    headers: bearer(accessToken),
+  });
+  return parseJson<{ success: true }>(res);
+}
+
+export async function upsertAdminMenuItemTranslation(
+  accessToken: string,
+  menuItemId: string,
+  payload: { languageId: number; name: string; description?: string },
+): Promise<AdminMenuItemItem> {
+  const res = await fetch(
+    `${getAdminApiBase()}/api/admin/menu-items/${encodeURIComponent(menuItemId)}/translations`,
+    {
+      ...fetchOpts,
+      method: "POST",
+      headers: { ...bearer(accessToken), "Content-Type": "application/json" },
+      body: JSON.stringify(payload),
+    },
+  );
+  return parseJson<AdminMenuItemItem>(res);
+}
+
+export async function deleteAdminMenuItemTranslation(
+  accessToken: string,
+  menuItemId: string,
+  languageId: string,
+): Promise<AdminMenuItemItem> {
+  const res = await fetch(
+    `${getAdminApiBase()}/api/admin/menu-items/${encodeURIComponent(menuItemId)}/translations/${encodeURIComponent(languageId)}`,
+    {
+      ...fetchOpts,
+      method: "DELETE",
+      headers: bearer(accessToken),
+    },
+  );
+  return parseJson<AdminMenuItemItem>(res);
+}
+
+export async function addAdminMenuItemIngredient(
+  accessToken: string,
+  menuItemId: string,
+  payload: {
+    ingredientId: number;
+    quantity: number;
+    unit?: AdminIngredientUnit;
+    isOptional?: boolean;
+    notes?: string;
+  },
+): Promise<AdminMenuItemItem> {
+  const res = await fetch(
+    `${getAdminApiBase()}/api/admin/menu-items/${encodeURIComponent(menuItemId)}/ingredients`,
+    {
+      ...fetchOpts,
+      method: "POST",
+      headers: { ...bearer(accessToken), "Content-Type": "application/json" },
+      body: JSON.stringify(payload),
+    },
+  );
+  return parseJson<AdminMenuItemItem>(res);
+}
+
+export async function updateAdminMenuItemIngredient(
+  accessToken: string,
+  menuItemId: string,
+  rowId: string,
+  payload: Partial<{
+    quantity: number;
+    unit: AdminIngredientUnit;
+    isOptional: boolean;
+    notes: string | null;
+  }>,
+): Promise<AdminMenuItemItem> {
+  const res = await fetch(
+    `${getAdminApiBase()}/api/admin/menu-items/${encodeURIComponent(menuItemId)}/ingredients/${encodeURIComponent(rowId)}`,
+    {
+      ...fetchOpts,
+      method: "PATCH",
+      headers: { ...bearer(accessToken), "Content-Type": "application/json" },
+      body: JSON.stringify(payload),
+    },
+  );
+  return parseJson<AdminMenuItemItem>(res);
+}
+
+export async function deleteAdminMenuItemIngredient(
+  accessToken: string,
+  menuItemId: string,
+  rowId: string,
+): Promise<AdminMenuItemItem> {
+  const res = await fetch(
+    `${getAdminApiBase()}/api/admin/menu-items/${encodeURIComponent(menuItemId)}/ingredients/${encodeURIComponent(rowId)}`,
+    {
+      ...fetchOpts,
+      method: "DELETE",
+      headers: bearer(accessToken),
+    },
+  );
+  return parseJson<AdminMenuItemItem>(res);
+}
+
+export async function addAdminMenuItemAttribute(
+  accessToken: string,
+  menuItemId: string,
+  payload: { attributeId: number },
+): Promise<AdminMenuItemItem> {
+  const res = await fetch(
+    `${getAdminApiBase()}/api/admin/menu-items/${encodeURIComponent(menuItemId)}/attributes`,
+    {
+      ...fetchOpts,
+      method: "POST",
+      headers: { ...bearer(accessToken), "Content-Type": "application/json" },
+      body: JSON.stringify(payload),
+    },
+  );
+  return parseJson<AdminMenuItemItem>(res);
+}
+
+export async function deleteAdminMenuItemAttribute(
+  accessToken: string,
+  menuItemId: string,
+  attributeId: string,
+): Promise<AdminMenuItemItem> {
+  const res = await fetch(
+    `${getAdminApiBase()}/api/admin/menu-items/${encodeURIComponent(menuItemId)}/attributes/${encodeURIComponent(attributeId)}`,
+    {
+      ...fetchOpts,
+      method: "DELETE",
+      headers: bearer(accessToken),
+    },
+  );
+  return parseJson<AdminMenuItemItem>(res);
+}

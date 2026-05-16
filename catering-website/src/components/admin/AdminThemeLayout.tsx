@@ -40,9 +40,11 @@ export function AdminThemeLayout({ user, onLogout, children }: AdminThemeLayoutP
         }}
         onCloseMobile={() => setMobileOpen(false)}
       />
-      <div className="flex min-h-0 min-w-0 flex-1 flex-col overflow-hidden">
+      <div className="flex min-h-0 min-w-0 flex-1 flex-col overflow-hidden bg-brand-page">
         <AdminHeader user={user} onToggleSidebar={handleToggleSidebar} onLogout={onLogout} />
-        <main className="admin-shell-scroll min-h-0 flex-1 overflow-y-auto p-4 md:p-8">{children}</main>
+        <main className="admin-shell-scroll min-h-0 flex-1 overflow-y-auto bg-brand-page p-4 md:p-8">
+          {children}
+        </main>
         <AdminFooter />
       </div>
     </div>
