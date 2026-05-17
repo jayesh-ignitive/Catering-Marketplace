@@ -23,6 +23,7 @@ import { CatererProfileGalleryImage } from './marketplace/caterer-profile-galler
 import { CatererProfileKeyword } from './marketplace/caterer-profile-keyword.entity';
 import { CatererProfileServiceOffering } from './marketplace/caterer-profile-service-offering.entity';
 import { Category } from './marketplace/category.entity';
+import { HomeBanner } from './marketplace/home-banner.entity';
 import { Cuisine } from './marketplace/cuisine.entity';
 import { City } from './marketplace/city.entity';
 import { Country } from './marketplace/country.entity';
@@ -65,6 +66,7 @@ const AppDataSource = new DataSource({
     CatererMarketplaceListing,
     CatererReview,
     Category,
+    HomeBanner,
     Country,
     State,
     City,

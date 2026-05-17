@@ -66,7 +66,8 @@ export class R2S3ImageStorage implements ImageStoragePort {
       throw new Error(`unsupported_image_type:${mime}`);
     }
 
-    const subdir = input.kind === 'banner' ? 'banner' : 'gallery';
+    const subdir =
+      input.kind === 'banner' ? 'banner' : input.kind === 'home' ? 'home' : 'gallery';
     const id = randomUUID();
     const key = `images/${subdir}/${id}.${ext}`;
 

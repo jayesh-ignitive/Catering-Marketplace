@@ -25,6 +25,37 @@ export const privateAreaRobots: Metadata["robots"] = {
   },
 };
 
+export function buildBlogPostMetadata(post: {
+  slug: string;
+  seo: { title: string; description: string; ogImageUrl: string | null };
+}): Metadata {
+  const title = post.seo.title;
+  const description = post.seo.description;
+  const url = `${seoConfig.baseUrl.replace(/\/$/, "")}/blog/${encodeURIComponent(post.slug)}`;
+  const image = post.seo.ogImageUrl ?? seoConfig.defaultOgImage;
+
+  return {
+    title,
+    description,
+    alternates: { canonical: url },
+    openGraph: {
+      title,
+      description,
+      type: "article",
+      siteName: seoConfig.siteName,
+      url,
+      images: [{ url: image }],
+    },
+    twitter: {
+      card: "summary_large_image",
+      title,
+      description,
+      images: [image],
+    },
+    robots: { index: true, follow: true },
+  };
+}
+
 export function buildPageMetadata({
   title,
   description,

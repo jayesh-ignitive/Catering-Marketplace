@@ -48,7 +48,7 @@ export class TenantProvisioningService {
     }
   }
 
-  /** Ensures caterer's isolated DB exists (retries after register or failed runs). */
+  /** Ensures caterer's isolated DB exists (e.g. retry after failed admin approval). */
   async ensureTenantDataReady(tenantId: string): Promise<void> {
     const tenant = await this.tenants.findOne({ where: { id: tenantId } });
     if (!tenant?.dbName) {

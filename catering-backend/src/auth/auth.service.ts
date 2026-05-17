@@ -11,7 +11,7 @@ import { ConfigService } from '@nestjs/config';
 import { JwtService } from '@nestjs/jwt';
 import { InjectRepository } from '@nestjs/typeorm';
 import * as bcrypt from 'bcrypt';
-import { randomBytes, randomInt, randomUUID } from 'crypto';
+import { randomInt, randomUUID } from 'crypto';
 import { Repository } from 'typeorm';
 import type { LoginDto } from './dto/login.dto';
 import type { RegisterDto } from './dto/register.dto';
@@ -19,13 +19,12 @@ import type { UpdateAccountProfileDto } from './dto/update-account-profile.dto';
 import type { JwtPayload } from './jwt-payload.type';
 import { MailService } from '../mail/mail.service';
 import {
-  mysqlDbNameFromTenantSlug,
-  slugify,
-  subdomainLabelFrom,
+  ensureUniqueDbName,
+  ensureUniqueSubdomain,
+  ensureUniqueTenantSlug,
 } from '../tenant/slug.util';
 import { Tenant } from '../tenant/tenant.entity';
 import { MarketplaceService } from '../marketplace/marketplace.service';
-import { TenantProvisioningService } from '../tenant-provisioning/tenant-provisioning.service';
 import { UserRole } from '../user/user-role.enum';
 import { User } from '../user/user.entity';
 
@@ -74,7 +73,6 @@ export class AuthService {
     private readonly jwt: JwtService,
     private readonly mail: MailService,
     private readonly config: ConfigService,
-    private readonly provisioning: TenantProvisioningService,
     private readonly marketplace: MarketplaceService,
   ) {}
 
@@ -256,61 +254,6 @@ export class AuthService {
     user.emailVerificationOtpHash = null;
   }
 
-  private async ensureUniqueTenantSlugInManager(
-    tenantRepo: Repository<Tenant>,
-    baseInput: string,
-  ): Promise<string> {
-    const base = slugify(baseInput).slice(0, 50) || 'catering';
-    let candidate = base;
-    for (let i = 0; i < 24; i++) {
-      const taken = await tenantRepo.exist({ where: { slug: candidate } });
-      if (!taken) {
-        return candidate;
-      }
-      const suffix = randomBytes(3).toString('hex');
-      candidate = `${base}-${suffix}`.slice(0, 80);
-    }
-    return `${base}-${randomUUID().slice(0, 8)}`.slice(0, 80);
-  }
-
-  private async ensureUniqueSubdomainInManager(
-    tenantRepo: Repository<Tenant>,
-    baseInput: string,
-  ): Promise<string> {
-    const base = subdomainLabelFrom(baseInput) || 'catering';
-    let candidate = base;
-    for (let i = 0; i < 24; i++) {
-      const taken = await tenantRepo.exist({ where: { subdomain: candidate } });
-      if (!taken) {
-        return candidate;
-      }
-      const suffix = randomBytes(2).toString('hex');
-      candidate = `${base}-${suffix}`.slice(0, 63);
-    }
-    return `${base}-${randomUUID().slice(0, 8)}`.slice(0, 63);
-  }
-
-  private async ensureUniqueDbNameInManager(
-    tenantRepo: Repository<Tenant>,
-    tenantSlug: string,
-  ): Promise<string> {
-    const base = mysqlDbNameFromTenantSlug(tenantSlug);
-    let candidate = base;
-    for (let i = 0; i < 24; i++) {
-      const taken = await tenantRepo.exist({ where: { dbName: candidate } });
-      if (!taken) {
-        return candidate;
-      }
-      const suffix = `_${randomBytes(2).toString('hex')}`;
-      const maxBaseLen = Math.max(1, 64 - suffix.length);
-      candidate = `${base.slice(0, maxBaseLen)}${suffix}`;
-    }
-    return `${base.slice(0, 40)}_${randomUUID().replace(/-/g, '')}`.slice(
-      0,
-      64,
-    );
-  }
-
   async register(dto: RegisterDto): Promise<RegisterResult> {
     const existing = await this.users.findOne({
       where: { email: dto.email.toLowerCase() },
@@ -328,15 +271,9 @@ export class AuthService {
       const tenantRepo = em.getRepository(Tenant);
       const userRepo = em.getRepository(User);
       const tenantId = randomUUID();
-      const slug = await this.ensureUniqueTenantSlugInManager(
-        tenantRepo,
-        businessName,
-      );
-      const dbName = await this.ensureUniqueDbNameInManager(tenantRepo, slug);
-      const subdomain = await this.ensureUniqueSubdomainInManager(
-        tenantRepo,
-        businessName,
-      );
+      const slug = await ensureUniqueTenantSlug(tenantRepo, businessName);
+      const dbName = await ensureUniqueDbName(tenantRepo, slug);
+      const subdomain = await ensureUniqueSubdomain(tenantRepo, businessName);
       responseSubdomain = subdomain;
 
       const tenant = tenantRepo.create({
@@ -392,23 +329,9 @@ export class AuthService {
     return { requiresVerification: true, email, subdomain: responseSubdomain };
   }
 
-  /** Creates tenant DB and runs migrations after email is verified (register does not provision). */
-  private async provisionTenantAfterEmailVerify(
-    tenantId: string,
-  ): Promise<void> {
-    try {
-      await this.provisioning.provisionTenant(tenantId);
-    } catch (e) {
-      this.log.error(
-        `Tenant DB provision failed after email verify (${tenantId})`,
-        e,
-      );
-    }
-  }
-
+  /** Draft marketplace listing only — isolated tenant DB is created when admin approves. */
   private async afterCatererEmailVerified(tenantId: string): Promise<void> {
     await this.marketplace.ensureDraftListingForTenant(tenantId);
-    await this.provisionTenantAfterEmailVerify(tenantId);
   }
 
   private async loadUserWithTenant(id: string): Promise<User> {
@@ -562,11 +485,6 @@ export class AuthService {
         },
         HttpStatus.FORBIDDEN,
       );
-    }
-    if (user.role === UserRole.CATERER && user.tenant?.id) {
-      await this.provisioning
-        .ensureTenantDataReady(user.tenant.id)
-        .catch(() => undefined);
     }
     const accessToken = await this.signToken(user);
     return { accessToken, user: this.toView(user) };

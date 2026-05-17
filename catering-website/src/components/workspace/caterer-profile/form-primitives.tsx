@@ -17,6 +17,41 @@ export function FieldError({ id, message }: { id?: string; message?: string }) {
   );
 }
 
+/** Spinner + bar overlay for workspace banner/gallery uploads. */
+export function ImageUploadProgressOverlay({
+  percent,
+  label,
+}: {
+  percent: number;
+  label?: string;
+}) {
+  const clamped = Math.min(100, Math.max(0, percent));
+  return (
+    <div
+      className="absolute inset-0 z-20 flex flex-col items-center justify-center bg-black/55 px-4 backdrop-blur-[2px]"
+      role="status"
+      aria-live="polite"
+      aria-busy="true"
+      aria-label={label ? `${label} ${clamped}%` : `Uploading ${clamped}%`}
+    >
+      <div
+        className="h-10 w-10 animate-spin rounded-full border-2 border-white/40 border-t-white"
+        aria-hidden
+      />
+      <p className="mt-3 text-center text-sm font-semibold text-white">
+        {label ?? "Uploading…"}
+      </p>
+      <div className="mt-3 h-1.5 w-full max-w-[10rem] overflow-hidden rounded-full bg-white/25">
+        <div
+          className="h-full rounded-full bg-brand-red transition-[width] duration-150 ease-out"
+          style={{ width: `${clamped}%` }}
+        />
+      </div>
+      <p className="mt-1.5 text-xs font-bold tabular-nums text-white">{clamped}%</p>
+    </div>
+  );
+}
+
 export function ChoiceChip({
   selected,
   onClick,

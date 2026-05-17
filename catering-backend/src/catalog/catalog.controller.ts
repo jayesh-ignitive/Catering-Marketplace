@@ -16,6 +16,12 @@ export class CatalogController {
     return this.catalog.getServiceCategories();
   }
 
+  @Get('home-banners')
+  @Header('Cache-Control', 'public, max-age=300, stale-while-revalidate=60')
+  getHomeBanners() {
+    return this.catalog.getHomeBanners();
+  }
+
   @Get('stats')
   getStats() {
     return this.catalog.getStats();

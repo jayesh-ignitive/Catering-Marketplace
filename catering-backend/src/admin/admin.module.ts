@@ -2,6 +2,8 @@ import { Module } from '@nestjs/common';
 import { TypeOrmModule } from '@nestjs/typeorm';
 import { AuthModule } from '../auth/auth.module';
 import { ContactSubmission } from '../contact/contact-submission.entity';
+import { BlogPost } from '../catalog/blog-post.entity';
+import { CatalogModule } from '../catalog/catalog.module';
 import { AttributeTranslation } from '../catalog/attribute-translation.entity';
 import { Attribute } from '../catalog/attribute.entity';
 import { IngredientCategoryTranslation } from '../catalog/ingredient-category-translation.entity';
@@ -18,7 +20,11 @@ import { Language } from '../localization/language.entity';
 import { Category } from '../marketplace/category.entity';
 import { CatererMarketplaceListing } from '../marketplace/caterer-marketplace-listing.entity';
 import { CatererReview } from '../marketplace/caterer-review.entity';
+import { HomeBanner } from '../marketplace/home-banner.entity';
+import { HomeBannersModule } from '../marketplace/home-banners.module';
+import { MarketplaceModule } from '../marketplace/marketplace.module';
 import { ServiceCategoriesModule } from '../marketplace/service-categories.module';
+import { StorageModule } from '../storage/storage.module';
 import { Tenant } from '../tenant/tenant.entity';
 import { User } from '../user/user.entity';
 import { AdminCaterersController } from './admin-caterers.controller';
@@ -37,6 +43,12 @@ import { AdminMenuCategoriesController } from './admin-menu-categories.controlle
 import { AdminMenuCategoriesService } from './admin-menu-categories.service';
 import { AdminMenuItemsController } from './admin-menu-items.controller';
 import { AdminMenuItemsService } from './admin-menu-items.service';
+import { AdminBlogPostsController } from './admin-blog-posts.controller';
+import { AdminBlogPostsService } from './admin-blog-posts.service';
+import { AdminContactSubmissionsController } from './admin-contact-submissions.controller';
+import { AdminContactSubmissionsService } from './admin-contact-submissions.service';
+import { AdminHomeBannersController } from './admin-home-banners.controller';
+import { AdminHomeBannersService } from './admin-home-banners.service';
 import { AdminServiceCategoriesController } from './admin-service-categories.controller';
 import { AdminServiceCategoriesService } from './admin-service-categories.service';
 import { AdminUsersController } from './admin-users.controller';
@@ -46,12 +58,18 @@ import { RolesGuard } from './roles.guard';
 @Module({
   imports: [
     AuthModule,
+    StorageModule,
     ServiceCategoriesModule,
+    HomeBannersModule,
+    MarketplaceModule,
+    CatalogModule,
     TypeOrmModule.forFeature([
+      BlogPost,
       User,
       Tenant,
       ContactSubmission,
       Category,
+      HomeBanner,
       CatererMarketplaceListing,
       CatererReview,
       Language,
@@ -80,6 +98,9 @@ import { RolesGuard } from './roles.guard';
     AdminMenuItemsController,
     AdminAttributesController,
     AdminServiceCategoriesController,
+    AdminHomeBannersController,
+    AdminBlogPostsController,
+    AdminContactSubmissionsController,
   ],
   providers: [
     AdminDashboardService,
@@ -92,6 +113,9 @@ import { RolesGuard } from './roles.guard';
     AdminMenuItemsService,
     AdminAttributesService,
     AdminServiceCategoriesService,
+    AdminHomeBannersService,
+    AdminBlogPostsService,
+    AdminContactSubmissionsService,
     RolesGuard,
   ],
 })

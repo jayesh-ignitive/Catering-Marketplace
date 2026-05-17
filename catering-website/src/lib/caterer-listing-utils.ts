@@ -64,21 +64,38 @@ export function filterByAreaQuery(items: MarketplaceListItem[], area: string): M
 }
 
 const VIEW_MODE_KEY = "caterers-listing-view";
+const WORKSPACE_PREVIEW_VIEW_KEY = "workspace-listing-preview-view";
 
-export function readListingViewMode(): ListingViewMode {
+function readViewModeFromStorage(key: string): ListingViewMode {
   if (typeof window === "undefined") return "list";
   try {
-    const v = window.localStorage.getItem(VIEW_MODE_KEY);
+    const v = window.localStorage.getItem(key);
     return v === "grid" ? "grid" : "list";
   } catch {
     return "list";
   }
 }
 
-export function persistListingViewMode(mode: ListingViewMode) {
+function persistViewModeToStorage(key: string, mode: ListingViewMode) {
   try {
-    window.localStorage.setItem(VIEW_MODE_KEY, mode);
+    window.localStorage.setItem(key, mode);
   } catch {
     /* ignore */
   }
+}
+
+export function readListingViewMode(): ListingViewMode {
+  return readViewModeFromStorage(VIEW_MODE_KEY);
+}
+
+export function persistListingViewMode(mode: ListingViewMode) {
+  persistViewModeToStorage(VIEW_MODE_KEY, mode);
+}
+
+export function readWorkspacePreviewViewMode(): ListingViewMode {
+  return readViewModeFromStorage(WORKSPACE_PREVIEW_VIEW_KEY);
+}
+
+export function persistWorkspacePreviewViewMode(mode: ListingViewMode) {
+  persistViewModeToStorage(WORKSPACE_PREVIEW_VIEW_KEY, mode);
 }

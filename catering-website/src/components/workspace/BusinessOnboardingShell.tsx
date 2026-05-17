@@ -33,8 +33,8 @@ export function BusinessOnboardingShell({ children }: Props) {
             Grow your catering business with us
           </h1>
           <p className="max-w-md text-lg leading-relaxed text-stone-300">
-            Complete your business profile to join our marketplace, show up in search, and start receiving
-            quality leads from customers near you.
+            Complete your business profile, submit for review, and once approved show up in search and start
+            receiving quality leads from customers near you.
           </p>
         </div>
 

@@ -30,10 +30,27 @@ function adminSectionTitle(pathname: string): string {
     return "Languages";
   }
   if (pathname.startsWith("/admin/caterers")) {
-    return "Caterers";
+    return pathname.includes("/admin/caterers/") && pathname !== "/admin/caterers"
+      ? "Caterer review"
+      : "Caterers";
   }
   if (pathname.startsWith("/admin/users")) {
     return "Users";
+  }
+  if (pathname.startsWith("/admin/service-categories")) {
+    return "Service categories";
+  }
+  if (pathname.startsWith("/admin/home-banners")) {
+    return "Home banners";
+  }
+  if (pathname.startsWith("/admin/blog-posts")) {
+    return "Blog posts";
+  }
+  if (pathname.startsWith("/admin/contact-inquiries")) {
+    return pathname.includes("/admin/contact-inquiries/") &&
+      pathname !== "/admin/contact-inquiries"
+      ? "Inquiry details"
+      : "Contact inquiries";
   }
   if (pathname === "/admin") {
     return "Dashboard";
@@ -63,11 +80,32 @@ function adminSectionSubtitle(pathname: string): string {
   if (pathname.startsWith("/admin/languages")) {
     return "Configure locales available across the platform.";
   }
+  if (pathname.startsWith("/admin/caterers/") && pathname !== "/admin/caterers") {
+    return "Review listing details and approve or reject marketplace visibility.";
+  }
   if (pathname.startsWith("/admin/caterers")) {
     return "Browse workspaces, provisioning state, and publishing.";
   }
   if (pathname.startsWith("/admin/users")) {
     return "Search accounts, roles, verification, and workspace links.";
+  }
+  if (pathname.startsWith("/admin/service-categories")) {
+    return "Specialties and filters shown on caterer listings.";
+  }
+  if (pathname.startsWith("/admin/home-banners")) {
+    return "Hero images and copy on the public homepage.";
+  }
+  if (pathname.startsWith("/admin/blog-posts")) {
+    return "Articles, SEO fields, and publishing for the blog.";
+  }
+  if (
+    pathname.startsWith("/admin/contact-inquiries/") &&
+    pathname !== "/admin/contact-inquiries"
+  ) {
+    return "Read the full message and reply to the sender.";
+  }
+  if (pathname.startsWith("/admin/contact-inquiries")) {
+    return "Messages submitted through the public contact form.";
   }
   if (pathname === "/admin") {
     return "Platform overview, traffic signals, and listing health.";

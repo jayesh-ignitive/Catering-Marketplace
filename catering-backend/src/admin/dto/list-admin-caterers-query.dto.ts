@@ -8,6 +8,7 @@ import {
   MaxLength,
   Min,
 } from 'class-validator';
+import { CATERER_PROFILE_APPROVAL_STATUSES } from '../../marketplace/caterer-profile-approval-status';
 
 export const ADMIN_CATERER_SORT_FIELDS = [
   'createdAt',
@@ -54,4 +55,9 @@ export class ListAdminCaterersQueryDto {
   )
   @IsIn(['asc', 'desc'])
   sortDir?: 'asc' | 'desc';
+
+  @IsOptional()
+  @IsString()
+  @IsIn([...CATERER_PROFILE_APPROVAL_STATUSES])
+  approvalStatus?: (typeof CATERER_PROFILE_APPROVAL_STATUSES)[number];
 }

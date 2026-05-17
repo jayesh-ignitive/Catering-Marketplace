@@ -5,7 +5,7 @@ import { useQuery } from "@tanstack/react-query";
 import Link from "next/link";
 import { useParams, useRouter } from "next/navigation";
 import { RemoteContentImage } from "@/components/common/RemoteContentImage";
-import { fetchBlogPost } from "@/lib/catering-api";
+import { BLOG_QUERY_KEY, BLOG_STALE_MS, fetchBlogPost } from "@/lib/blog";
 
 const FALLBACK_IMG =
   "https://images.unsplash.com/photo-1546069901-ba9599a7e63c?auto=format&fit=crop&w=1600&q=85";
@@ -28,9 +28,10 @@ export function BlogArticleContent() {
   const slug = typeof params.slug === "string" ? params.slug : "";
 
   const q = useQuery({
-    queryKey: ["catalog", "blog", slug],
+    queryKey: [...BLOG_QUERY_KEY, slug],
     queryFn: () => fetchBlogPost(slug),
     enabled: Boolean(slug),
+    staleTime: BLOG_STALE_MS,
     retry: false,
   });
 

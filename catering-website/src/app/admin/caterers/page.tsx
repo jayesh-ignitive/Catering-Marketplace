@@ -6,10 +6,13 @@ import { useAuth } from "@/context/AuthContext";
 import {
   type AdminCatererSortDir,
   type AdminCatererSortField,
+  type CatererMarketplaceApprovalStatus,
   fetchAdminCaterersList,
+  setAdminCatererMarketplaceApproval,
 } from "@/lib/admin-api";
-import { ArrowRight, CaretLeft, CaretRight, MagnifyingGlass } from "@phosphor-icons/react";
-import { useQuery } from "@tanstack/react-query";
+import { CaretLeft, CaretRight, Check, MagnifyingGlass, User, X } from "@phosphor-icons/react";
+import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
+import { toast } from "react-toastify";
 import { ADMIN_SEARCH_DEBOUNCE_MS, useDebouncedValue } from "@/hooks/useDebouncedValue";
 import Link from "next/link";
 import { useEffect, useMemo, useState } from "react";
@@ -30,6 +33,32 @@ function initials(fullName: string | null | undefined, email: string | null | un
 function defaultSortDir(field: AdminCatererSortField): AdminCatererSortDir {
   if (field === "createdAt" || field === "updatedAt" || field === "profilePublished") return "desc";
   return "asc";
+}
+
+function approvalBadgeClass(status: CatererMarketplaceApprovalStatus): string {
+  switch (status) {
+    case "approved":
+      return "bg-emerald-50 text-emerald-800";
+    case "pending_review":
+      return "bg-amber-50 text-amber-900";
+    case "rejected":
+      return "bg-rose-50 text-rose-800";
+    default:
+      return "bg-gray-100 text-brand-text-muted";
+  }
+}
+
+function approvalLabel(status: CatererMarketplaceApprovalStatus): string {
+  switch (status) {
+    case "approved":
+      return "Approved";
+    case "pending_review":
+      return "Pending review";
+    case "rejected":
+      return "Rejected";
+    default:
+      return "Draft";
+  }
 }
 
 function provisionBadgeClass(status: string): string {
@@ -58,6 +87,70 @@ function visiblePageNumbers(current: number, total: number): (number | "gap")[] 
     prev = p;
   }
   return out;
+}
+
+const adminRowActionBtn =
+  "inline-flex h-7 shrink-0 cursor-pointer items-center justify-center gap-1 rounded-md px-2 text-[11px] font-bold leading-none transition disabled:cursor-not-allowed disabled:opacity-50";
+
+function CatererRowActions({
+  tenantId,
+  ownerUserId,
+  pendingReview,
+  actionsDisabled,
+  onApprove,
+  onReject,
+}: {
+  tenantId: string;
+  ownerUserId: string | null;
+  pendingReview: boolean;
+  actionsDisabled: boolean;
+  onApprove: () => void;
+  onReject: () => void;
+}) {
+  return (
+    <div className="flex items-center justify-end gap-1">
+      <Link
+        href={`/admin/caterers/${tenantId}`}
+        className={`${adminRowActionBtn} bg-brand-red text-white hover:bg-red-700`}
+      >
+        Review
+      </Link>
+      {pendingReview ? (
+        <>
+          <button
+            type="button"
+            disabled={actionsDisabled}
+            onClick={onApprove}
+            title="Approve listing"
+            aria-label="Approve listing"
+            className={`${adminRowActionBtn} w-7 bg-emerald-600 px-0 text-white hover:bg-emerald-700`}
+          >
+            <Check size={14} weight="bold" aria-hidden />
+          </button>
+          <button
+            type="button"
+            disabled={actionsDisabled}
+            onClick={onReject}
+            title="Reject listing"
+            aria-label="Reject listing"
+            className={`${adminRowActionBtn} w-7 border border-rose-200 bg-rose-50 px-0 text-rose-700 hover:bg-rose-100`}
+          >
+            <X size={14} weight="bold" aria-hidden />
+          </button>
+        </>
+      ) : null}
+      {ownerUserId ? (
+        <Link
+          href={`/admin/users/${ownerUserId}`}
+          title="View owner account"
+          aria-label="View owner account"
+          className={`${adminRowActionBtn} w-7 bg-blue-50 px-0 text-blue-600 hover:bg-blue-600 hover:text-white`}
+        >
+          <User size={14} weight="bold" aria-hidden />
+        </Link>
+      ) : null}
+    </div>
+  );
 }
 
 function SortableTh({
@@ -99,9 +192,11 @@ function SortableTh({
 
 export default function AdminCaterersListPage() {
   const { token, user } = useAuth();
+  const qc = useQueryClient();
   const [page, setPage] = useState(1);
   const [draftQ, setDraftQ] = useState("");
   const [appliedQ, setAppliedQ] = useState("");
+  const [approvalFilter, setApprovalFilter] = useState<CatererMarketplaceApprovalStatus | "">("");
   const [limit, setLimit] = useState(20);
   const [sortBy, setSortBy] = useState<AdminCatererSortField>("createdAt");
   const [sortDir, setSortDir] = useState<AdminCatererSortDir>("desc");
@@ -115,20 +210,36 @@ export default function AdminCaterersListPage() {
 
   useEffect(() => {
     setPage(1);
-  }, [appliedQ]);
+  }, [appliedQ, approvalFilter]);
 
   const listQ = useQuery({
-    queryKey: ["admin", "caterers", token, page, appliedQ, limit, sortBy, sortDir],
+    queryKey: ["admin", "caterers", token, page, appliedQ, approvalFilter, limit, sortBy, sortDir],
     queryFn: () =>
       fetchAdminCaterersList(token!, {
         page,
         limit,
         q: appliedQ || undefined,
+        approvalStatus: approvalFilter || undefined,
         sortBy,
         sortDir,
       }),
     enabled: Boolean(token && user?.role === "admin"),
     retry: 1,
+  });
+
+  const approvalM = useMutation({
+    mutationFn: ({
+      tenantId,
+      decision,
+    }: {
+      tenantId: string;
+      decision: "approve" | "reject";
+    }) => setAdminCatererMarketplaceApproval(token!, tenantId, decision),
+    onSuccess: (_, { decision }) => {
+      toast.success(decision === "approve" ? "Listing approved and published." : "Listing rejected.");
+      void qc.invalidateQueries({ queryKey: ["admin", "caterers"] });
+    },
+    onError: (err: Error) => toast.error(err.message),
   });
 
   const totalPages = useMemo(() => {
@@ -181,6 +292,33 @@ export default function AdminCaterersListPage() {
       <AdminBreadcrumb items={[{ label: "Dashboard", href: "/admin" }, { label: "Caterers" }]} />
 
       <div className="admin-datatable-shell">
+        <div className="flex flex-wrap gap-2 border-b border-gray-100 px-6 pt-6">
+          {(
+            [
+              { value: "", label: "All listings" },
+              { value: "pending_review", label: "Pending review" },
+              { value: "approved", label: "Approved" },
+              { value: "rejected", label: "Rejected" },
+              { value: "draft", label: "Draft" },
+            ] as const
+          ).map((opt) => (
+            <button
+              key={opt.value || "all"}
+              type="button"
+              onClick={() => {
+                setApprovalFilter(opt.value);
+                setPage(1);
+              }}
+              className={`cursor-pointer rounded-full px-4 py-2 text-xs font-bold transition ${
+                approvalFilter === opt.value
+                  ? "bg-brand-red text-white shadow-sm"
+                  : "bg-gray-100 text-brand-text-dark hover:bg-gray-200"
+              }`}
+            >
+              {opt.label}
+            </button>
+          ))}
+        </div>
         <div className="flex flex-col items-stretch justify-between gap-4 border-b border-gray-100 p-6 md:flex-row md:items-center">
           <label className="flex flex-wrap items-center gap-2 text-sm text-brand-text-muted">
             <span>Show</span>
@@ -273,8 +411,11 @@ export default function AdminCaterersListPage() {
                   sortDir={sortDir}
                   onSort={toggleColumnSort}
                 />
+                <th scope="col" className="admin-datatable-th whitespace-nowrap text-left">
+                  Review
+                </th>
                 <SortableTh
-                  label="Published"
+                  label="Live"
                   field="profilePublished"
                   sortBy={sortBy}
                   sortDir={sortDir}
@@ -295,7 +436,7 @@ export default function AdminCaterersListPage() {
             <tbody className="admin-table-body">
               {items.length === 0 ? (
                 <tr>
-                  <td colSpan={9} className="admin-datatable-cell py-20 text-center">
+                  <td colSpan={10} className="admin-datatable-cell py-20 text-center">
                     <p className="text-base font-semibold text-brand-text-dark">No caterers match your filters</p>
                     <p className="mt-1 text-sm text-brand-text-muted">Try a different search or clear the query.</p>
                   </td>
@@ -343,6 +484,13 @@ export default function AdminCaterersListPage() {
                       </span>
                     </td>
                     <td className="admin-datatable-cell whitespace-nowrap">
+                      <span
+                        className={`inline-flex rounded-full px-3 py-1 text-xs font-semibold ${approvalBadgeClass(row.marketplaceApprovalStatus)}`}
+                      >
+                        {approvalLabel(row.marketplaceApprovalStatus)}
+                      </span>
+                    </td>
+                    <td className="admin-datatable-cell whitespace-nowrap">
                       {row.profilePublished ? (
                         <span className="inline-flex rounded-full bg-emerald-50 px-3 py-1 text-xs font-semibold text-emerald-700">
                           Yes
@@ -359,18 +507,19 @@ export default function AdminCaterersListPage() {
                         timeStyle: "short",
                       })}
                     </td>
-                    <td className="admin-datatable-cell whitespace-nowrap text-right">
-                      {row.ownerUserId ? (
-                        <Link
-                          href={`/admin/users/${row.ownerUserId}`}
-                          className="inline-flex items-center gap-1 rounded-lg bg-blue-50 px-2 py-2 text-xs font-bold text-blue-600 shadow-sm transition hover:bg-blue-600 hover:text-white"
-                        >
-                          Owner
-                          <ArrowRight size={14} weight="bold" aria-hidden />
-                        </Link>
-                      ) : (
-                        <span className="text-xs text-brand-text-muted">—</span>
-                      )}
+                    <td className="admin-datatable-cell w-px whitespace-nowrap py-3 text-right">
+                      <CatererRowActions
+                        tenantId={row.id}
+                        ownerUserId={row.ownerUserId}
+                        pendingReview={row.marketplaceApprovalStatus === "pending_review"}
+                        actionsDisabled={approvalM.isPending}
+                        onApprove={() =>
+                          approvalM.mutate({ tenantId: row.id, decision: "approve" })
+                        }
+                        onReject={() =>
+                          approvalM.mutate({ tenantId: row.id, decision: "reject" })
+                        }
+                      />
                     </td>
                   </tr>
                 ))

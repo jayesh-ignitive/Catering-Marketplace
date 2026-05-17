@@ -25,12 +25,18 @@ import Image from "next/image";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { useMemo, useState } from "react";
+import { HomeHeroBackground } from "@/components/home/HomeHeroBackground";
 import {
   fetchBlogPosts,
   fetchCities,
   fetchServiceCategories,
   fetchTrustStats,
 } from "@/lib/catering-api";
+import {
+  fetchHomeHeroSlides,
+  HOME_BANNERS_QUERY_KEY,
+  HOME_BANNERS_STALE_MS,
+} from "@/lib/home-banners";
 import { caterersListingPath } from "@/lib/caterers-url";
 import {
   getCategoryIconHoverClasses,
@@ -64,6 +70,13 @@ export default function Home() {
     queryKey: ["catalog", "blog", "home-preview"],
     queryFn: () => fetchBlogPosts({ page: 1, limit: 2 }),
   });
+  const heroSlidesQ = useQuery({
+    queryKey: HOME_BANNERS_QUERY_KEY,
+    queryFn: fetchHomeHeroSlides,
+    staleTime: HOME_BANNERS_STALE_MS,
+  });
+
+  const heroSlides = heroSlidesQ.data ?? [];
 
   const cities = citiesQ.data ?? [];
   const categories = categoriesQ.data ?? [];
@@ -91,14 +104,7 @@ export default function Home() {
         {/* Hero */}
         <section className="relative flex h-[min(600px,90vh)] items-center justify-center">
           <div className="absolute inset-0 z-0">
-            <Image
-              src={IMG.hero}
-              alt=""
-              fill
-              className="object-cover"
-              sizes="100vw"
-              priority
-            />
+            <HomeHeroBackground slides={heroSlides} fallbackSrc={IMG.hero} />
             <div className="absolute inset-0 bg-gradient-to-r from-black/80 to-black/40" aria-hidden />
           </div>
 
@@ -176,23 +182,11 @@ export default function Home() {
               </div>
             </div>
 
-            <div className="mb-12 flex flex-col items-end justify-between gap-6 md:flex-row md:items-end">
-              <div>
-                <div className="mb-4 inline-block rounded bg-brand-green px-3 py-1 text-xs font-bold uppercase tracking-wider text-white">
-                  Browse All
-                </div>
-                <h2 className="font-heading text-4xl font-bold text-brand-dark">Catering Service Categories</h2>
+            <div className="mb-12">
+              <div className="mb-4 inline-block rounded bg-brand-green px-3 py-1 text-xs font-bold uppercase tracking-wider text-white">
+                Browse All
               </div>
-              <Link
-                href="/packages"
-                className="group inline-flex items-center gap-2 text-sm font-bold text-brand-red transition hover:text-red-800"
-              >
-                View caterer packages
-                <ArrowRight
-                  className="transition-transform group-hover:translate-x-0.5"
-                  aria-hidden
-                />
-              </Link>
+              <h2 className="font-heading text-4xl font-bold text-brand-dark">Catering Service Categories</h2>
             </div>
 
             <div className="grid grid-cols-1 gap-6 md:grid-cols-2 lg:grid-cols-4">

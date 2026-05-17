@@ -8,7 +8,7 @@ import { useRouter } from "next/navigation";
 import { useEffect } from "react";
 
 export default function CatererWorkspaceShellLayout({ children }: { children: React.ReactNode }) {
-  const { ready, user, logout, token } = useAuth();
+  const { ready, user, token } = useAuth();
   const router = useRouter();
 
   const profileQ = useQuery({
@@ -63,13 +63,7 @@ export default function CatererWorkspaceShellLayout({ children }: { children: Re
 
   if (profileQ.isError) {
     return (
-      <WorkspaceThemeLayout
-        user={user}
-        onLogout={() => {
-          logout();
-          router.push("/");
-        }}
-      >
+      <WorkspaceThemeLayout user={user} profile={profileQ.data ?? null}>
         {children}
       </WorkspaceThemeLayout>
     );
@@ -85,13 +79,7 @@ export default function CatererWorkspaceShellLayout({ children }: { children: Re
   }
 
   return (
-    <WorkspaceThemeLayout
-      user={user}
-      onLogout={() => {
-        logout();
-        router.push("/");
-      }}
-    >
+    <WorkspaceThemeLayout user={user} profile={profileQ.data ?? null}>
       {children}
     </WorkspaceThemeLayout>
   );

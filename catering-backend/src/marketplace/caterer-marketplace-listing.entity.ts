@@ -15,6 +15,7 @@ import { CatererProfileGalleryImage } from './caterer-profile-gallery-image.enti
 import { CatererProfileKeyword } from './caterer-profile-keyword.entity';
 import { CatererProfileServiceOffering } from './caterer-profile-service-offering.entity';
 import { City } from './city.entity';
+import type { CatererProfileApprovalStatus } from './caterer-profile-approval-status';
 
 export type CatererPriceBand = 'budget' | 'mid' | 'premium' | 'custom';
 
@@ -130,6 +131,28 @@ export class CatererMarketplaceListing {
 
   @Column({ type: 'boolean', default: false })
   published!: boolean;
+
+  @Column({
+    name: 'approval_status',
+    type: 'varchar',
+    length: 20,
+    default: 'draft',
+  })
+  approvalStatus!: CatererProfileApprovalStatus;
+
+  @Column({
+    name: 'submitted_for_review_at',
+    type: 'datetime',
+    precision: 6,
+    nullable: true,
+  })
+  submittedForReviewAt!: Date | null;
+
+  @Column({ name: 'reviewed_at', type: 'datetime', precision: 6, nullable: true })
+  reviewedAt!: Date | null;
+
+  @Column({ name: 'reviewed_by_user_id', type: 'char', length: 36, nullable: true })
+  reviewedByUserId!: string | null;
 
   @CreateDateColumn({ name: 'created_at', type: 'datetime', precision: 6 })
   createdAt!: Date;

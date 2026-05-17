@@ -4,8 +4,11 @@ import {
   CookingPot,
   FolderOpen,
   ForkKnife,
+  EnvelopeSimple,
+  Images,
   ListBullets,
   ListDashes,
+  Newspaper,
   SquaresFour,
   Storefront,
   Tag,
@@ -36,22 +39,34 @@ export function isAdminNavSubmenu(item: AdminNavItem): item is AdminNavSubmenuGr
   return "children" in item;
 }
 
+/** Sidebar sections: overview → marketplace ops → public site → menu master data */
 export const ADMIN_NAV_SECTIONS: AdminNavSection[] = [
   {
-    label: "Menu",
+    label: "Overview",
+    items: [{ href: "/admin", label: "Dashboard", icon: SquaresFour }],
+  },
+  {
+    label: "Marketplace",
     items: [
-      { href: "/admin", label: "Dashboard", icon: SquaresFour },
       { href: "/admin/caterers", label: "Caterers", icon: Storefront },
       { href: "/admin/users", label: "Users", icon: UsersThree },
+      { href: "/admin/service-categories", label: "Service categories", icon: ListDashes },
     ],
   },
   {
-    label: "Catalog",
+    label: "Website",
+    items: [
+      { href: "/admin/contact-inquiries", label: "Contact inquiries", icon: EnvelopeSimple },
+      { href: "/admin/home-banners", label: "Home banners", icon: Images },
+      { href: "/admin/blog-posts", label: "Blog posts", icon: Newspaper },
+    ],
+  },
+  {
+    label: "Menu catalog",
     items: [
       { href: "/admin/languages", label: "Languages", icon: Translate },
-      { href: "/admin/service-categories", label: "Service categories", icon: ListDashes },
       {
-        label: "Categories and Attributes",
+        label: "Menus & ingredients",
         icon: FolderOpen,
         children: [
           { href: "/admin/menu-categories", label: "Menu categories", icon: ListBullets },

@@ -2,23 +2,32 @@
 
 import { useState } from "react";
 import type { AuthUser } from "@/lib/auth-api";
+import type { CatererWorkspaceProfile } from "@/lib/catering-api";
+import { usePathname } from "next/navigation";
 import { WorkspaceFooter } from "./commons/WorkspaceFooter";
 import { WorkspaceHeader } from "./commons/WorkspaceHeader";
 import { WorkspaceSidebar } from "./commons/WorkspaceSidebar";
+import { WorkspaceListingFlashBanner } from "./WorkspaceListingFlashBanner";
 
 type WorkspaceThemeLayoutProps = {
   user: AuthUser;
-  onLogout: () => void;
+  profile?: CatererWorkspaceProfile | null;
   children: React.ReactNode;
 };
 
-export function WorkspaceThemeLayout({ user, onLogout, children }: WorkspaceThemeLayoutProps) {
+export function WorkspaceThemeLayout({
+  user,
+  profile,
+  children,
+}: WorkspaceThemeLayoutProps) {
+  const pathname = usePathname();
+  const flashOnDashboard = pathname === "/workspace" || pathname === "/workspace/";
   const [mobileOpen, setMobileOpen] = useState(false);
   const [collapsed, setCollapsed] = useState(false);
   const [hoverExpanded, setHoverExpanded] = useState(false);
 
   function handleToggleSidebar() {
-    if (window.innerWidth < 768) {
+    if (typeof window !== "undefined" && window.innerWidth < 768) {
       setMobileOpen((open) => !open);
       return;
     }
@@ -27,9 +36,8 @@ export function WorkspaceThemeLayout({ user, onLogout, children }: WorkspaceThem
   }
 
   return (
-    <div className="flex min-h-screen bg-[#f8f9fa] text-stone-700">
+    <div className="fixed inset-0 z-0 flex overflow-hidden bg-brand-page font-sans text-brand-text-muted">
       <WorkspaceSidebar
-        user={user}
         mobileOpen={mobileOpen}
         collapsed={collapsed}
         hoverExpanded={hoverExpanded}
@@ -40,11 +48,16 @@ export function WorkspaceThemeLayout({ user, onLogout, children }: WorkspaceThem
           if (collapsed) setHoverExpanded(false);
         }}
         onCloseMobile={() => setMobileOpen(false)}
-        onLogout={onLogout}
       />
-      <div className="flex min-w-0 flex-1 flex-col">
+      <div className="flex min-h-0 min-w-0 flex-1 flex-col overflow-hidden bg-brand-page">
         <WorkspaceHeader user={user} onToggleSidebar={handleToggleSidebar} />
-        <main className="flex-1 overflow-y-auto p-4 md:p-8">{children}</main>
+        <WorkspaceListingFlashBanner
+          profile={profile}
+          size={flashOnDashboard ? "prominent" : "default"}
+        />
+        <main className="admin-shell-scroll min-h-0 flex-1 overflow-y-auto overscroll-y-contain bg-brand-page px-4 pt-4 pb-4 md:px-8 md:pt-8 md:pb-6">
+          {children}
+        </main>
         <WorkspaceFooter />
       </div>
     </div>

@@ -147,7 +147,7 @@ export class MarketplaceController {
     );
   }
 
-  /** Wizard step 3 — publish when server-side completion checks pass. */
+  /** Wizard step 3 — submit for admin review when completion checks pass. */
   @Patch('caterer/profile/step/3')
   @UseGuards(JwtAuthGuard)
   publishWorkspaceProfile(@Req() req: Request & { user: User }) {

@@ -98,7 +98,7 @@
 @layer components {
   .ws-listing-tab-strip {
     box-shadow: 0 10px 30px rgb(0 0 0 / 0.04);
-    @apply sticky top-0 z-20 mb-10 flex w-full min-w-0 flex-nowrap gap-2 overflow-hidden rounded-3xl bg-white p-2;
+    @apply sticky top-0 z-10 mb-10 flex w-full min-w-0 flex-nowrap gap-2 overflow-hidden rounded-3xl bg-white p-2;
   }
 
   .ws-listing-tab-link {

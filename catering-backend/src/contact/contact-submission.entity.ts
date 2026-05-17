@@ -25,6 +25,12 @@ export class ContactSubmission {
   @Column({ type: 'text' })
   message!: string;
 
+  @Column({ type: 'boolean', default: false })
+  solved!: boolean;
+
+  @Column({ name: 'solved_at', type: 'datetime', precision: 6, nullable: true })
+  solvedAt!: Date | null;
+
   @CreateDateColumn({ name: 'created_at', type: 'datetime', precision: 6 })
   createdAt!: Date;
 }

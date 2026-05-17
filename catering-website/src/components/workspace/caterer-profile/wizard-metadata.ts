@@ -9,7 +9,7 @@ export const WIZARD_STEPS: readonly {
   { label: "Business", onboardingShortLabel: "Business info", icon: Storefront },
   { label: "Categories & Services", onboardingShortLabel: "Services", icon: ListDashes },
   { label: "Gallery", onboardingShortLabel: "Portfolio", icon: Images },
-  { label: "Publish", onboardingShortLabel: "Review", icon: PaperPlaneRight },
+  { label: "Submit for review", onboardingShortLabel: "Submit", icon: PaperPlaneRight },
 ] as const;
 
 export type WizardStepIndex = 0 | 1 | 2 | 3;
@@ -29,12 +29,13 @@ export const STEP_INTROS: readonly { title: string; subtitle: string }[] = [
     subtitle: "Upload a banner and gallery photos — strong visuals increase trust and enquiries.",
   },
   {
-    title: "Review & publish",
-    subtitle: "Check the checklist, then save to make your listing visible on the marketplace.",
+    title: "Submit for admin review",
+    subtitle:
+      "Confirm everything below, then submit. Your listing is not public until our team approves it.",
   },
 ];
 
-/** Tabs in workspace (subset of wizard — no publish step). */
+/** Tabs in workspace (subset of wizard — no submit-for-review step). */
 export type ProfileEditorTabId = "business" | "services" | "gallery";
 
 export const PROFILE_TAB_ORDER: readonly ProfileEditorTabId[] = ["business", "services", "gallery"];

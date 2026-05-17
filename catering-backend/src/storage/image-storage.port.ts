@@ -1,4 +1,4 @@
-export type ImageUploadKind = 'banner' | 'gallery';
+export type ImageUploadKind = 'banner' | 'gallery' | 'home';
 
 /** Contract for saving uploaded images; swap implementation for S3, Cloudflare R2, etc. */
 export interface SaveImageInput {

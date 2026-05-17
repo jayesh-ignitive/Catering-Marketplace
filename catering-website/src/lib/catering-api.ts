@@ -4,6 +4,46 @@ export function getCateringApiBase(): string {
   return publicSiteConfig.cateringApiUrl.replace(/\/$/, "");
 }
 
+/** Public CDN origin for R2 keys — matches `S3_PUBLIC_BASE_URL` on the API when using R2. */
+export function getCateringImageCdnBase(): string | null {
+  const fromBase = process.env.NEXT_PUBLIC_IMAGE_CDN_BASE_URL?.trim();
+  if (fromBase) {
+    const b = fromBase.replace(/\/$/, "");
+    return b.includes("://") ? b : `https://${b.replace(/^\/+/, "")}`;
+  }
+  const hostList = process.env.NEXT_PUBLIC_IMAGE_CDN_HOSTNAME?.trim();
+  if (!hostList) return null;
+  const host = hostList.split(",")[0]!.trim();
+  if (!host) return null;
+  return host.includes("://") ? host.replace(/\/$/, "") : `https://${host.replace(/^\/+/, "")}`;
+}
+
+/**
+ * Browser-ready URL for banner/gallery values from upload (`key`) or profile API (absolute URL).
+ * Mirrors backend `ImagePublicUrlService.resolveToPublicUrl`.
+ */
+export function resolveCateringImageDisplayUrl(stored: string): string {
+  const t = stored.trim();
+  if (!t) return "";
+  if (t.startsWith("data:")) return t;
+  if (/^https?:\/\//i.test(t)) return t;
+
+  const key = t.replace(/^\/+/, "");
+  const cdnBase = getCateringImageCdnBase();
+  if (cdnBase) return `${cdnBase}/${key}`;
+
+  return `${getCateringApiBase()}/uploads/${key}`;
+}
+
+/** Prefer API `url` (CDN) for previews; fall back to resolving storage `key`. */
+export function cateringImagePreviewUrl(upload: { url: string; key: string }): string {
+  const url = upload.url.trim();
+  if (url && (/^https?:\/\//i.test(url) || url.startsWith("data:"))) {
+    return url;
+  }
+  return resolveCateringImageDisplayUrl(upload.key || url);
+}
+
 export type City = { id: string; name: string; slug: string };
 export type ServiceCategory = {
   /** Stable filter id (`code`, e.g. `c1`). */
@@ -215,6 +255,8 @@ export type CatererWorkspaceProfile = {
   keywords: string[];
   galleryImageUrls: string[];
   published: boolean;
+  approvalStatus: "draft" | "pending_review" | "approved" | "rejected";
+  submittedForReviewAt: string | null;
   completion: WorkspaceCompletionStatus;
 };
 
@@ -323,30 +365,65 @@ function formatUploadImageError(data: unknown, status: number): string {
   return `Could not upload image (${status})`;
 }
 
-/** Multipart field name `file`. Query `kind=banner|gallery` selects `images/banner/` vs `images/gallery/`. Returns `{ url, key }` (`key` is the DB value). */
+export type UploadImageProgressHandler = (percent: number) => void;
+
+/** Multipart field name `file`. Query `kind=banner|gallery|home` selects folder under `images/`. Returns `{ url, key }` (`key` is the DB value). */
 export async function uploadCateringImage(
   accessToken: string,
   file: File,
-  kind: "banner" | "gallery"
+  kind: "banner" | "gallery" | "home",
+  options?: { onProgress?: UploadImageProgressHandler }
 ): Promise<{ url: string; key: string }> {
   const fd = new FormData();
   fd.append("file", file);
   const q = new URLSearchParams({ kind });
-  const res = await fetch(`${getCateringApiBase()}/api/upload/image?${q.toString()}`, {
-    method: "POST",
-    headers: { Authorization: `Bearer ${accessToken}` },
-    body: fd,
-    cache: "no-store",
+  const endpoint = `${getCateringApiBase()}/api/upload/image?${q.toString()}`;
+
+  return new Promise((resolve, reject) => {
+    const xhr = new XMLHttpRequest();
+    xhr.open("POST", endpoint);
+    xhr.setRequestHeader("Authorization", `Bearer ${accessToken}`);
+
+    xhr.upload.addEventListener("progress", (event) => {
+      if (!options?.onProgress) return;
+      if (event.lengthComputable && event.total > 0) {
+        const pct = Math.min(100, Math.round((event.loaded / event.total) * 100));
+        options.onProgress(pct);
+      } else {
+        options.onProgress(0);
+      }
+    });
+
+    xhr.addEventListener("load", () => {
+      let data: unknown = {};
+      try {
+        data = xhr.responseText ? JSON.parse(xhr.responseText) : {};
+      } catch {
+        data = {};
+      }
+      if (xhr.status < 200 || xhr.status >= 300) {
+        reject(new Error(formatUploadImageError(data, xhr.status)));
+        return;
+      }
+      if (!data || typeof data !== "object" || typeof (data as { url?: unknown }).url !== "string") {
+        reject(new Error("Invalid upload response"));
+        return;
+      }
+      const o = data as { url: string; key?: string };
+      options?.onProgress?.(100);
+      resolve({ url: o.url, key: typeof o.key === "string" ? o.key : "" });
+    });
+
+    xhr.addEventListener("error", () => {
+      reject(new Error("Network error while uploading image"));
+    });
+
+    xhr.addEventListener("abort", () => {
+      reject(new Error("Upload cancelled"));
+    });
+
+    xhr.send(fd);
   });
-  const data: unknown = await res.json().catch(() => ({}));
-  if (!res.ok) {
-    throw new Error(formatUploadImageError(data, res.status));
-  }
-  if (!data || typeof data !== "object" || typeof (data as { url?: unknown }).url !== "string") {
-    throw new Error("Invalid upload response");
-  }
-  const o = data as { url: string; key?: string };
-  return { url: o.url, key: typeof o.key === "string" ? o.key : "" };
 }
 
 function formatWorkspaceProfileSaveError(data: unknown, status: number): string {
@@ -506,55 +583,13 @@ export async function searchCaterers(
   return parseJson<SearchResponse>(res);
 }
 
-export type BlogPostSummary = {
-  id: string;
-  slug: string;
-  title: string;
-  excerpt: string;
-  categoryLabel: string;
-  featuredImageUrl: string | null;
-  publishedAt: string;
-};
-
-export type BlogPostDetail = BlogPostSummary & {
-  bodyHtml: string;
-};
-
-export type BlogListResponse = {
-  items: BlogPostSummary[];
-  total: number;
-  page: number;
-  limit: number;
-};
-
-export async function fetchBlogPosts(params?: {
-  page?: number;
-  limit?: number;
-}): Promise<BlogListResponse> {
-  const sp = new URLSearchParams();
-  if (params?.page != null) sp.set("page", String(params.page));
-  if (params?.limit != null) sp.set("limit", String(params.limit));
-  const q = sp.toString();
-  const res = await fetch(
-    `${getCateringApiBase()}/api/catalog/blog${q ? `?${q}` : ""}`,
-    fetchOpts
-  );
-  return parseJson<BlogListResponse>(res);
-}
-
-export async function fetchBlogPost(slug: string): Promise<BlogPostDetail> {
-  const res = await fetch(
-    `${getCateringApiBase()}/api/catalog/blog/${encodeURIComponent(slug)}`,
-    fetchOpts
-  );
-  if (res.status === 404) {
-    throw new Error("not_found");
-  }
-  if (!res.ok) {
-    throw new Error(`API error ${res.status}`);
-  }
-  return parseJson<BlogPostDetail>(res);
-}
+export type {
+  BlogListResponse,
+  BlogPostDetail,
+  BlogPostSeo,
+  BlogPostSummary,
+} from "@/lib/blog";
+export { fetchBlogPost, fetchBlogPosts } from "@/lib/blog";
 
 function formatContactApiError(data: unknown, status: number): string {
   if (data && typeof data === "object") {

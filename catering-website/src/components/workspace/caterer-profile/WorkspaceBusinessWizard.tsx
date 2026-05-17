@@ -15,6 +15,8 @@ import {
   publishWorkspaceCatererProfile,
   type PatchWorkspaceProfileStep0Body,
   type PatchWorkspaceProfileStep1Body,
+  cateringImagePreviewUrl,
+  resolveCateringImageDisplayUrl,
   uploadCateringImage,
 } from "@/lib/catering-api";
 import {
@@ -29,6 +31,7 @@ import {
   Check,
   ArrowRight,
   Trash,
+  Clock,
 } from "@phosphor-icons/react";
 import {
   SearchableKeywordTags,
@@ -48,7 +51,13 @@ import {
   workspaceHintTextClass,
   workspaceLabelTextClass,
 } from "./constants";
-import { ChoiceChip, FieldError, InputLabel, ToggleChip } from "./form-primitives";
+import {
+  ChoiceChip,
+  FieldError,
+  ImageUploadProgressOverlay,
+  InputLabel,
+  ToggleChip,
+} from "./form-primitives";
 import { OnboardingStyleStepper } from "./OnboardingStyleStepper";
 import { StepIntro } from "./StepIntro";
 import {
@@ -172,8 +181,12 @@ export function WorkspaceBusinessWizard({
 
   const [bannerDragging, setBannerDragging] = useState(false);
   const [galleryDragging, setGalleryDragging] = useState(false);
+  const [bannerUploadProgress, setBannerUploadProgress] = useState<number | null>(null);
+  const [galleryUploadProgress, setGalleryUploadProgress] = useState<{
+    percent: number;
+    label: string;
+  } | null>(null);
   const bannerFileInputRef = useRef<HTMLInputElement>(null);
-  const bannerUploadInFlightRef = useRef(false);
   const galleryFileInputRef = useRef<HTMLInputElement>(null);
 
   const keywords = useMemo(
@@ -188,6 +201,16 @@ export function WorkspaceBusinessWizard({
   const galleryImageUrls = useMemo(
     () => galleryUrls.map((x) => x.trim()).filter(Boolean),
     [galleryUrls]
+  );
+
+  const galleryDisplayUrls = useMemo(
+    () => galleryImageUrls.map(resolveCateringImageDisplayUrl),
+    [galleryImageUrls]
+  );
+
+  const bannerDisplayUrl = useMemo(
+    () => resolveCateringImageDisplayUrl(heroImageUrl),
+    [heroImageUrl]
   );
 
   const pincodeDigits = pincode.replace(/\D/g, "");
@@ -510,43 +533,64 @@ export function WorkspaceBusinessWizard({
       toast.error("Session expired. Sign in again and retry the upload.");
       return;
     }
-    if (bannerUploadInFlightRef.current) {
+    if (bannerUploadProgress !== null) {
       return;
     }
-    bannerUploadInFlightRef.current = true;
+    setBannerUploadProgress(0);
     try {
-      const { url, key } = await uploadCateringImage(accessToken, file, "banner");
-      setHeroImageUrl(key || url);
+      const uploaded = await uploadCateringImage(accessToken, file, "banner", {
+        onProgress: setBannerUploadProgress,
+      });
+      setHeroImageUrl(cateringImagePreviewUrl(uploaded));
       clearFieldError("banner");
     } catch (e) {
       toast.error(e instanceof Error ? e.message : "Could not upload banner.");
     } finally {
-      bannerUploadInFlightRef.current = false;
+      setBannerUploadProgress(null);
     }
   };
 
   const appendGalleryFiles = useCallback(
     async (files: FileList | File[] | null) => {
-      if (!files?.length) return;
+      if (!files?.length || galleryUploadProgress !== null) return;
       const list = Array.from(files).filter((f) => f.type.startsWith("image/"));
       if (!list.length) {
         return;
       }
 
-      const accepted: string[] = [];
-      for (const file of list) {
-        if (file.size > MAX_GALLERY_UPLOAD_BYTES) {
-          continue;
-        }
-        try {
-          const accessToken = getStoredToken() ?? token;
-          if (!accessToken) continue;
-          const { url, key } = await uploadCateringImage(accessToken, file, "gallery");
-          accepted.push(key || url);
-        } catch (e) {
-          toast.error(e instanceof Error ? e.message : `Could not upload ${file.name}.`);
-        }
+      const accessToken = getStoredToken() ?? token;
+      if (!accessToken) {
+        toast.error("Session expired. Sign in again and retry the upload.");
+        return;
       }
+
+      const accepted: string[] = [];
+      const total = list.length;
+      try {
+        for (let i = 0; i < list.length; i++) {
+          const file = list[i]!;
+          if (file.size > MAX_GALLERY_UPLOAD_BYTES) {
+            toast.error(`${file.name} is too large. Use a file under 5 MB.`);
+            continue;
+          }
+          const label =
+            total > 1 ? `Uploading photo ${i + 1} of ${total}…` : "Uploading photo…";
+          setGalleryUploadProgress({ percent: 0, label });
+          try {
+            const uploaded = await uploadCateringImage(accessToken, file, "gallery", {
+              onProgress: (percent) => {
+                setGalleryUploadProgress({ percent, label });
+              },
+            });
+            accepted.push(cateringImagePreviewUrl(uploaded));
+          } catch (e) {
+            toast.error(e instanceof Error ? e.message : `Could not upload ${file.name}.`);
+          }
+        }
+      } finally {
+        setGalleryUploadProgress(null);
+      }
+
       if (!accepted.length) return;
 
       setGalleryUrls((prev) => {
@@ -559,7 +603,7 @@ export function WorkspaceBusinessWizard({
         return [...slice, ...prev];
       });
     },
-    [clearFieldError, token]
+    [clearFieldError, galleryUploadProgress, token]
   );
 
   const removeGalleryAt = useCallback((index: number) => {
@@ -1447,16 +1491,20 @@ export function WorkspaceBusinessWizard({
                   Wide hero shown across the top of your listing.
                 </p>
                 <div
-                  className={`relative flex min-h-[168px] w-full cursor-pointer flex-col items-center justify-center overflow-hidden ${surfaceRound} border-2 border-dashed p-8 text-center transition-all duration-300 ${fieldClassErrored("", Boolean(fieldErrors.banner))} ${
-                    bannerDragging
-                      ? "border-brand-red bg-red-50"
-                      : "border-[#E5E7EB] bg-[#F9FAFB] hover:border-brand-red hover:bg-red-50/30"
+                  className={`relative flex min-h-[168px] w-full flex-col items-center justify-center overflow-hidden ${surfaceRound} border-2 border-dashed p-8 text-center transition-all duration-300 ${fieldClassErrored("", Boolean(fieldErrors.banner))} ${
+                    bannerUploadProgress !== null
+                      ? "cursor-wait border-brand-red/60 bg-[#F9FAFB]"
+                      : bannerDragging
+                        ? "cursor-pointer border-brand-red bg-red-50"
+                        : "cursor-pointer border-[#E5E7EB] bg-[#F9FAFB] hover:border-brand-red hover:bg-red-50/30"
                   }`}
                   aria-invalid={Boolean(fieldErrors.banner)}
+                  aria-busy={bannerUploadProgress !== null}
                   aria-describedby={
                     fieldErrors.banner ? "ws-banner-err ws-banner-hint" : "ws-banner-hint"
                   }
                   onDragOver={(e) => {
+                    if (bannerUploadProgress !== null) return;
                     e.preventDefault();
                     setBannerDragging(true);
                   }}
@@ -1467,9 +1515,13 @@ export function WorkspaceBusinessWizard({
                   onDrop={(e) => {
                     e.preventDefault();
                     setBannerDragging(false);
+                    if (bannerUploadProgress !== null) return;
                     if (e.dataTransfer.files?.[0]) handleBannerFileUpload(e.dataTransfer.files[0]);
                   }}
-                  onClick={() => bannerFileInputRef.current?.click()}
+                  onClick={() => {
+                    if (bannerUploadProgress !== null) return;
+                    bannerFileInputRef.current?.click();
+                  }}
                 >
                   <input
                     type="file"
@@ -1485,7 +1537,7 @@ export function WorkspaceBusinessWizard({
                     <div className="absolute inset-0 h-full w-full">
                       {/* eslint-disable-next-line @next/next/no-img-element */}
                       <img
-                        src={heroImageUrl}
+                        src={bannerDisplayUrl}
                         alt="Banner preview"
                         className="h-full w-full object-cover opacity-60"
                       />
@@ -1504,6 +1556,12 @@ export function WorkspaceBusinessWizard({
                       <p className={workspaceHintTextClass}>PNG, JPG or GIF — wide ratio works best</p>
                     </>
                   )}
+                  {bannerUploadProgress !== null ? (
+                    <ImageUploadProgressOverlay
+                      percent={bannerUploadProgress}
+                      label="Uploading banner…"
+                    />
+                  ) : null}
                 </div>
                 <FieldError id="ws-banner-err" message={fieldErrors.banner} />
               </section>
@@ -1524,16 +1582,20 @@ export function WorkspaceBusinessWizard({
                 >
                   <li className={`relative aspect-square min-h-0 min-w-0 ${surfaceRound}`}>
                     <div
-                      className={`absolute inset-0 flex cursor-pointer flex-col items-center justify-center overflow-hidden p-2 text-center transition-all duration-300 sm:p-3 ${surfaceRound} border-2 border-dashed ${
-                        galleryDragging
-                          ? "border-brand-red bg-red-50"
-                          : "border-[#E5E7EB] bg-[#F9FAFB] hover:border-brand-red hover:bg-red-50/30"
+                      className={`absolute inset-0 flex flex-col items-center justify-center overflow-hidden p-2 text-center transition-all duration-300 sm:p-3 ${surfaceRound} border-2 border-dashed ${
+                        galleryUploadProgress !== null
+                          ? "cursor-wait border-brand-red/60 bg-[#F9FAFB]"
+                          : galleryDragging
+                            ? "cursor-pointer border-brand-red bg-red-50"
+                            : "cursor-pointer border-[#E5E7EB] bg-[#F9FAFB] hover:border-brand-red hover:bg-red-50/30"
                       }`}
                       onDragEnter={(e) => {
+                        if (galleryUploadProgress !== null) return;
                         e.preventDefault();
                         setGalleryDragging(true);
                       }}
                       onDragOver={(e) => {
+                        if (galleryUploadProgress !== null) return;
                         e.preventDefault();
                         e.dataTransfer.dropEffect = "copy";
                         setGalleryDragging(true);
@@ -1547,12 +1609,18 @@ export function WorkspaceBusinessWizard({
                       onDrop={(e) => {
                         e.preventDefault();
                         setGalleryDragging(false);
+                        if (galleryUploadProgress !== null) return;
                         if (e.dataTransfer.files?.length) void appendGalleryFiles(e.dataTransfer.files);
                       }}
-                      onClick={() => galleryFileInputRef.current?.click()}
+                      onClick={() => {
+                        if (galleryUploadProgress !== null) return;
+                        galleryFileInputRef.current?.click();
+                      }}
                       role="button"
-                      tabIndex={0}
+                      tabIndex={galleryUploadProgress !== null ? -1 : 0}
+                      aria-busy={galleryUploadProgress !== null}
                       onKeyDown={(e) => {
+                        if (galleryUploadProgress !== null) return;
                         if (e.key === "Enter" || e.key === " ") {
                           e.preventDefault();
                           galleryFileInputRef.current?.click();
@@ -1577,15 +1645,25 @@ export function WorkspaceBusinessWizard({
                       </div>
                       <p className={workspaceCardTitleClass}>Add photos</p>
                       <p className={`mt-0.5 hidden ${workspaceHintTextClass} sm:block`}>Drop or click</p>
+                      {galleryUploadProgress !== null ? (
+                        <ImageUploadProgressOverlay
+                          percent={galleryUploadProgress.percent}
+                          label={galleryUploadProgress.label}
+                        />
+                      ) : null}
                     </div>
                   </li>
-                  {galleryUrls.map((url, idx) => (
+                  {galleryImageUrls.map((url, idx) => (
                     <li
                       key={`${idx}-${url.slice(0, 64)}`}
                       className={`relative aspect-square min-h-0 min-w-0 overflow-hidden border border-[#E5E7EB] bg-[#F9FAFB] ${surfaceRound}`}
                     >
                       {/* eslint-disable-next-line @next/next/no-img-element */}
-                      <img src={url} alt="" className="h-full w-full object-cover" />
+                      <img
+                        src={galleryDisplayUrls[idx] ?? resolveCateringImageDisplayUrl(url)}
+                        alt=""
+                        className="h-full w-full object-cover"
+                      />
                       <button
                         type="button"
                         aria-label={`Remove gallery photo ${idx + 1}`}
@@ -1614,10 +1692,11 @@ export function WorkspaceBusinessWizard({
                 <div className="border-b border-gray-200 bg-gray-50 px-6 py-5 sm:px-8">
                   <h3 className={`flex items-center gap-2 ${workspaceLabelTextClass}`}>
                     <PaperPlaneRight className="text-brand-red" weight="fill" aria-hidden />
-                    Ready to publish
+                    Submit for admin review
                   </h3>
                   <p className={`mt-1 ${workspaceHintTextClass}`}>
-                    Review the checklist before your listing goes live on the marketplace.
+                    Complete the checklist, then submit. We review every profile before it appears in
+                    caterer search and listings.
                   </p>
                 </div>
                 <div className="p-6 sm:p-8">
@@ -1669,20 +1748,45 @@ export function WorkspaceBusinessWizard({
                       </div>
                     </li>
                   </ul>
-                  
-                  <div className={`mt-8 ${fieldRadius} border border-[#4CAF50]/25 bg-[#4CAF50]/10 p-5`}>
-                    <div className="flex items-center gap-4">
-                      <div className="shrink-0 rounded-full bg-white p-2 shadow-sm ring-1 ring-[#4CAF50]/20">
-                        <CheckCircle className="h-6 w-6 text-[#4CAF50]" weight="fill" aria-hidden />
-                      </div>
-                      <div>
-                        <p className={workspaceCardTitleClass}>Marketplace visibility</p>
-                        <p className={`mt-1 ${workspaceHintTextClass}`}>
-                          When every item above is complete and you save, your listing goes live for customers.
-                        </p>
-                      </div>
-                    </div>
+
+                  <div className={`mt-8 ${fieldRadius} border border-gray-200 bg-gray-50/80 p-5 sm:p-6`}>
+                    <p className={workspaceCardTitleClass}>What happens after you submit</p>
+                    <ol className={`mt-4 space-y-4 ${workspaceHintTextClass}`}>
+                      <li className="flex gap-3">
+                        <span className="flex h-7 w-7 shrink-0 items-center justify-center rounded-full bg-brand-red text-xs font-bold text-white">
+                          1
+                        </span>
+                        <span>
+                          <span className="font-semibold text-brand-text-dark">You submit</span> — we save
+                          your profile and mark it as pending review (not visible to customers yet).
+                        </span>
+                      </li>
+                      <li className="flex gap-3">
+                        <span className="flex h-7 w-7 shrink-0 items-center justify-center rounded-full bg-brand-red text-xs font-bold text-white">
+                          2
+                        </span>
+                        <span>
+                          <span className="font-semibold text-brand-text-dark">Admin review</span> — our
+                          team checks your business details, services, and photos for quality and accuracy.
+                        </span>
+                      </li>
+                      <li className="flex gap-3">
+                        <span className="flex h-7 w-7 shrink-0 items-center justify-center rounded-full bg-brand-red text-xs font-bold text-white">
+                          3
+                        </span>
+                        <span>
+                          <span className="font-semibold text-brand-text-dark">Goes live</span> — once
+                          approved, your listing appears in marketplace search and on your public profile
+                          page.
+                        </span>
+                      </li>
+                    </ol>
                   </div>
+
+                  <MarketplaceVisibilityNotice
+                    approvalStatus={profile.approvalStatus}
+                    published={profile.published}
+                  />
                 </div>
               </div>
             </div>
@@ -1770,6 +1874,9 @@ export function WorkspaceBusinessWizard({
                 saveM.mutate(step, {
                   onSuccess: () => {
                     if (step === 3) {
+                      toast.success(
+                        "Submitted for admin review. Your listing will appear after approval."
+                      );
                       router.replace("/workspace");
                       return;
                     }
@@ -1785,13 +1892,13 @@ export function WorkspaceBusinessWizard({
               }`}
             >
               {saveM.isPending
-                ? step === 3 && uiVariant === "onboarding"
-                  ? "Publishing..."
+                ? step === 3
+                  ? "Submitting..."
                   : "Saving..."
                 : step === 3
                   ? uiVariant === "onboarding"
-                    ? "Publish"
-                    : "Publish Profile"
+                    ? "Submit for review"
+                    : "Submit for review"
                   : uiVariant === "onboarding"
                     ? "Next step"
                     : "Save & Continue"}
@@ -1807,6 +1914,95 @@ export function WorkspaceBusinessWizard({
             </button>
           </div>
         ) : null}
+      </div>
+    </div>
+  );
+}
+
+function marketplaceVisibilityCopy(
+  approvalStatus: CatererWorkspaceProfile["approvalStatus"],
+  published: boolean
+): { title: string; message: string; tone: "success" | "pending" | "rejected" | "info" } {
+  if (published && approvalStatus === "approved") {
+    return {
+      title: "Live on marketplace",
+      message: "Your listing is visible to customers searching for caterers.",
+      tone: "success",
+    };
+  }
+  if (approvalStatus === "pending_review") {
+    return {
+      title: "Pending admin review",
+      message:
+        "We received your submission. An admin will review your profile before it appears in listings.",
+      tone: "pending",
+    };
+  }
+  if (approvalStatus === "rejected") {
+    return {
+      title: "Not approved",
+      message:
+        "Your last submission was not approved. Update your profile and submit again for another review.",
+      tone: "rejected",
+    };
+  }
+  return {
+    title: "Marketplace visibility",
+    message:
+      "When every item above is complete and you submit, our team reviews your listing before it goes live for customers.",
+    tone: "info",
+  };
+}
+
+function MarketplaceVisibilityNotice({
+  approvalStatus,
+  published,
+}: {
+  approvalStatus: CatererWorkspaceProfile["approvalStatus"];
+  published: boolean;
+}) {
+  const copy = marketplaceVisibilityCopy(approvalStatus, published);
+  const boxClass =
+    copy.tone === "success"
+      ? "border-[#4CAF50]/25 bg-[#4CAF50]/10"
+      : copy.tone === "pending"
+        ? "border-amber-200 bg-amber-50"
+        : copy.tone === "rejected"
+          ? "border-rose-200 bg-rose-50"
+          : "border-[#4CAF50]/25 bg-[#4CAF50]/10";
+  const iconColor =
+    copy.tone === "success"
+      ? "text-[#4CAF50]"
+      : copy.tone === "pending"
+        ? "text-amber-600"
+        : copy.tone === "rejected"
+          ? "text-rose-600"
+          : "text-[#4CAF50]";
+  const ringClass =
+    copy.tone === "success"
+      ? "ring-[#4CAF50]/20"
+      : copy.tone === "pending"
+        ? "ring-amber-200"
+        : copy.tone === "rejected"
+          ? "ring-rose-200"
+          : "ring-[#4CAF50]/20";
+
+  return (
+    <div className={`mt-8 ${fieldRadius} border p-5 ${boxClass}`}>
+      <div className="flex items-center gap-4">
+        <div className={`shrink-0 rounded-full bg-white p-2 shadow-sm ring-1 ${ringClass}`}>
+          {copy.tone === "pending" ? (
+            <Clock className={`h-6 w-6 ${iconColor}`} weight="fill" aria-hidden />
+          ) : copy.tone === "rejected" ? (
+            <XCircle className={`h-6 w-6 ${iconColor}`} weight="fill" aria-hidden />
+          ) : (
+            <CheckCircle className={`h-6 w-6 ${iconColor}`} weight="fill" aria-hidden />
+          )}
+        </div>
+        <div>
+          <p className={workspaceCardTitleClass}>{copy.title}</p>
+          <p className={`mt-1 ${workspaceHintTextClass}`}>{copy.message}</p>
+        </div>
       </div>
     </div>
   );

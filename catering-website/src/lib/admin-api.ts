@@ -52,6 +52,43 @@ export type AdminDashboardOverview = {
   generatedAt: string;
 };
 
+export type AdminContactSortField = "createdAt" | "name" | "email" | "subject" | "solved";
+export type AdminContactSortDir = "asc" | "desc";
+export type AdminContactStatusFilter = "all" | "open" | "solved";
+
+export type AdminContactListItem = {
+  id: string;
+  name: string;
+  email: string;
+  phone: string | null;
+  subject: string;
+  messagePreview: string;
+  solved: boolean;
+  solvedAt: string | null;
+  createdAt: string;
+};
+
+export type AdminContactDetail = {
+  id: string;
+  name: string;
+  email: string;
+  phone: string | null;
+  subject: string;
+  message: string;
+  solved: boolean;
+  solvedAt: string | null;
+  createdAt: string;
+};
+
+export type AdminContactListResponse = {
+  items: AdminContactListItem[];
+  total: number;
+  page: number;
+  limit: number;
+  sortBy: AdminContactSortField;
+  sortDir: AdminContactSortDir;
+};
+
 export type AdminTenantSnapshot = {
   id: string;
   name: string;
@@ -135,6 +172,12 @@ export const ADMIN_USER_SORT_OPTIONS: { value: AdminUserSortField; label: string
   { value: "emailVerified", label: "Email verified" },
 ];
 
+export type CatererMarketplaceApprovalStatus =
+  | "draft"
+  | "pending_review"
+  | "approved"
+  | "rejected";
+
 export type AdminCatererListItem = {
   id: string;
   name: string;
@@ -143,6 +186,8 @@ export type AdminCatererListItem = {
   dbName: string | null;
   provisionStatus: string;
   profilePublished: boolean;
+  marketplaceApprovalStatus: CatererMarketplaceApprovalStatus;
+  submittedForReviewAt: string | null;
   ownerUserId: string | null;
   ownerEmail: string | null;
   ownerFullName: string | null;
@@ -170,6 +215,50 @@ export type AdminCatererListResponse = {
   limit: number;
   sortBy: AdminCatererSortField;
   sortDir: AdminCatererSortDir;
+};
+
+export type AdminCatererReviewOwner = {
+  id: string;
+  email: string;
+  fullName: string;
+  businessName: string | null;
+  phoneCountryCode: string | null;
+  phoneNumber: string | null;
+};
+
+export type AdminCatererReviewDetail = {
+  tenantId: string;
+  workspaceName: string;
+  workspaceSlug: string;
+  profileSlug: string;
+  subdomain: string | null;
+  provisionStatus: string;
+  owner: AdminCatererReviewOwner | null;
+  published: boolean;
+  approvalStatus: CatererMarketplaceApprovalStatus;
+  submittedForReviewAt: string | null;
+  reviewedAt: string | null;
+  completion: { isComplete: boolean; missingFields: string[] };
+  business: {
+    cityName: string | null;
+    streetAddress: string | null;
+    tagline: string | null;
+    about: string | null;
+    yearsInBusiness: number | null;
+    capacityGuestMin: number | null;
+    capacityGuestMax: number | null;
+    priceBand: string | null;
+    priceFrom: number | null;
+  };
+  categories: { code: string; name: string }[];
+  serviceOfferings: { id: string; name: string }[];
+  keywords: string[];
+  portfolio: {
+    heroImageUrl: string | null;
+    galleryImageUrls: string[];
+  };
+  profileCreatedAt: string;
+  profileUpdatedAt: string;
 };
 
 export type AdminLanguageItem = {
@@ -279,6 +368,57 @@ export async function fetchAdminDashboardOverview(accessToken: string): Promise<
   return parseJson<AdminDashboardOverview>(res);
 }
 
+export async function fetchAdminContactInquiriesList(
+  accessToken: string,
+  params?: {
+    page?: number;
+    limit?: number;
+    q?: string;
+    sortBy?: AdminContactSortField;
+    sortDir?: AdminContactSortDir;
+    status?: AdminContactStatusFilter;
+  },
+): Promise<AdminContactListResponse> {
+  const sp = new URLSearchParams();
+  if (params?.page != null) sp.set("page", String(params.page));
+  if (params?.limit != null) sp.set("limit", String(params.limit));
+  if (params?.q?.trim()) sp.set("q", params.q.trim());
+  if (params?.sortBy) sp.set("sortBy", params.sortBy);
+  if (params?.sortDir) sp.set("sortDir", params.sortDir);
+  if (params?.status && params.status !== "all") sp.set("status", params.status);
+  const q = sp.toString();
+  const res = await fetch(
+    `${getAdminApiBase()}/api/admin/contact-inquiries${q ? `?${q}` : ""}`,
+    { ...fetchOpts, headers: bearer(accessToken) },
+  );
+  return parseJson<AdminContactListResponse>(res);
+}
+
+export async function fetchAdminContactInquiryDetail(
+  accessToken: string,
+  id: string,
+): Promise<AdminContactDetail> {
+  const res = await fetch(`${getAdminApiBase()}/api/admin/contact-inquiries/${id}`, {
+    ...fetchOpts,
+    headers: bearer(accessToken),
+  });
+  return parseJson<AdminContactDetail>(res);
+}
+
+export async function setAdminContactInquiryStatus(
+  accessToken: string,
+  id: string,
+  solved: boolean,
+): Promise<AdminContactDetail> {
+  const res = await fetch(`${getAdminApiBase()}/api/admin/contact-inquiries/${id}/status`, {
+    method: "PATCH",
+    ...fetchOpts,
+    headers: { ...bearer(accessToken), "Content-Type": "application/json" },
+    body: JSON.stringify({ solved }),
+  });
+  return parseJson<AdminContactDetail>(res);
+}
+
 export async function fetchAdminUsersList(
   accessToken: string,
   params?: {
@@ -311,6 +451,7 @@ export async function fetchAdminCaterersList(
     q?: string;
     sortBy?: AdminCatererSortField;
     sortDir?: AdminCatererSortDir;
+    approvalStatus?: CatererMarketplaceApprovalStatus;
   }
 ): Promise<AdminCatererListResponse> {
   const sp = new URLSearchParams();
@@ -319,12 +460,60 @@ export async function fetchAdminCaterersList(
   if (params?.q?.trim()) sp.set("q", params.q.trim());
   if (params?.sortBy) sp.set("sortBy", params.sortBy);
   if (params?.sortDir) sp.set("sortDir", params.sortDir);
+  if (params?.approvalStatus) sp.set("approvalStatus", params.approvalStatus);
   const q = sp.toString();
   const res = await fetch(`${getAdminApiBase()}/api/admin/caterers${q ? `?${q}` : ""}`, {
     ...fetchOpts,
     headers: bearer(accessToken),
   });
   return parseJson<AdminCatererListResponse>(res);
+}
+
+export async function fetchAdminCatererReviewDetail(
+  accessToken: string,
+  tenantId: string
+): Promise<AdminCatererReviewDetail> {
+  const res = await fetch(
+    `${getAdminApiBase()}/api/admin/caterers/${encodeURIComponent(tenantId)}/review`,
+    {
+      ...fetchOpts,
+      headers: bearer(accessToken),
+    }
+  );
+  if (res.status === 404) {
+    throw new Error("not_found");
+  }
+  return parseJson<AdminCatererReviewDetail>(res);
+}
+
+export async function setAdminCatererMarketplaceApproval(
+  accessToken: string,
+  tenantId: string,
+  decision: "approve" | "reject"
+): Promise<void> {
+  const res = await fetch(
+    `${getAdminApiBase()}/api/admin/caterers/${encodeURIComponent(tenantId)}/marketplace-approval`,
+    {
+      method: "PATCH",
+      ...fetchOpts,
+      headers: {
+        ...bearer(accessToken),
+        "Content-Type": "application/json",
+      },
+      body: JSON.stringify({ decision }),
+    }
+  );
+  if (!res.ok) {
+    const data: unknown = await res.json().catch(() => ({}));
+    const msg =
+      typeof data === "object" &&
+      data !== null &&
+      "message" in data &&
+      typeof (data as { message: unknown }).message === "string"
+        ? (data as { message: string }).message
+        : `Request failed (${res.status})`;
+    throw new Error(msg);
+  }
 }
 
 export async function fetchAdminUserDetail(accessToken: string, userId: string): Promise<AdminUserDetail> {
@@ -492,6 +681,208 @@ export async function deleteAdminServiceCategory(
 ): Promise<{ success: true }> {
   const res = await fetch(
     `${getAdminApiBase()}/api/admin/service-categories/${encodeURIComponent(id)}`,
+    {
+      ...fetchOpts,
+      method: "DELETE",
+      headers: bearer(accessToken),
+    },
+  );
+  if (!res.ok) {
+    throw new Error(`API error ${res.status}`);
+  }
+  return parseJson<{ success: true }>(res);
+}
+
+export type AdminHomeBannerItem = {
+  id: string;
+  placement: "hero" | "stats" | "testimonial";
+  title: string | null;
+  subtitle: string | null;
+  imageKey: string;
+  imageUrl: string;
+  linkHref: string | null;
+  linkLabel: string | null;
+  displayOrder: number;
+  isActive: boolean;
+  createdAt: string;
+  updatedAt: string;
+};
+
+export async function fetchAdminHomeBanners(
+  accessToken: string,
+): Promise<AdminHomeBannerItem[]> {
+  const res = await fetch(`${getAdminApiBase()}/api/admin/home-banners`, {
+    ...fetchOpts,
+    headers: bearer(accessToken),
+  });
+  return parseJson<AdminHomeBannerItem[]>(res);
+}
+
+export async function createAdminHomeBanner(
+  accessToken: string,
+  payload: {
+    title?: string | null;
+    subtitle?: string | null;
+    imageKey: string;
+    linkHref?: string | null;
+    linkLabel?: string | null;
+    displayOrder?: number;
+    isActive?: boolean;
+  },
+): Promise<AdminHomeBannerItem> {
+  const res = await fetch(`${getAdminApiBase()}/api/admin/home-banners`, {
+    ...fetchOpts,
+    method: "POST",
+    headers: { ...bearer(accessToken), "Content-Type": "application/json" },
+    body: JSON.stringify(payload),
+  });
+  if (!res.ok) {
+    throw new Error(`API error ${res.status}`);
+  }
+  return parseJson<AdminHomeBannerItem>(res);
+}
+
+export async function updateAdminHomeBanner(
+  accessToken: string,
+  id: string,
+  payload: Partial<{
+    title: string | null;
+    subtitle: string | null;
+    imageKey: string;
+    linkHref: string | null;
+    linkLabel: string | null;
+    displayOrder: number;
+    isActive: boolean;
+  }>,
+): Promise<AdminHomeBannerItem> {
+  const res = await fetch(
+    `${getAdminApiBase()}/api/admin/home-banners/${encodeURIComponent(id)}`,
+    {
+      ...fetchOpts,
+      method: "PATCH",
+      headers: { ...bearer(accessToken), "Content-Type": "application/json" },
+      body: JSON.stringify(payload),
+    },
+  );
+  if (!res.ok) {
+    throw new Error(`API error ${res.status}`);
+  }
+  return parseJson<AdminHomeBannerItem>(res);
+}
+
+export async function deleteAdminHomeBanner(
+  accessToken: string,
+  id: string,
+): Promise<{ success: true }> {
+  const res = await fetch(
+    `${getAdminApiBase()}/api/admin/home-banners/${encodeURIComponent(id)}`,
+    {
+      ...fetchOpts,
+      method: "DELETE",
+      headers: bearer(accessToken),
+    },
+  );
+  if (!res.ok) {
+    throw new Error(`API error ${res.status}`);
+  }
+  return parseJson<{ success: true }>(res);
+}
+
+export type AdminBlogPostItem = {
+  id: string;
+  slug: string;
+  title: string;
+  metaTitle: string | null;
+  excerpt: string;
+  metaDescription: string | null;
+  bodyHtml: string;
+  categoryLabel: string;
+  featuredImageUrl: string | null;
+  featuredImageResolved: string | null;
+  ogImageUrl: string | null;
+  ogImageResolved: string | null;
+  publishedAt: string;
+  isPublished: boolean;
+  seoTitle: string;
+  seoDescription: string;
+  createdAt: string;
+  updatedAt: string;
+};
+
+export async function fetchAdminBlogPosts(accessToken: string): Promise<AdminBlogPostItem[]> {
+  const res = await fetch(`${getAdminApiBase()}/api/admin/blog-posts`, {
+    ...fetchOpts,
+    headers: bearer(accessToken),
+  });
+  return parseJson<AdminBlogPostItem[]>(res);
+}
+
+export async function createAdminBlogPost(
+  accessToken: string,
+  payload: {
+    title: string;
+    slug?: string;
+    metaTitle?: string | null;
+    excerpt: string;
+    metaDescription?: string | null;
+    bodyHtml: string;
+    categoryLabel?: string;
+    featuredImageUrl?: string | null;
+    ogImageUrl?: string | null;
+    publishedAt: string;
+    isPublished?: boolean;
+  },
+): Promise<AdminBlogPostItem> {
+  const res = await fetch(`${getAdminApiBase()}/api/admin/blog-posts`, {
+    ...fetchOpts,
+    method: "POST",
+    headers: { ...bearer(accessToken), "Content-Type": "application/json" },
+    body: JSON.stringify(payload),
+  });
+  if (!res.ok) {
+    throw new Error(`API error ${res.status}`);
+  }
+  return parseJson<AdminBlogPostItem>(res);
+}
+
+export async function updateAdminBlogPost(
+  accessToken: string,
+  id: string,
+  payload: Partial<{
+    title: string;
+    slug: string;
+    metaTitle: string | null;
+    excerpt: string;
+    metaDescription: string | null;
+    bodyHtml: string;
+    categoryLabel: string;
+    featuredImageUrl: string | null;
+    ogImageUrl: string | null;
+    publishedAt: string;
+    isPublished: boolean;
+  }>,
+): Promise<AdminBlogPostItem> {
+  const res = await fetch(
+    `${getAdminApiBase()}/api/admin/blog-posts/${encodeURIComponent(id)}`,
+    {
+      ...fetchOpts,
+      method: "PATCH",
+      headers: { ...bearer(accessToken), "Content-Type": "application/json" },
+      body: JSON.stringify(payload),
+    },
+  );
+  if (!res.ok) {
+    throw new Error(`API error ${res.status}`);
+  }
+  return parseJson<AdminBlogPostItem>(res);
+}
+
+export async function deleteAdminBlogPost(
+  accessToken: string,
+  id: string,
+): Promise<{ success: true }> {
+  const res = await fetch(
+    `${getAdminApiBase()}/api/admin/blog-posts/${encodeURIComponent(id)}`,
     {
       ...fetchOpts,
       method: "DELETE",

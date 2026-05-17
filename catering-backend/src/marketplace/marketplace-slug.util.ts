@@ -4,19 +4,25 @@ export function buildMarketplaceProfileSlug(tenantSlug: string): string {
 }
 
 /**
- * Resolves the path param to slug lookup candidates (new: slug only; legacy: `slug-nnnnn` → try `slug`).
+ * Resolves the path param to slug lookup candidates.
+ * Supports legacy hyphenated suffixes (`slug-2`, `slug-abc`) and numeric suffixes (`slug2`).
  */
 export function parseMarketplaceProfileSlug(
   param: string,
 ): { slugCandidates: string[] } | null {
   const lower = param.trim().toLowerCase();
-  if (!lower) {
+  if (!lower || !/^[a-z0-9-]+$/.test(lower)) {
     return null;
   }
-  const legacy = /^(.+)-(\d+)$/.exec(lower);
-  if (legacy) {
-    const base = legacy[1];
-    return { slugCandidates: [base, lower] };
+  const legacyHyphen = /^(.+)-(\d+|[a-f0-9]+)$/.exec(lower);
+  if (legacyHyphen) {
+    const base = legacyHyphen[1];
+    return { slugCandidates: [lower, base] };
+  }
+  const numericSuffix = /^(.+?)(\d+)$/.exec(lower);
+  if (numericSuffix && numericSuffix[1].length >= 3) {
+    const base = numericSuffix[1];
+    return { slugCandidates: [lower, base] };
   }
   return { slugCandidates: [lower] };
 }

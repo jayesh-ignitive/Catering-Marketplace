@@ -7,7 +7,6 @@ import { TypeOrmModule } from '@nestjs/typeorm';
 import { MailModule } from '../mail/mail.module';
 import { MarketplaceModule } from '../marketplace/marketplace.module';
 import { Tenant } from '../tenant/tenant.entity';
-import { TenantProvisioningModule } from '../tenant-provisioning/tenant-provisioning.module';
 import { User } from '../user/user.entity';
 import { AuthController } from './auth.controller';
 import { AuthService } from './auth.service';
@@ -17,7 +16,6 @@ import { JwtStrategy } from './jwt.strategy';
   imports: [
     MailModule,
     MarketplaceModule,
-    TenantProvisioningModule,
     TypeOrmModule.forFeature([User, Tenant]),
     PassportModule.register({ defaultStrategy: 'jwt' }),
     JwtModule.registerAsync({

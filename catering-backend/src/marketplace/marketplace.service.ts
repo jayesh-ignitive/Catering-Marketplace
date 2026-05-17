@@ -7,19 +7,26 @@ import {
   UnauthorizedException,
 } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
-import { randomBytes, randomUUID } from 'crypto';
-import { In, QueryFailedError, Repository, SelectQueryBuilder } from 'typeorm';
+import { randomUUID } from 'crypto';
+import {
+  In,
+  QueryFailedError,
+  Repository,
+  SelectQueryBuilder,
+} from 'typeorm';
+import type { QueryDeepPartialEntity } from 'typeorm/query-builder/QueryPartialEntity';
 import { ImagePublicUrlService } from '../storage/image-public-url.service';
 import { TenantProvisioningService } from '../tenant-provisioning/tenant-provisioning.service';
 import {
-  mysqlDbNameFromTenantSlug,
-  slugify,
-  subdomainLabelFrom,
+  ensureUniqueDbName,
+  ensureUniqueSubdomain,
+  ensureUniqueTenantSlug,
 } from '../tenant/slug.util';
 import { Tenant } from '../tenant/tenant.entity';
 import { User } from '../user/user.entity';
 import { UserRole } from '../user/user-role.enum';
 import { City } from './city.entity';
+import type { CatererProfileApprovalStatus } from './caterer-profile-approval-status';
 import { CatererMarketplaceListing } from './caterer-marketplace-listing.entity';
 import { CatererProfileCategory } from './caterer-profile-category.entity';
 import { CatererProfileGalleryImage } from './caterer-profile-gallery-image.entity';
@@ -116,6 +123,8 @@ export type CatererWorkspaceProfile = {
   keywords: string[];
   galleryImageUrls: string[];
   published: boolean;
+  approvalStatus: CatererProfileApprovalStatus;
+  submittedForReviewAt: string | null;
   completion: WorkspaceCompletionStatus;
 };
 
@@ -231,6 +240,21 @@ export class MarketplaceService {
     return profile;
   }
 
+  /** PATCH handlers: avoid loading junction collections TypeORM would orphan on delete/save. */
+  private async loadWorkspaceListingForPatch(
+    tenantId: string,
+  ): Promise<CatererMarketplaceListing> {
+    await this.ensureDraftListingForTenant(tenantId);
+    const profile = await this.listings.findOne({
+      where: { tenantId },
+      relations: { cityRef: true },
+    });
+    if (!profile) {
+      throw new NotFoundException('Caterer workspace profile not found');
+    }
+    return profile;
+  }
+
   private toWorkspaceProfile(
     profile: CatererMarketplaceListing,
   ): CatererWorkspaceProfile {
@@ -252,6 +276,10 @@ export class MarketplaceService {
       keywords: this.orderedKeywordRefs(profile).map((x) => x.label),
       galleryImageUrls: this.resolvedGalleryDisplayUrls(profile),
       published: profile.published,
+      approvalStatus: profile.approvalStatus ?? 'draft',
+      submittedForReviewAt: profile.submittedForReviewAt
+        ? profile.submittedForReviewAt.toISOString()
+        : null,
       completion: { isComplete: false, missingFields: [] },
     };
     dto.completion = this.computeCompletion(dto);
@@ -721,12 +749,9 @@ export class MarketplaceService {
         'My catering'
       ).trim();
       const tenantId = randomUUID();
-      const slug = await this.ensureUniqueTenantSlug(tenantRepo, businessName);
-      const dbName = await this.ensureUniqueDbName(tenantRepo, slug);
-      const subdomain = await this.ensureUniqueSubdomain(
-        tenantRepo,
-        businessName,
-      );
+      const slug = await ensureUniqueTenantSlug(tenantRepo, businessName);
+      const dbName = await ensureUniqueDbName(tenantRepo, slug);
+      const subdomain = await ensureUniqueSubdomain(tenantRepo, businessName);
 
       const tenant = tenantRepo.create({
         id: tenantId,
@@ -751,12 +776,6 @@ export class MarketplaceService {
     });
 
     await this.ensureDraftListingForTenant(tenantIdOut);
-    await this.provisioning.provisionTenant(tenantIdOut).catch((e) => {
-      this.log.warn(
-        `provisionTenant after auto-link failed (${tenantIdOut})`,
-        e,
-      );
-    });
 
     return tenantIdOut;
   }
@@ -781,7 +800,7 @@ export class MarketplaceService {
     dto: WorkspaceProfileStep0Dto,
   ): Promise<CatererWorkspaceProfile> {
     const tenantId = await this.resolveTenantIdForWorkspaceUser(userId);
-    const profile = await this.loadWorkspaceListingOrThrow(tenantId);
+    const profile = await this.loadWorkspaceListingForPatch(tenantId);
 
     if (
       dto.capacityGuestMin != null &&
@@ -827,7 +846,18 @@ export class MarketplaceService {
       profile.capacityGuestMax = dto.capacityGuestMax ?? null;
     }
 
-    await this.listings.save(profile);
+    await this.persistWorkspaceListingScalars(profile.id, {
+      cityRef,
+      streetAddress: profile.streetAddress,
+      tagline: profile.tagline,
+      about: profile.about,
+      heroImageUrl: profile.heroImageUrl,
+      priceBand: profile.priceBand,
+      priceFrom: profile.priceFrom,
+      yearsInBusiness: profile.yearsInBusiness,
+      capacityGuestMin: profile.capacityGuestMin,
+      capacityGuestMax: profile.capacityGuestMax,
+    });
     await this.refreshPublishedFlag(tenantId);
     return this.getWorkspaceProfile(tenantId);
   }
@@ -837,7 +867,7 @@ export class MarketplaceService {
     dto: WorkspaceProfileStep1Dto,
   ): Promise<CatererWorkspaceProfile> {
     const tenantId = await this.resolveTenantIdForWorkspaceUser(userId);
-    const profile = await this.loadWorkspaceListingOrThrow(tenantId);
+    const profile = await this.loadWorkspaceListingForPatch(tenantId);
 
     if (
       dto.capacityGuestMin != null &&
@@ -853,30 +883,25 @@ export class MarketplaceService {
     await this.syncProfileServiceOfferings(profile, dto.serviceOfferingIds);
     await this.syncProfileKeywords(profile, dto.keywords);
 
-    let needsSave = false;
+    const scalarPatch: QueryDeepPartialEntity<CatererMarketplaceListing> = {};
     if (dto.priceBand !== undefined) {
-      profile.priceBand = dto.priceBand ?? null;
-      needsSave = true;
+      scalarPatch.priceBand = dto.priceBand ?? null;
     }
     if (dto.priceFrom !== undefined) {
-      profile.priceFrom =
+      scalarPatch.priceFrom =
         dto.priceFrom != null ? Number(dto.priceFrom).toFixed(2) : null;
-      needsSave = true;
     }
     if (dto.yearsInBusiness !== undefined) {
-      profile.yearsInBusiness = dto.yearsInBusiness ?? null;
-      needsSave = true;
+      scalarPatch.yearsInBusiness = dto.yearsInBusiness ?? null;
     }
     if (dto.capacityGuestMin !== undefined) {
-      profile.capacityGuestMin = dto.capacityGuestMin ?? null;
-      needsSave = true;
+      scalarPatch.capacityGuestMin = dto.capacityGuestMin ?? null;
     }
     if (dto.capacityGuestMax !== undefined) {
-      profile.capacityGuestMax = dto.capacityGuestMax ?? null;
-      needsSave = true;
+      scalarPatch.capacityGuestMax = dto.capacityGuestMax ?? null;
     }
-    if (needsSave) {
-      await this.listings.save(profile);
+    if (Object.keys(scalarPatch).length > 0) {
+      await this.persistWorkspaceListingScalars(profile.id, scalarPatch);
     }
 
     await this.refreshPublishedFlag(tenantId);
@@ -888,9 +913,8 @@ export class MarketplaceService {
     dto: WorkspaceProfileStep2Dto,
   ): Promise<CatererWorkspaceProfile> {
     const tenantId = await this.resolveTenantIdForWorkspaceUser(userId);
-    const profile = await this.loadWorkspaceListingOrThrow(tenantId);
+    const profile = await this.loadWorkspaceListingForPatch(tenantId);
     await this.syncProfileGallery(profile, dto.galleryImageUrls);
-    /** Avoid `save(profile)` while `galleryItems` may still be attached from the pre-sync load. */
     await this.listings.update(
       { id: profile.id },
       { heroImageUrl: this.persistHeroRef(dto.heroImageUrl) },
@@ -899,12 +923,12 @@ export class MarketplaceService {
     return this.getWorkspaceProfile(tenantId);
   }
 
+  /** Wizard step 3 — submit complete profile for admin review (not public until approved). */
   async publishWorkspaceProfileForUser(
     userId: string,
   ): Promise<CatererWorkspaceProfile> {
     const tenantId = await this.resolveTenantIdForWorkspaceUser(userId);
-    const refreshed = await this.loadWorkspaceListingOrThrow(tenantId);
-    const workspace = this.toWorkspaceProfile(refreshed);
+    const workspace = await this.getWorkspaceProfile(tenantId);
     if (!workspace.completion.isComplete) {
       throw new BadRequestException({
         message: workspace.completion.missingFields.map(
@@ -913,64 +937,76 @@ export class MarketplaceService {
         missingFields: workspace.completion.missingFields,
       });
     }
-    refreshed.published = true;
-    await this.listings.save(refreshed);
+    const now = new Date();
+    await this.listings.update(
+      { tenantId },
+      {
+        published: false,
+        approvalStatus: 'pending_review',
+        submittedForReviewAt: now,
+        reviewedAt: null,
+        reviewedByUserId: null,
+      },
+    );
+    await this.syncTenantProfilePublished(tenantId, false);
     return this.getWorkspaceProfile(tenantId);
   }
 
-  private async ensureUniqueTenantSlug(
-    tenantRepo: Repository<Tenant>,
-    baseInput: string,
-  ): Promise<string> {
-    const base = slugify(baseInput).slice(0, 50) || 'catering';
-    let candidate = base;
-    for (let i = 0; i < 24; i++) {
-      const taken = await tenantRepo.exist({ where: { slug: candidate } });
-      if (!taken) {
-        return candidate;
-      }
-      const suffix = randomBytes(3).toString('hex');
-      candidate = `${base}-${suffix}`.slice(0, 80);
+  async setWorkspaceListingApprovalForAdmin(
+    tenantId: string,
+    decision: 'approve' | 'reject',
+    adminUserId: string,
+  ): Promise<CatererWorkspaceProfile> {
+    const profile = await this.listings.findOne({ where: { tenantId } });
+    if (!profile) {
+      throw new NotFoundException('Caterer marketplace profile not found');
     }
-    return `${base}-${randomUUID().slice(0, 8)}`.slice(0, 80);
-  }
+    if (profile.approvalStatus !== 'pending_review') {
+      throw new BadRequestException(
+        'Only listings pending admin review can be approved or rejected',
+      );
+    }
 
-  private async ensureUniqueSubdomain(
-    tenantRepo: Repository<Tenant>,
-    baseInput: string,
-  ): Promise<string> {
-    const base = subdomainLabelFrom(baseInput) || 'catering';
-    let candidate = base;
-    for (let i = 0; i < 24; i++) {
-      const taken = await tenantRepo.exist({ where: { subdomain: candidate } });
-      if (!taken) {
-        return candidate;
+    const now = new Date();
+    if (decision === 'approve') {
+      const workspace = await this.getWorkspaceProfile(tenantId);
+      if (!workspace.completion.isComplete) {
+        throw new BadRequestException(
+          'Profile is incomplete and cannot be published',
+        );
       }
-      const suffix = randomBytes(2).toString('hex');
-      candidate = `${base}-${suffix}`.slice(0, 63);
+      await this.listings.update(
+        { tenantId },
+        {
+          published: true,
+          approvalStatus: 'approved',
+          reviewedAt: now,
+          reviewedByUserId: adminUserId,
+        },
+      );
+      await this.syncTenantProfilePublished(tenantId, true);
+      try {
+        await this.provisioning.provisionTenant(tenantId);
+      } catch (e) {
+        this.log.error(
+          `Tenant DB provision failed after admin approval (${tenantId})`,
+          e,
+        );
+      }
+    } else {
+      await this.listings.update(
+        { tenantId },
+        {
+          published: false,
+          approvalStatus: 'rejected',
+          reviewedAt: now,
+          reviewedByUserId: adminUserId,
+        },
+      );
+      await this.syncTenantProfilePublished(tenantId, false);
     }
-    return `${base}-${randomUUID().slice(0, 8)}`.slice(0, 63);
-  }
 
-  private async ensureUniqueDbName(
-    tenantRepo: Repository<Tenant>,
-    tenantSlug: string,
-  ): Promise<string> {
-    const base = mysqlDbNameFromTenantSlug(tenantSlug);
-    let candidate = base;
-    for (let i = 0; i < 24; i++) {
-      const taken = await tenantRepo.exist({ where: { dbName: candidate } });
-      if (!taken) {
-        return candidate;
-      }
-      const suffix = `_${randomBytes(2).toString('hex')}`;
-      const maxBaseLen = Math.max(1, 64 - suffix.length);
-      candidate = `${base.slice(0, maxBaseLen)}${suffix}`;
-    }
-    return `${base.slice(0, 40)}_${randomUUID().replace(/-/g, '')}`.slice(
-      0,
-      64,
-    );
+    return this.getWorkspaceProfile(tenantId);
   }
 
   async getWorkspaceProfile(
@@ -980,14 +1016,34 @@ export class MarketplaceService {
     return this.toWorkspaceProfile(profile);
   }
 
-  /** Unpublish when the profile is incomplete; do not auto-publish when complete (wizard uses PATCH step/3). */
+  /** Unpublish when incomplete; never auto-publish (admin approves after caterer submits). */
   private async refreshPublishedFlag(tenantId: string): Promise<void> {
-    const refreshed = await this.loadWorkspaceListingOrThrow(tenantId);
-    const workspace = this.toWorkspaceProfile(refreshed);
+    const workspace = await this.getWorkspaceProfile(tenantId);
     if (!workspace.completion.isComplete) {
-      refreshed.published = false;
-      await this.listings.save(refreshed);
+      await this.listings.update(
+        { tenantId },
+        { published: false, approvalStatus: 'draft' },
+      );
+      await this.syncTenantProfilePublished(tenantId, false);
     }
+  }
+
+  private async syncTenantProfilePublished(
+    tenantId: string,
+    published: boolean,
+  ): Promise<void> {
+    await this.tenants.update({ id: tenantId }, { profilePublished: published });
+  }
+
+  /** Never `listings.save(profile)` after junction sync — use column updates only. */
+  private async persistWorkspaceListingScalars(
+    profileId: string,
+    patch: QueryDeepPartialEntity<CatererMarketplaceListing>,
+  ): Promise<void> {
+    if (Object.keys(patch).length === 0) {
+      return;
+    }
+    await this.listings.update({ id: profileId }, patch);
   }
 
   private async syncProfileCategories(
@@ -1003,16 +1059,25 @@ export class MarketplaceService {
     if (categories.length !== categoryCodes.length) {
       throw new BadRequestException('One or more category codes are invalid');
     }
-    await this.profileCategories.delete({ catererProfileId: profile.id });
-    await this.profileCategories.save(
-      categoryCodes.map((code, index) =>
-        this.profileCategories.create({
+    await this.listings.manager.transaction(async (manager) => {
+      await manager
+        .createQueryBuilder()
+        .delete()
+        .from(CatererProfileCategory)
+        .where('caterer_profile_id = :profileId', { profileId: profile.id })
+        .execute();
+      if (categoryCodes.length === 0) {
+        return;
+      }
+      await manager.insert(
+        CatererProfileCategory,
+        categoryCodes.map((code, index) => ({
           catererProfileId: profile.id,
           categoryId: categories.find((c) => c.code === code)!.id,
           sortOrder: index,
-        }),
-      ),
-    );
+        })),
+      );
+    });
   }
 
   private async syncProfileServiceOfferings(
@@ -1028,60 +1093,99 @@ export class MarketplaceService {
         'One or more serviceOfferingIds are invalid',
       );
     }
-    await this.profileServiceOfferings.delete({ catererProfileId: profile.id });
-    await this.profileServiceOfferings.save(
-      serviceIds.map((id, index) =>
-        this.profileServiceOfferings.create({
+    await this.listings.manager.transaction(async (manager) => {
+      await manager
+        .createQueryBuilder()
+        .delete()
+        .from(CatererProfileServiceOffering)
+        .where('caterer_profile_id = :profileId', { profileId: profile.id })
+        .execute();
+      if (serviceIds.length === 0) {
+        return;
+      }
+      await manager.insert(
+        CatererProfileServiceOffering,
+        serviceIds.map((id, index) => ({
           catererProfileId: profile.id,
           serviceOfferingId: id,
           sortOrder: index,
-        }),
-      ),
-    );
+        })),
+      );
+    });
+  }
+
+  private normalizeKeywordEntries(
+    keywordsRaw: string[],
+  ): { label: string; slug: string }[] {
+    const out: { label: string; slug: string }[] = [];
+    const seenSlugs = new Set<string>();
+    for (const raw of keywordsRaw) {
+      const label = this.normalizeKeywordLabel(raw);
+      if (!label) continue;
+      const slug = this.normalizeKeywordSlug(label);
+      if (!slug) {
+        throw new BadRequestException(
+          'Invalid keywords: only letters and numbers are allowed',
+        );
+      }
+      if (seenSlugs.has(slug)) continue;
+      seenSlugs.add(slug);
+      out.push({ label, slug });
+    }
+    return out;
   }
 
   private async syncProfileKeywords(
     profile: CatererMarketplaceListing,
     keywordsRaw: string[],
   ): Promise<void> {
-    const keywordLabels = [
-      ...new Set(
-        keywordsRaw.map((x) => this.normalizeKeywordLabel(x)).filter(Boolean),
-      ),
-    ];
-    const keywordSlugs = keywordLabels.map((x) => this.normalizeKeywordSlug(x));
-    if (keywordSlugs.some((s) => !s)) {
-      throw new BadRequestException(
-        'Invalid keywords: only letters and numbers are allowed',
-      );
-    }
+    const keywordEntries = this.normalizeKeywordEntries(keywordsRaw);
+    const keywordSlugs = keywordEntries.map((e) => e.slug);
 
-    const existingKeywords = await this.keywords
-      .createQueryBuilder('k')
-      .where('k.slug IN (:...slugs)', { slugs: keywordSlugs })
-      .getMany();
+    const existingKeywords = keywordSlugs.length
+      ? await this.keywords
+          .createQueryBuilder('k')
+          .where('k.slug IN (:...slugs)', { slugs: keywordSlugs })
+          .getMany()
+      : [];
     const keywordBySlug = new Map(existingKeywords.map((k) => [k.slug, k]));
-    for (let i = 0; i < keywordSlugs.length; i += 1) {
-      const slug = keywordSlugs[i];
+    for (const { label, slug } of keywordEntries) {
       if (keywordBySlug.has(slug)) continue;
-      const created = this.keywords.create({
-        slug,
-        label: keywordLabels[i],
-      });
-      const saved = await this.keywords.save(created);
-      keywordBySlug.set(saved.slug, saved);
+      const created = this.keywords.create({ slug, label });
+      try {
+        const saved = await this.keywords.save(created);
+        keywordBySlug.set(saved.slug, saved);
+      } catch (err) {
+        if (!this.isDuplicateKeywordSlugError(err)) {
+          throw err;
+        }
+        const existing = await this.keywords.findOne({ where: { slug } });
+        if (!existing) {
+          throw err;
+        }
+        keywordBySlug.set(slug, existing);
+      }
     }
 
-    await this.profileKeywords.delete({ catererProfileId: profile.id });
-    await this.profileKeywords.save(
-      keywordSlugs.map((slug, index) =>
-        this.profileKeywords.create({
+    await this.listings.manager.transaction(async (manager) => {
+      await manager
+        .createQueryBuilder()
+        .delete()
+        .from(CatererProfileKeyword)
+        .where('caterer_profile_id = :profileId', { profileId: profile.id })
+        .execute();
+      if (keywordSlugs.length === 0) {
+        return;
+      }
+      await manager.insert(
+        CatererProfileKeyword,
+        keywordSlugs.map((slug, index) => ({
           catererProfileId: profile.id,
           keywordId: keywordBySlug.get(slug)!.id,
           sortOrder: index,
-        }),
-      ),
-    );
+        })),
+      );
+    });
   }
 
   private async syncProfileGallery(
@@ -1089,10 +1193,13 @@ export class MarketplaceService {
     galleryUrlsRaw: string[],
   ): Promise<void> {
     const galleryUrls = this.persistGalleryRefs(galleryUrlsRaw);
-    await this.galleryImages.manager.transaction(async (manager) => {
-      await manager.delete(CatererProfileGalleryImage, {
-        catererProfileId: profile.id,
-      });
+    await this.listings.manager.transaction(async (manager) => {
+      await manager
+        .createQueryBuilder()
+        .delete()
+        .from(CatererProfileGalleryImage)
+        .where('caterer_profile_id = :profileId', { profileId: profile.id })
+        .execute();
       if (galleryUrls.length === 0) {
         return;
       }
@@ -1112,7 +1219,7 @@ export class MarketplaceService {
     tenantId: string,
     dto: UpsertCatererWorkspaceProfileDto,
   ): Promise<CatererWorkspaceProfile> {
-    const profile = await this.loadWorkspaceListingOrThrow(tenantId);
+    const profile = await this.loadWorkspaceListingForPatch(tenantId);
 
     if (
       dto.capacityGuestMin != null &&
@@ -1141,7 +1248,18 @@ export class MarketplaceService {
     profile.capacityGuestMin = dto.capacityGuestMin ?? null;
     profile.capacityGuestMax = dto.capacityGuestMax ?? null;
 
-    await this.listings.save(profile);
+    await this.persistWorkspaceListingScalars(profile.id, {
+      cityRef,
+      streetAddress: profile.streetAddress,
+      tagline: profile.tagline,
+      about: profile.about,
+      heroImageUrl: profile.heroImageUrl,
+      priceBand: profile.priceBand,
+      priceFrom: profile.priceFrom,
+      yearsInBusiness: profile.yearsInBusiness,
+      capacityGuestMin: profile.capacityGuestMin,
+      capacityGuestMax: profile.capacityGuestMax,
+    });
 
     await this.syncProfileCategories(profile, dto.categoryCodes);
     await this.syncProfileServiceOfferings(profile, dto.serviceOfferingIds);
@@ -1242,6 +1360,10 @@ export class MarketplaceService {
       reviewCount: 0,
       priceFrom: null,
       published: false,
+      approvalStatus: 'draft',
+      submittedForReviewAt: null,
+      reviewedAt: null,
+      reviewedByUserId: null,
     });
     try {
       await this.listings.save(m);
@@ -1255,6 +1377,14 @@ export class MarketplaceService {
 
   /** Concurrent verify + profile GET can both try to insert the same tenant row. */
   private isDuplicateTenantListingError(err: unknown): boolean {
+    if (!(err instanceof QueryFailedError)) {
+      return false;
+    }
+    const driver = err.driverError as { code?: string; errno?: number };
+    return driver?.code === 'ER_DUP_ENTRY' || driver?.errno === 1062;
+  }
+
+  private isDuplicateKeywordSlugError(err: unknown): boolean {
     if (!(err instanceof QueryFailedError)) {
       return false;
     }

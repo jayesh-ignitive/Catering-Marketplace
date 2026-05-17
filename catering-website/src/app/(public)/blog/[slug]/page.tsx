@@ -1,5 +1,12 @@
+import type { Metadata } from "next";
 import { Suspense } from "react";
 import { BlogArticleLazy } from "@/components/blog/BlogArticleLazy";
+import { fetchBlogPostCached } from "@/lib/blog";
+import { buildBlogPostMetadata } from "@/lib/seo";
+
+type PageProps = {
+  params: Promise<{ slug: string }>;
+};
 
 function BlogArticleFallback() {
   return (
@@ -13,6 +20,18 @@ function BlogArticleFallback() {
       </div>
     </div>
   );
+}
+
+export async function generateMetadata({ params }: PageProps): Promise<Metadata> {
+  const { slug } = await params;
+  const post = await fetchBlogPostCached(slug);
+  if (!post) {
+    return {
+      title: "Article not found",
+      robots: { index: false, follow: false },
+    };
+  }
+  return buildBlogPostMetadata(post);
 }
 
 export default function BlogArticlePage() {

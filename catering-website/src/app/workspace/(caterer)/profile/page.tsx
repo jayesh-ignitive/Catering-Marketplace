@@ -39,18 +39,6 @@ function CatererProfileEditorContent() {
 
   return (
     <div className="w-full min-w-0 max-w-none">
-      <div className="mb-10">
-        <p className="mb-1 text-xs font-bold uppercase tracking-widest text-[#8A92A6]">
-          Listing Management
-        </p>
-        <h1 className="font-heading mt-2 mb-2 text-3xl font-bold tracking-tight text-[#232D42]">
-          Manage your listing
-        </h1>
-        <p className="mt-2 text-sm text-[#8A92A6]">
-          Update business details, services, and gallery — changes save per tab.
-        </p>
-      </div>
-
       {enabled && profile && citiesQ.data && categoriesQ.data && offeringsQ.data ? (
         <WorkspaceBusinessWizard
           key={`${profile.cityId ?? "none"}-${profile.published}`}

@@ -1,5 +1,9 @@
 import { Injectable } from '@nestjs/common';
 import {
+  PublicHomeBanner,
+  HomeBannersService,
+} from '../marketplace/home-banners.service';
+import {
   PublicServiceCategory,
   ServiceCategoriesService,
 } from '../marketplace/service-categories.service';
@@ -25,7 +29,10 @@ export type CatererListing = {
 
 @Injectable()
 export class CatalogService {
-  constructor(private readonly serviceCategories: ServiceCategoriesService) {}
+  constructor(
+    private readonly serviceCategories: ServiceCategoriesService,
+    private readonly homeBanners: HomeBannersService,
+  ) {}
 
   private readonly cities: City[] = [
     { id: '1', name: 'Mumbai', slug: 'mumbai' },
@@ -99,6 +106,11 @@ export class CatalogService {
 
   getServiceCategories(): Promise<ServiceCategory[]> {
     return this.serviceCategories.listPublicActive();
+  }
+
+  /** Hero carousel slides for the home page first section only. */
+  getHomeBanners(): Promise<PublicHomeBanner[]> {
+    return this.homeBanners.listByPlacement('hero');
   }
 
   getStats(): TrustStats {

@@ -9,7 +9,7 @@ import {
 import { CaretDown, ChefHat } from "@phosphor-icons/react";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
-import { useEffect, useState } from "react";
+import { useCallback, useEffect, useState } from "react";
 
 type AdminSidebarProps = {
   mobileOpen: boolean;
@@ -19,6 +19,10 @@ type AdminSidebarProps = {
   onDesktopHoverEnd: () => void;
   onCloseMobile: () => void;
 };
+
+function submenuKey(sectionLabel: string, groupLabel: string): string {
+  return `${sectionLabel}::${groupLabel}`;
+}
 
 export function AdminSidebar({
   mobileOpen,
@@ -30,15 +34,27 @@ export function AdminSidebar({
 }: AdminSidebarProps) {
   const pathname = usePathname();
   const compact = collapsed && !hoverExpanded;
-  const [catalogSubmenuOpen, setCatalogSubmenuOpen] = useState(true);
+  const [openSubmenus, setOpenSubmenus] = useState<Record<string, boolean>>({});
 
-  const catalogGroup = ADMIN_NAV_SECTIONS.find((s) => s.label === "Catalog")?.items.find(isAdminNavSubmenu);
+  const isSubmenuOpen = useCallback(
+    (key: string) => openSubmenus[key] ?? false,
+    [openSubmenus],
+  );
+
+  const toggleSubmenu = useCallback((key: string) => {
+    setOpenSubmenus((prev) => ({ ...prev, [key]: !prev[key] }));
+  }, []);
 
   useEffect(() => {
-    if (catalogGroup && isAdminSubmenuActive(pathname, catalogGroup)) {
-      setCatalogSubmenuOpen(true);
+    for (const section of ADMIN_NAV_SECTIONS) {
+      for (const item of section.items) {
+        if (isAdminNavSubmenu(item) && isAdminSubmenuActive(pathname, item)) {
+          const key = submenuKey(section.label, item.label);
+          setOpenSubmenus((prev) => (prev[key] ? prev : { ...prev, [key]: true }));
+        }
+      }
     }
-  }, [pathname, catalogGroup]);
+  }, [pathname]);
 
   return (
     <>
@@ -84,12 +100,12 @@ export function AdminSidebar({
           </div>
 
           <nav
-            className={`admin-shell-scroll flex-1 min-h-0 space-y-1 overflow-y-auto transition-all duration-300 ${
+            className={`admin-shell-scroll min-h-0 flex-1 space-y-1 overflow-y-auto transition-all duration-300 ${
               compact ? "p-2" : "p-4"
             }`}
           >
             {ADMIN_NAV_SECTIONS.map((section) => (
-              <div key={section.label} className={compact ? "space-y-1" : "space-y-1"}>
+              <div key={section.label} className="space-y-1">
                 {!compact ? (
                   <div className="menu-header mb-2 mt-4 px-3 text-xs font-bold uppercase tracking-wider text-gray-400 first:mt-0">
                     {section.label}
@@ -99,10 +115,13 @@ export function AdminSidebar({
                 )}
                 {section.items.map((item) => {
                   if (isAdminNavSubmenu(item)) {
+                    const key = submenuKey(section.label, item.label);
+                    const expanded = isSubmenuOpen(key);
                     const submenuActive = isAdminSubmenuActive(pathname, item);
+
                     if (compact) {
                       return (
-                        <div key={item.label} className="space-y-1">
+                        <div key={key} className="space-y-1">
                           {item.children.map((child) => {
                             const active = isAdminNavActive(pathname, child.href);
                             const Icon = child.icon;
@@ -132,13 +151,14 @@ export function AdminSidebar({
                         </div>
                       );
                     }
+
                     const SubmenuParentIcon = item.icon;
                     return (
-                      <div key={item.label} className="space-y-0.5">
+                      <div key={key} className="space-y-0.5">
                         <button
                           type="button"
-                          onClick={() => setCatalogSubmenuOpen((o) => !o)}
-                          aria-expanded={catalogSubmenuOpen}
+                          onClick={() => toggleSubmenu(key)}
+                          aria-expanded={expanded}
                           className={`nav-link flex w-full cursor-pointer items-center gap-3 rounded-xl px-3 py-3 text-left text-sm font-medium transition-all duration-300 ${
                             submenuActive
                               ? "bg-brand-red-light/70 font-semibold text-brand-red"
@@ -155,16 +175,16 @@ export function AdminSidebar({
                           <CaretDown
                             size={16}
                             weight="bold"
-                            className={`shrink-0 text-brand-text-muted transition-transform ${catalogSubmenuOpen ? "" : "-rotate-90"}`}
+                            className={`shrink-0 text-brand-text-muted transition-transform ${expanded ? "" : "-rotate-90"}`}
                             aria-hidden
                           />
                         </button>
                         <div
-                          className={`space-y-0.5 overflow-hidden border-l border-gray-100 pl-2 ml-4 transition-all duration-200 ${
-                            catalogSubmenuOpen ? "max-h-[280px] opacity-100" : "max-h-0 opacity-0"
+                          className={`ml-4 space-y-0.5 overflow-hidden border-l border-gray-100 pl-2 transition-all duration-200 ${
+                            expanded ? "max-h-80 opacity-100" : "max-h-0 opacity-0"
                           }`}
                         >
-                          {catalogSubmenuOpen
+                          {expanded
                             ? item.children.map((child) => {
                                 const active = isAdminNavActive(pathname, child.href);
                                 const Icon = child.icon;
@@ -202,6 +222,7 @@ export function AdminSidebar({
                       key={item.href}
                       href={item.href}
                       onClick={onCloseMobile}
+                      title={compact ? item.label : undefined}
                       className={`nav-link group flex cursor-pointer items-center gap-3 rounded-xl py-3 transition-all duration-300 ${
                         compact ? "justify-center px-2" : "px-3"
                       } ${

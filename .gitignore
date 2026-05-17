@@ -31,6 +31,9 @@ Desktop.ini
 coverage/
 *.lcov
 .nyc_output/
+catering-website/playwright-report/
+catering-website/test-results/
+catering-website/blob-report/
 
 # ─── TypeScript ───────────────────────────────────────────────
 *.tsbuildinfo

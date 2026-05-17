@@ -5,7 +5,7 @@ import { useQuery } from "@tanstack/react-query";
 import Link from "next/link";
 import { useMemo, useState } from "react";
 import { RemoteContentImage } from "@/components/common/RemoteContentImage";
-import { fetchBlogPosts, type BlogPostSummary } from "@/lib/catering-api";
+import { BLOG_QUERY_KEY, BLOG_STALE_MS, fetchBlogPosts, type BlogPostSummary } from "@/lib/blog";
 import { FaChevronLeft, FaChevronRight } from "react-icons/fa";
 
 const FALLBACK_IMG =
@@ -62,8 +62,9 @@ export function BlogPageContent() {
   const limit = 9;
 
   const blogQ = useQuery({
-    queryKey: ["catalog", "blog", page, limit],
+    queryKey: [...BLOG_QUERY_KEY, page, limit],
     queryFn: () => fetchBlogPosts({ page, limit }),
+    staleTime: BLOG_STALE_MS,
   });
 
   const totalPages = useMemo(

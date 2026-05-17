@@ -4,7 +4,6 @@ import {
   CurrencyInr,
   MapPin,
   SealCheck,
-  Star,
   Users,
 } from "@phosphor-icons/react";
 import Link from "next/link";
@@ -15,6 +14,7 @@ import {
   formatMarketplacePriceChip,
   type MarketplaceListItem,
 } from "@/lib/catering-api";
+
 import { getCatererCardBadge, type ListingViewMode } from "@/lib/caterer-listing-utils";
 
 function locationLine(row: MarketplaceListItem): string {
@@ -26,31 +26,39 @@ function locationLine(row: MarketplaceListItem): string {
   return [row.city, row.state].filter(Boolean).join(", ") || "Location on request";
 }
 
+const cardShellClass = (
+  isGrid: boolean,
+  preview: boolean,
+) =>
+  [
+    "caterer-card group overflow-hidden rounded-2xl border border-gray-100 bg-white shadow-[0_4px_20px_-5px_rgba(0,0,0,0.05)] transition-all duration-500",
+    preview
+      ? "cursor-default"
+      : "cursor-pointer hover:shadow-[0_20px_40px_-10px_rgba(0,0,0,0.1)] focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-brand-red",
+    isGrid ? "flex h-full flex-col" : "flex flex-row items-start sm:items-stretch",
+  ].join(" ");
+
 export function CatererListingCard({
   row,
   viewMode,
+  preview = false,
 }: {
   row: MarketplaceListItem;
   viewMode: ListingViewMode;
+  /** Non-interactive preview (workspace dashboard). */
+  preview?: boolean;
 }) {
   const isGrid = viewMode === "grid";
   const badge = getCatererCardBadge(row);
-  const rating = Number(row.avgRating ?? 0);
-  const safeRating = Number.isFinite(rating) ? rating : 0;
   const capacity = formatMarketplaceCapacityShort(row.capacityGuestMin, row.capacityGuestMax);
   const cuisines = formatCuisinesChip(row.cuisines ?? []);
   const priceChip = formatMarketplacePriceChip(row.priceFrom);
   const href = `/caterers/${encodeURIComponent(row.profileSlug)}`;
 
-  return (
-    <Link
-      href={href}
-      aria-label={`View ${row.businessName} profile`}
-      className={[
-        "caterer-card group cursor-pointer overflow-hidden rounded-2xl border border-gray-100 bg-white shadow-[0_4px_20px_-5px_rgba(0,0,0,0.05)] transition-all duration-500 hover:shadow-[0_20px_40px_-10px_rgba(0,0,0,0.1)] focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-brand-red",
-        isGrid ? "flex h-full flex-col" : "flex flex-row items-start sm:items-stretch",
-      ].join(" ")}
-    >
+  const shellClass = cardShellClass(isGrid, preview);
+
+  const cardBody = (
+    <>
       <div
         className={[
           "card-image-wrapper relative shrink-0 overflow-hidden",
@@ -65,7 +73,10 @@ export function CatererListingCard({
             alt=""
             fill
             sizes={isGrid ? "(max-width: 768px) 100vw, 320px" : "(max-width: 640px) 96px, 256px"}
-            className="object-cover transition-transform duration-700 group-hover:scale-110"
+            className={[
+              "object-cover transition-transform duration-700",
+              preview ? "" : "group-hover:scale-110",
+            ].join(" ")}
           />
         ) : (
           <div className="flex h-full w-full items-center justify-center bg-gradient-to-br from-brand-dark/5 to-brand-red/10">
@@ -99,24 +110,19 @@ export function CatererListingCard({
           isGrid ? "min-h-0" : "",
         ].join(" ")}
       >
-        <div className="mb-1 flex items-start justify-between">
-          <div className="min-w-0 pr-3">
-            <h2
-              className={[
-                "font-heading font-bold leading-tight text-brand-dark transition-colors group-hover:text-brand-red",
-                isGrid ? "text-base" : "text-base sm:text-lg md:text-xl",
-              ].join(" ")}
-            >
-              {row.businessName}
-            </h2>
-            <div className="mt-0.5 flex items-center gap-2 text-[11px] text-gray-400">
-              <MapPin className="shrink-0 text-brand-red" weight="fill" aria-hidden />
-              <span className="truncate">{locationLine(row)}</span>
-            </div>
-          </div>
-          <div className="flex shrink-0 items-center gap-1 rounded-lg bg-brand-yellow/10 px-1.5 py-0.5 text-sm text-brand-yellow">
-            <span className="font-bold tabular-nums">{safeRating.toFixed(1)}</span>
-            <Star weight="fill" aria-hidden />
+        <div className="mb-1 min-w-0">
+          <h2
+            className={[
+              "font-heading font-bold leading-tight text-brand-dark transition-colors",
+              preview ? "" : "group-hover:text-brand-red",
+              isGrid ? "text-base" : "text-base sm:text-lg md:text-xl",
+            ].join(" ")}
+          >
+            {row.businessName}
+          </h2>
+          <div className="mt-0.5 flex items-center gap-2 text-[11px] text-gray-400">
+            <MapPin className="shrink-0 text-brand-red" weight="fill" aria-hidden />
+            <span className="truncate">{locationLine(row)}</span>
           </div>
         </div>
 
@@ -184,7 +190,8 @@ export function CatererListingCard({
           )}
           <span
             className={[
-              "shrink-0 rounded-lg bg-brand-dark font-bold text-white shadow-md transition-all group-hover:bg-brand-red",
+              "shrink-0 rounded-lg bg-brand-dark font-bold text-white shadow-md transition-all",
+              preview ? "" : "group-hover:bg-brand-red",
               row.tagline?.trim()
                 ? "px-3 py-1.5 text-[10px] sm:px-4 sm:py-2 sm:text-xs"
                 : "ml-auto px-4 py-2 text-xs",
@@ -194,6 +201,20 @@ export function CatererListingCard({
           </span>
         </div>
       </div>
+    </>
+  );
+
+  if (preview) {
+    return (
+      <article className={shellClass} aria-label={`Listing preview: ${row.businessName}`}>
+        {cardBody}
+      </article>
+    );
+  }
+
+  return (
+    <Link href={href} aria-label={`View ${row.businessName} profile`} className={shellClass}>
+      {cardBody}
     </Link>
   );
 }

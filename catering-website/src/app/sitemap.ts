@@ -1,7 +1,7 @@
 import type { MetadataRoute } from "next";
+import { fetchBlogSlugsCached } from "@/lib/blog";
 import { seoConfig } from "@/lib/seo";
 
-/** Public marketing & catalog URLs only — excludes /admin and /workspace. */
 const publicPaths = [
   "",
   "/caterers",
@@ -14,14 +14,22 @@ const publicPaths = [
   "/register",
 ] as const;
 
-export default function sitemap(): MetadataRoute.Sitemap {
+export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
   const base = seoConfig.baseUrl.replace(/\/$/, "");
-  const lastModified = new Date();
-
-  return publicPaths.map((path) => ({
+  const staticEntries: MetadataRoute.Sitemap = publicPaths.map((path) => ({
     url: `${base}${path}`,
-    lastModified,
+    lastModified: new Date(),
     changeFrequency: path === "" || path === "/caterers" ? "daily" : "weekly",
     priority: path === "" ? 1 : path === "/caterers" ? 0.9 : 0.6,
   }));
+
+  const slugs = await fetchBlogSlugsCached();
+  const blogEntries: MetadataRoute.Sitemap = slugs.map((entry) => ({
+    url: `${base}/blog/${encodeURIComponent(entry.slug)}`,
+    lastModified: new Date(entry.updatedAt),
+    changeFrequency: "weekly" as const,
+    priority: 0.55,
+  }));
+
+  return [...staticEntries, ...blogEntries];
 }

@@ -20,7 +20,7 @@ const MAX_UPLOAD_BYTES = 5 * 1024 * 1024;
 export class UploadController {
   constructor(private readonly upload: UploadService) {}
 
-  /** Single image; multipart field name `file`. Query `kind=banner|gallery` chooses folder `images/banner/` vs `images/gallery/`. */
+  /** Single image; multipart field name `file`. Query `kind=banner|gallery|home` chooses upload folder under `images/`. */
   @Post('image')
   @UseGuards(JwtAuthGuard)
   @UseInterceptors(
@@ -34,9 +34,9 @@ export class UploadController {
     @UploadedFile() file: Express.Multer.File | undefined,
   ) {
     const k = kindRaw?.trim().toLowerCase();
-    if (k !== 'banner' && k !== 'gallery') {
+    if (k !== 'banner' && k !== 'gallery' && k !== 'home') {
       throw new BadRequestException(
-        'Query parameter "kind" must be "banner" or "gallery"',
+        'Query parameter "kind" must be "banner", "gallery", or "home"',
       );
     }
     return this.upload.uploadAuthenticatedImage(file, req.user, k);

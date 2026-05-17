@@ -37,7 +37,8 @@ export class LocalFilesystemImageStorage implements ImageStoragePort {
       'http://localhost:4000';
     const publicBase = rawPublic.replace(/\/$/, '');
 
-    const subdir = input.kind === 'banner' ? 'banner' : 'gallery';
+    const subdir =
+      input.kind === 'banner' ? 'banner' : input.kind === 'home' ? 'home' : 'gallery';
     const id = randomUUID();
     const key = `images/${subdir}/${id}.${ext}`;
     const dir = join(diskRoot, 'images', subdir);
