@@ -53,7 +53,11 @@ export function WorkspaceHeader({ user, onToggleSidebar }: WorkspaceHeaderProps)
   }, [menuOpen]);
 
   return (
-    <header className="sticky top-0 z-20 flex h-20 shrink-0 items-center justify-between border-b border-gray-100 bg-white/80 px-4 backdrop-blur-md md:px-8">
+    <header
+      className={`sticky top-0 flex h-20 shrink-0 items-center justify-between border-b border-gray-100 bg-white/80 px-4 backdrop-blur-md md:px-8 ${
+        menuOpen ? "z-[250]" : "z-20"
+      }`}
+    >
       <div className="flex min-w-0 items-center gap-4">
         <button
           type="button"
@@ -99,7 +103,7 @@ export function WorkspaceHeader({ user, onToggleSidebar }: WorkspaceHeaderProps)
         {menuOpen ? (
           <div
             role="menu"
-            className="absolute right-0 top-full z-[60] mt-3 w-56 rounded-2xl border border-gray-100 bg-white py-1 shadow-[0_10px_40px_-10px_rgba(0,0,0,0.12)]"
+            className="absolute right-0 top-full z-[250] mt-3 w-56 rounded-2xl border border-gray-100 bg-white py-1 shadow-[0_10px_40px_-10px_rgba(0,0,0,0.12)]"
           >
             <div className="border-b border-gray-50 px-4 py-3">
               <p className="truncate text-sm font-bold text-brand-text-dark">{user.fullName}</p>

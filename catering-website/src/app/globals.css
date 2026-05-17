@@ -98,11 +98,16 @@
 @layer components {
   .ws-listing-tab-strip {
     box-shadow: 0 10px 30px rgb(0 0 0 / 0.04);
-    @apply sticky top-0 z-10 mb-10 flex w-full min-w-0 flex-nowrap gap-2 overflow-hidden rounded-3xl bg-white p-2;
+    @apply mb-8 flex w-full min-w-0 gap-2 overflow-x-auto rounded-3xl bg-white p-2 sm:overflow-visible;
+    scrollbar-width: none;
+  }
+
+  .ws-listing-tab-strip::-webkit-scrollbar {
+    display: none;
   }
 
   .ws-listing-tab-link {
-    @apply flex min-h-[52px] min-w-0 flex-1 shrink items-center justify-center rounded-2xl px-4 py-3 text-center text-sm font-bold transition-all duration-300 outline-none ring-0 focus-visible:ring-2 focus-visible:ring-brand-red/25 focus-visible:ring-offset-2;
+    @apply flex min-h-[48px] min-w-[7.25rem] flex-none items-center justify-center rounded-2xl px-3 py-2.5 text-center text-xs font-bold transition-all duration-300 outline-none ring-0 sm:min-h-[52px] sm:min-w-0 sm:flex-1 sm:px-4 sm:py-3 sm:text-sm focus-visible:ring-2 focus-visible:ring-brand-red/25 focus-visible:ring-offset-2;
   }
 
   .ws-listing-tab-link--active {
