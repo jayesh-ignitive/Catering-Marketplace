@@ -1,3 +1,7 @@
+"use client";
+
+import { useI18n } from "@/context/LocaleContext";
+import { trans } from "@/i18n";
 import { workspaceLabelTextClass } from "./constants";
 
 export function InputLabel({ children, htmlFor }: { children: React.ReactNode; htmlFor?: string }) {
@@ -25,22 +29,24 @@ export function ImageUploadProgressOverlay({
   percent: number;
   label?: string;
 }) {
+  const { ws, trans: t } = useI18n();
   const clamped = Math.min(100, Math.max(0, percent));
+  const defaultLabel = label ?? ws.select.uploading;
+  const ariaLabel = t(ws.select.uploadingPercent, { percent: clamped });
+
   return (
     <div
       className="absolute inset-0 z-20 flex flex-col items-center justify-center bg-black/55 px-4 backdrop-blur-[2px]"
       role="status"
       aria-live="polite"
       aria-busy="true"
-      aria-label={label ? `${label} ${clamped}%` : `Uploading ${clamped}%`}
+      aria-label={ariaLabel}
     >
       <div
         className="h-10 w-10 animate-spin rounded-full border-2 border-white/40 border-t-white"
         aria-hidden
       />
-      <p className="mt-3 text-center text-sm font-semibold text-white">
-        {label ?? "Uploading…"}
-      </p>
+      <p className="mt-3 text-center text-sm font-semibold text-white">{defaultLabel}</p>
       <div className="mt-3 h-1.5 w-full max-w-[10rem] overflow-hidden rounded-full bg-white/25">
         <div
           className="h-full rounded-full bg-brand-red transition-[width] duration-150 ease-out"

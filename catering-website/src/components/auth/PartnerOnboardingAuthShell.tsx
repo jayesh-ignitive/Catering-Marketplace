@@ -1,7 +1,8 @@
 "use client";
 
-import Image from "next/image";
 import { BrandLogoLink } from "@/components/common/BrandLogoLink";
+import { useI18n } from "@/context/LocaleContext";
+import Image from "next/image";
 
 const PANEL_BG =
   "https://images.unsplash.com/photo-1555244162-803834f70033?auto=format&fit=crop&w=1000&q=80";
@@ -41,6 +42,7 @@ export type PartnerOnboardingAuthShellProps = {
 };
 
 export function PartnerOnboardingAuthShell({ title, subtitle, children }: PartnerOnboardingAuthShellProps) {
+  const { w } = useI18n();
   return (
     <main className="flex min-h-full w-full flex-col bg-brand-gray font-sans text-gray-800 lg:flex-row lg:items-start">
       <div className="relative hidden flex-col justify-between overflow-hidden bg-brand-dark p-12 text-white lg:sticky lg:top-0 lg:flex lg:h-screen lg:w-5/12 lg:shrink-0 xl:w-1/2">
@@ -55,13 +57,8 @@ export function PartnerOnboardingAuthShell({ title, subtitle, children }: Partne
         <div className="relative z-10">
           <BrandLogoLink preset="onboardingHero" className="mb-12" />
 
-          <h1 className="mb-6 font-heading text-4xl font-bold leading-tight xl:text-5xl">
-            Grow Your Catering Business With Us
-          </h1>
-          <p className="max-w-md text-lg leading-relaxed text-gray-300">
-            Join India&apos;s largest catering directory. Get verified, showcase your menus, and start receiving
-            high-quality leads today.
-          </p>
+          <h1 className="mb-6 font-heading text-4xl font-bold leading-tight xl:text-5xl">{w.auth.shellTitle}</h1>
+          <p className="max-w-md text-lg leading-relaxed text-gray-300">{w.auth.shellSubtitle}</p>
         </div>
 
         <div className="relative z-10 max-w-md rounded-2xl border border-white/20 bg-white/10 p-6 backdrop-blur-md">
@@ -90,15 +87,12 @@ export function PartnerOnboardingAuthShell({ title, subtitle, children }: Partne
               />
             </div>
             <div className="text-sm font-semibold">
-              <span className="text-brand-yellow">1000+</span> Caterers
+              <span className="text-brand-yellow">{w.auth.shellStatLine1}</span> {w.auth.shellStatLine2}
               <br />
-              Already Joined
+              {w.auth.shellStatLine3}
             </div>
           </div>
-          <p className="text-sm italic text-gray-300">
-            &quot;Since joining Bharat Caterers, our wedding booking rate has increased by 300%. The platform is
-            incredibly easy to use.&quot;
-          </p>
+          <p className="text-sm italic text-gray-300">&quot;{w.auth.shellTestimonial}&quot;</p>
         </div>
       </div>
 

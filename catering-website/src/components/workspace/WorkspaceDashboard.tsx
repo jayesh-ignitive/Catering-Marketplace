@@ -28,46 +28,32 @@ import {
   workspaceCardTitleClass,
   workspaceHintTextClass,
 } from "./caterer-profile/constants";
+import { useI18n } from "@/context/LocaleContext";
+import type { WorkspaceMessages } from "@/i18n/workspace.messages";
 import { WorkspaceListingPreview } from "./WorkspaceListingPreview";
 
-function listingStatusCopy(profile: CatererWorkspaceProfile): {
+function listingStatusCopy(
+  profile: CatererWorkspaceProfile,
+  ws: WorkspaceMessages,
+): {
   title: string;
   message: string;
   tone: "live" | "pending" | "rejected" | "draft";
 } {
+  const s = ws.dashboard.status;
   if (profile.published && profile.approvalStatus === "approved") {
-    return {
-      title: "Live on marketplace",
-      message: "Customers can find your listing in search and view your public profile.",
-      tone: "live",
-    };
+    return { title: s.liveTitle, message: s.liveMessage, tone: "live" };
   }
   if (profile.approvalStatus === "pending_review") {
-    return {
-      title: "Pending admin review",
-      message: "Your profile was submitted and is waiting for approval before it goes public.",
-      tone: "pending",
-    };
+    return { title: s.pendingTitle, message: s.pendingMessage, tone: "pending" };
   }
   if (profile.approvalStatus === "rejected") {
-    return {
-      title: "Not approved",
-      message: "Update your listing and submit again for another review.",
-      tone: "rejected",
-    };
+    return { title: s.rejectedTitle, message: s.rejectedMessage, tone: "rejected" };
   }
   if (profile.completion.isComplete) {
-    return {
-      title: "Ready to submit",
-      message: "Your profile is complete. Submit it for admin review to appear in listings.",
-      tone: "draft",
-    };
+    return { title: s.readyTitle, message: s.readyMessage, tone: "draft" };
   }
-  return {
-    title: "Setup in progress",
-    message: "Finish your listing in the editor, then submit for admin review.",
-    tone: "draft",
-  };
+  return { title: s.inProgressTitle, message: s.inProgressMessage, tone: "draft" };
 }
 
 function StatusIcon({ tone }: { tone: ReturnType<typeof listingStatusCopy>["tone"] }) {
@@ -99,8 +85,9 @@ export function WorkspaceDashboard({
   profile: CatererWorkspaceProfile;
   token: string;
 }) {
+  const { ws, trans } = useI18n();
   const qc = useQueryClient();
-  const status = listingStatusCopy(profile);
+  const status = listingStatusCopy(profile, ws);
   const tenantSlug = user.tenant?.slug?.trim().toLowerCase();
   const publicProfileHref = tenantSlug ? `/caterers/${encodeURIComponent(tenantSlug)}` : null;
   const canViewPublic = Boolean(publicProfileHref && profile.published && profile.approvalStatus === "approved");
@@ -109,6 +96,10 @@ export function WorkspaceDashboard({
     profile.approvalStatus !== "pending_review" &&
     !(profile.published && profile.approvalStatus === "approved");
 
+  const firstName = user.fullName.split(/\s+/)[0] || user.fullName;
+  const businessName =
+    user.tenant?.name ?? user.businessName ?? ws.dashboard.yourBusiness;
+
   /** Top flash banner in layout already covers pending / rejected messaging. */
   const showListingStatusCard =
     profile.approvalStatus !== "pending_review" && profile.approvalStatus !== "rejected";
@@ -116,7 +107,7 @@ export function WorkspaceDashboard({
   const submitM = useMutation({
     mutationFn: () => publishWorkspaceCatererProfile(token),
     onSuccess: async () => {
-      toast.success("Submitted for admin review. We'll notify you when your listing is live.");
+      toast.success(ws.toast.submitSuccess);
       await qc.invalidateQueries({ queryKey: ["workspace", "profile", token] });
     },
     onError: (err: Error) => toast.error(err.message),
@@ -125,13 +116,14 @@ export function WorkspaceDashboard({
   return (
     <div className="w-full min-w-0 max-w-5xl">
       <div className="mb-8 md:mb-10">
-        <p className="mb-1 text-xs font-bold uppercase tracking-widest text-brand-text-muted">Welcome</p>
+        <p className="mb-1 text-xs font-bold uppercase tracking-widest text-brand-text-muted">
+          {ws.dashboard.welcome}
+        </p>
         <h2 className="font-heading mt-2 text-2xl font-bold tracking-tight text-brand-text-dark md:text-3xl">
-          Welcome back, {user.fullName.split(/\s+/)[0] || user.fullName}
+          {trans(ws.dashboard.welcomeBack, { name: firstName })}
         </h2>
         <p className="mt-2 text-sm text-brand-text-muted">
-          {user.tenant?.name ?? user.businessName ?? "Your catering business"} — manage your profile, menu,
-          orders, and insights from one place.
+          {trans(ws.dashboard.subtitle, { business: businessName })}
         </p>
       </div>
 
@@ -158,7 +150,7 @@ export function WorkspaceDashboard({
                 className="inline-flex cursor-pointer items-center gap-2 rounded-sm bg-brand-red px-5 py-2.5 text-sm font-bold text-white shadow-md shadow-brand-red/25 transition hover:bg-red-700 disabled:cursor-not-allowed disabled:opacity-60"
               >
                 <PaperPlaneRight weight="bold" size={18} aria-hidden />
-                {submitM.isPending ? "Submitting…" : "Submit for review"}
+                {submitM.isPending ? ws.dashboard.submitting : ws.dashboard.submitForReview}
               </button>
             ) : null}
             {canViewPublic && publicProfileHref ? (
@@ -169,7 +161,7 @@ export function WorkspaceDashboard({
                 className="inline-flex items-center gap-2 rounded-sm border border-stone-200 bg-white px-5 py-2.5 text-sm font-bold text-[#374151] shadow-sm transition hover:border-brand-red/30 hover:text-brand-red"
               >
                 <Eye weight="bold" size={18} aria-hidden />
-                View public profile
+                {ws.dashboard.viewPublicProfile}
               </Link>
             ) : null}
           </div>
@@ -178,44 +170,44 @@ export function WorkspaceDashboard({
       ) : null}
 
       <div className="admin-panel-card p-6 sm:p-8">
-          <h2 className={workspaceCardTitleClass}>Quick actions</h2>
-          <p className={`mt-1 ${workspaceHintTextClass}`}>Jump to a workspace module.</p>
+          <h2 className={workspaceCardTitleClass}>{ws.dashboard.quickActions}</h2>
+          <p className={`mt-1 ${workspaceHintTextClass}`}>{ws.dashboard.quickActionsHint}</p>
           <ul className="mt-6 grid gap-3 sm:grid-cols-2">
             {[
               {
                 href: "/workspace/profile",
-                label: "Profile",
-                hint: "Marketplace listing & gallery",
+                label: ws.dashboard.actionProfile,
+                hint: ws.dashboard.actionProfileHint,
                 icon: Storefront,
               },
               {
                 href: "/workspace/menu",
-                label: "Menu",
-                hint: "Categories & dishes",
+                label: ws.dashboard.actionMenu,
+                hint: ws.dashboard.actionMenuHint,
                 icon: ForkKnife,
               },
               {
                 href: "/workspace/orders",
-                label: "Orders",
-                hint: "Enquiries & bookings",
+                label: ws.dashboard.actionOrders,
+                hint: ws.dashboard.actionOrdersHint,
                 icon: ShoppingCart,
               },
               {
                 href: "/workspace/analytics",
-                label: "Analytics",
-                hint: "Views & performance",
+                label: ws.dashboard.actionAnalytics,
+                hint: ws.dashboard.actionAnalyticsHint,
                 icon: ChartLineUp,
               },
               {
                 href: "/workspace/profile?tab=business",
-                label: "Business details",
-                hint: "Location, about, tagline",
+                label: ws.dashboard.actionBusinessDetails,
+                hint: ws.dashboard.actionBusinessDetailsHint,
                 icon: ListDashes,
               },
               {
                 href: "/workspace/profile?tab=gallery",
-                label: "Banner & gallery",
-                hint: "Listing photos",
+                label: ws.dashboard.actionGallery,
+                hint: ws.dashboard.actionGalleryHint,
                 icon: Images,
               },
             ].map((action) => {
@@ -250,7 +242,7 @@ export function WorkspaceDashboard({
             href="/workspace/profile"
             className="mt-6 inline-flex cursor-pointer items-center gap-2 text-sm font-bold text-brand-red transition hover:text-red-700"
           >
-            Open profile editor
+            {ws.dashboard.openProfileEditor}
             <ArrowRight size={16} weight="bold" aria-hidden />
           </Link>
       </div>

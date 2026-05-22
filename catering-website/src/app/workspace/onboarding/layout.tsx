@@ -1,5 +1,6 @@
 "use client";
 
+import { I18nLoadingFallback } from "@/components/common/I18nLoadingFallback";
 import { BusinessOnboardingShell } from "@/components/workspace/BusinessOnboardingShell";
 import { useAuth } from "@/context/AuthContext";
 import { fetchWorkspaceCatererProfile } from "@/lib/catering-api";
@@ -30,25 +31,24 @@ export default function WorkspaceOnboardingLayout({ children }: { children: Reac
 
   if (!ready || !user) {
     return (
-      <div className="flex min-h-screen items-center justify-center bg-[#f8f9fa] text-sm text-stone-500">
-        Loading…
+      <div className="flex min-h-screen items-center justify-center bg-[#f8f9fa]">
+        <I18nLoadingFallback />
       </div>
     );
   }
 
   if (user.role === "admin") {
     return (
-      <div className="flex min-h-screen items-center justify-center bg-[#f8f9fa] text-sm text-stone-500">
-        Redirecting…
+      <div className="flex min-h-screen items-center justify-center bg-[#f8f9fa]">
+        <I18nLoadingFallback variant="redirect" />
       </div>
     );
   }
 
   if (profileQ.isPending) {
     return (
-      <div className="flex min-h-screen flex-col items-center justify-center gap-3 bg-[#f8f9fa] text-stone-500">
-        <div className="h-10 w-10 animate-spin rounded-full border-4 border-stone-200 border-t-brand-red" />
-        <p className="text-sm font-semibold text-stone-400">Loading workspace…</p>
+      <div className="flex min-h-screen items-center justify-center bg-[#f8f9fa]">
+        <I18nLoadingFallback variant="workspace" />
       </div>
     );
   }

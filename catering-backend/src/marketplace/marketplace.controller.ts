@@ -30,13 +30,13 @@ export class MarketplaceController {
 
   /** Distinct cities for filter dropdowns (published listings only). */
   @Get('caterers/cities')
-  listCities() {
-    return this.marketplace.listCities();
+  listCities(@Query('locale') locale?: string) {
+    return this.marketplace.listCities(locale);
   }
 
   @Get('cities')
-  listWorkspaceCities() {
-    return this.marketplace.listAllCitiesForWorkspace();
+  listWorkspaceCities(@Query('locale') locale?: string) {
+    return this.marketplace.listAllCitiesForWorkspace(locale);
   }
 
   /** Autocomplete: keyword labels/slugs used by published caterers (prefix / contains on small set). */

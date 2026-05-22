@@ -1,6 +1,7 @@
 "use client";
 
 import { AuthProvider } from "@/context/AuthContext";
+import { LocaleProvider } from "@/context/LocaleContext";
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import { useState } from "react";
 
@@ -21,7 +22,9 @@ export function AppProviders({ children }: { children: React.ReactNode }) {
   const [queryClient] = useState(makeQueryClient);
   return (
     <QueryClientProvider client={queryClient}>
-      <AuthProvider>{children}</AuthProvider>
+      <LocaleProvider>
+        <AuthProvider>{children}</AuthProvider>
+      </LocaleProvider>
     </QueryClientProvider>
   );
 }

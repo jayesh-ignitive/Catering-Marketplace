@@ -1,5 +1,6 @@
 "use client";
 
+import { useI18n } from "@/context/LocaleContext";
 import {
   ArrowRight,
   BowlFood,
@@ -44,7 +45,6 @@ import {
   getServiceCategoryIcon,
 } from "@/lib/service-category-icons";
 
-const nf = new Intl.NumberFormat("en-IN");
 
 const IMG = {
   hero: "https://images.unsplash.com/photo-1555939594-58d7cb561ad1?auto=format&fit=crop&w=1920&q=80",
@@ -55,14 +55,24 @@ const IMG = {
 };
 
 export default function Home() {
+  const { w, locale } = useI18n();
+  const h = w.home;
+  const nf = useMemo(
+    () => new Intl.NumberFormat(locale === "hi" ? "hi-IN" : locale === "gu" ? "gu-IN" : "en-IN"),
+    [locale],
+  );
+
   const router = useRouter();
   const [cityId, setCityId] = useState("");
   const [categoryId, setCategoryId] = useState("");
 
-  const citiesQ = useQuery({ queryKey: ["catalog", "cities"], queryFn: fetchCities });
+  const citiesQ = useQuery({
+    queryKey: ["catalog", "cities", locale],
+    queryFn: () => fetchCities(locale),
+  });
   const categoriesQ = useQuery({
-    queryKey: ["catalog", "service-categories"],
-    queryFn: fetchServiceCategories,
+    queryKey: ["catalog", "service-categories", locale],
+    queryFn: () => fetchServiceCategories(locale),
   });
   
   const statsQ = useQuery({ queryKey: ["catalog", "stats"], queryFn: fetchTrustStats });
@@ -110,38 +120,33 @@ export default function Home() {
 
           <div className="relative z-10 mx-auto w-full max-w-4xl px-6 text-center">
             <h1 className="font-heading mb-6 text-4xl font-bold leading-tight text-white md:text-6xl">
-              Find Best Catering Service <br /> Providers <span className="text-brand-yellow">Near You</span>
+              {h.heroTitle} <br /> {h.heroTitleLine2}{" "}
+              <span className="text-brand-yellow">{h.heroTitleHighlight}</span>
             </h1>
             <p className="mx-auto mb-10 max-w-2xl text-lg text-gray-200">
               {stats?.customersHelped != null ? (
                 <>
-                  Join{" "}
-                  <span className="font-semibold text-white">
-                    {nf.format(stats.customersHelped)}+
-                  </span>{" "}
-                  hosts who used Bharat Catering to compare menus, cities, and caterer profiles—then book with
-                  confidence.
+                  {h.heroSubtitleJoin}{" "}
+                  <span className="font-semibold text-white">{nf.format(stats.customersHelped)}+</span>{" "}
+                  {h.heroSubtitleWithStatsAfterCount}
                 </>
               ) : (
-                <>
-                  Bharat Catering connects hosts with verified-style caterer listings, published menus, and quotes
-                  across India.
-                </>
+                h.heroSubtitleDefault
               )}
             </p>
 
             <div className="relative z-20 mx-auto mt-8 flex w-full max-w-3xl flex-col gap-4 md:flex-row md:items-stretch">
               <HeroAutocomplete
-                label="City (optional)"
-                placeholder="City — optional"
+                label={h.cityLabel}
+                placeholder={h.cityPlaceholder}
                 options={cities.map((c) => ({ id: c.id, name: c.name }))}
                 value={cityId}
                 onChange={setCityId}
                 disabled={!heroReady}
               />
               <HeroAutocomplete
-                label="Service category (optional)"
-                placeholder="Category — optional"
+                label={h.categoryLabel}
+                placeholder={h.categoryPlaceholder}
                 options={categories.map((c) => ({ id: c.id, name: c.name }))}
                 value={categoryId}
                 onChange={setCategoryId}
@@ -154,14 +159,12 @@ export default function Home() {
                 className="flex shrink-0 items-center justify-center gap-2 rounded bg-brand-red px-8 py-3 font-bold text-white transition-all duration-300 hover:-translate-y-1 hover:bg-red-700 hover:shadow-xl hover:shadow-brand-red/30 disabled:cursor-not-allowed disabled:opacity-60"
               >
                 <MagnifyingGlass className="text-xl" aria-hidden />
-                SEARCH
+                {h.search}
               </button>
             </div>
 
             {(citiesQ.isError || categoriesQ.isError) && (
-              <p className="mt-4 text-sm text-amber-200">
-                Catalog API unavailable — ensure Nest is running on port 4000.
-              </p>
+              <p className="mt-4 text-sm text-amber-200">{h.catalogApiUnavailable}</p>
             )}
           </div>
         </section>
@@ -172,21 +175,19 @@ export default function Home() {
             <div className="-ml-[5%] mb-20 w-[110%] rotate-[-1deg] overflow-hidden bg-brand-dark py-4 shadow-xl">
               <div className="inline-flex animate-marquee whitespace-nowrap">
                 <span className="font-heading text-4xl font-bold uppercase tracking-widest text-outline">
-                  POPULAR DISHES &nbsp;&nbsp;•&nbsp;&nbsp; TOP CATERERS &nbsp;&nbsp;•&nbsp;&nbsp; PREMIUM
-                  SERVICE &nbsp;&nbsp;•&nbsp;&nbsp; BEST DEALS &nbsp;&nbsp;•&nbsp;&nbsp;
+                  {h.marquee}&nbsp;&nbsp;
                 </span>
                 <span className="font-heading text-4xl font-bold uppercase tracking-widest text-outline" aria-hidden>
-                  POPULAR DISHES &nbsp;&nbsp;•&nbsp;&nbsp; TOP CATERERS &nbsp;&nbsp;•&nbsp;&nbsp; PREMIUM
-                  SERVICE &nbsp;&nbsp;•&nbsp;&nbsp; BEST DEALS &nbsp;&nbsp;•&nbsp;&nbsp;
+                  {h.marquee}&nbsp;&nbsp;
                 </span>
               </div>
             </div>
 
             <div className="mb-12">
               <div className="mb-4 inline-block rounded bg-brand-green px-3 py-1 text-xs font-bold uppercase tracking-wider text-white">
-                Browse All
+                {h.browseAllBadge}
               </div>
-              <h2 className="font-heading text-4xl font-bold text-brand-dark">Catering Service Categories</h2>
+              <h2 className="font-heading text-4xl font-bold text-brand-dark">{h.categoriesTitle}</h2>
             </div>
 
             <div className="grid grid-cols-1 gap-6 md:grid-cols-2 lg:grid-cols-4">
@@ -229,14 +230,12 @@ export default function Home() {
                 <div className="mb-4 flex h-16 w-16 items-center justify-center rounded-lg bg-brand-red text-3xl text-white transition-all duration-300 group-hover:rotate-12 group-hover:scale-110">
                   <ArrowRight className="text-3xl" aria-hidden />
                 </div>
-                <h3 className="font-heading text-xl font-bold text-white">Browse All Services</h3>
+                <h3 className="font-heading text-xl font-bold text-white">{h.browseAllServices}</h3>
               </Link>
             </div>
 
             {!categoriesQ.isPending && categories.length === 0 && (
-              <p className="mt-10 text-center text-sm text-amber-700">
-                Categories could not be loaded. Check that the catalog API is running on port 4000.
-              </p>
+              <p className="mt-10 text-center text-sm text-amber-700">{h.categoriesApiError}</p>
             )}
           </div>
         </section>
@@ -246,11 +245,11 @@ export default function Home() {
           <div className="mx-auto max-w-7xl px-6 text-center">
             <div className="mb-4 inline-block">
               <span className="paint-stroke-bg px-4 py-1 font-heading text-sm font-bold uppercase tracking-widest text-brand-dark">
-                How It Works
+                {h.howItWorksEyebrow}
               </span>
             </div>
             <h2 className="font-heading mx-auto mb-20 max-w-2xl text-4xl font-bold leading-tight text-brand-dark md:text-5xl">
-              So How Does Bharat Catering Process Work?
+              {h.howItWorksTitle}
             </h2>
 
             <div className="relative grid grid-cols-1 gap-12 md:grid-cols-4">
@@ -264,29 +263,29 @@ export default function Home() {
                   step: "01",
                   icon: MagnifyingGlass,
                   color: "text-brand-red",
-                  title: "Search Caterer",
-                  body: "Find the best caterers in your city based on your specific event requirements.",
+                  title: h.stepSearchTitle,
+                  body: h.stepSearchBody,
                 },
                 {
                   step: "02",
                   icon: Scroll,
                   color: "text-brand-green",
-                  title: "Get Quotes",
-                  body: "Receive detailed pricing and menu options from multiple top-rated providers.",
+                  title: h.stepQuotesTitle,
+                  body: h.stepQuotesBody,
                 },
                 {
                   step: "03",
                   icon: Handshake,
                   color: "text-brand-yellow",
-                  title: "Hire Best Match",
-                  body: "Compare reviews, taste their food, and finalize the one that fits your needs.",
+                  title: h.stepHireTitle,
+                  body: h.stepHireBody,
                 },
                 {
                   step: "04",
                   icon: Confetti,
                   color: "text-purple-500",
-                  title: "Enjoy Event",
-                  body: "Relax and enjoy your event while the caterers handle the delicious food.",
+                  title: h.stepEnjoyTitle,
+                  body: h.stepEnjoyBody,
                 },
               ].map((s) => (
                 <div key={s.step} className="flex flex-col items-center">
@@ -323,73 +322,61 @@ export default function Home() {
             <div className="mx-auto mb-14 max-w-2xl text-center">
               <div className="mb-4 inline-flex items-center gap-2 rounded-full border border-brand-red/15 bg-brand-red/[0.06] px-3 py-1.5">
                 <Storefront className="text-lg text-brand-red" weight="duotone" aria-hidden />
-                <span className="text-[11px] font-bold uppercase tracking-[0.2em] text-brand-red">For caterers</span>
+                <span className="text-[11px] font-bold uppercase tracking-[0.2em] text-brand-red">
+                  {h.packagesEyebrow}
+                </span>
               </div>
               <h2 className="font-heading text-4xl font-extrabold tracking-tight text-brand-dark md:text-5xl">
-                Listing <span className="text-brand-red">packages</span> for your kitchen
+                {h.packagesTitle} <span className="text-brand-red">{h.packagesTitleHighlight}</span>{" "}
+                {h.packagesTitleSuffix}
               </h2>
-              <p className="mt-4 text-lg leading-relaxed text-gray-600">
-                Grow on Bharat Catering with a profile guests can trust — from your first published listing to
-                hands-on partner support for larger teams.
-              </p>
+              <p className="mt-4 text-lg leading-relaxed text-gray-600">{h.packagesSubtitle}</p>
             </div>
 
             <div className="grid gap-8 lg:grid-cols-3 lg:items-stretch">
               {[
                 {
-                  name: "Listing starter",
-                  tag: "Get discovered",
-                  price: "Free",
-                  period: "to begin",
-                  blurb: "Create your account, verify your email, and publish a professional profile on the directory.",
+                  name: h.planStarterName,
+                  tag: h.planStarterTag,
+                  price: h.planStarterPrice,
+                  period: h.planStarterPeriod,
+                  blurb: h.planStarterBlurb,
                   icon: MagnifyingGlass,
                   accent: "border-gray-200 bg-white shadow-sm",
-                  cta: "Create account",
+                  cta: h.planStarterCta,
                   href: "/register",
                   featured: false,
                   darkCard: false,
-                  perks: [
-                    "Appear in marketplace search by city & service type",
-                    "Business name, story, and contact-ready profile",
-                    "Email verification before you go live",
-                  ],
+                  perks: [h.planStarterPerk1, h.planStarterPerk2, h.planStarterPerk3],
                 },
                 {
-                  name: "Workspace",
-                  tag: "Most popular",
-                  price: "Free",
-                  period: "with your listing",
-                  blurb: "Use your caterer workspace to keep menus, gallery, and categories polished as you scale.",
+                  name: h.planWorkspaceName,
+                  tag: h.planWorkspaceTag,
+                  price: h.planWorkspacePrice,
+                  period: h.planWorkspacePeriod,
+                  blurb: h.planWorkspaceBlurb,
                   icon: Star,
                   accent:
                     "border-2 border-brand-red/90 bg-white shadow-[0_28px_70px_-24px_rgba(229,57,53,0.22),0_0_0_1px_rgba(229,57,53,0.06)] ring-4 ring-brand-red/10 lg:-translate-y-1 lg:scale-[1.02]",
-                  cta: "Set up workspace",
+                  cta: h.planWorkspaceCta,
                   href: "/register",
                   featured: true,
                   darkCard: false,
-                  perks: [
-                    "Business hub: profile, gallery, and service categories",
-                    "Publish the details hosts compare before they enquire",
-                    "Built for teams updating menus and photos often",
-                  ],
+                  perks: [h.planWorkspacePerk1, h.planWorkspacePerk2, h.planWorkspacePerk3],
                 },
                 {
-                  name: "Partner program",
-                  tag: "Kitchens at scale",
-                  price: "Custom",
-                  period: "let’s talk",
-                  blurb: "Multi-location brands, high-volume kitchens, or bespoke onboarding — we align with your ops team.",
+                  name: h.planPartnerName,
+                  tag: h.planPartnerTag,
+                  price: h.planPartnerPrice,
+                  period: h.planPartnerPeriod,
+                  blurb: h.planPartnerBlurb,
                   icon: Sparkle,
                   accent: "border border-gray-200/90 bg-brand-dark text-white shadow-xl",
-                  cta: "Talk to sales",
+                  cta: h.planPartnerCta,
                   href: "/contact",
                   featured: false,
                   darkCard: true,
-                  perks: [
-                    "Priority onboarding and listing reviews",
-                    "Support for multi-brand or multi-city rollouts",
-                    "Commercial terms tailored to your footprint",
-                  ],
+                  perks: [h.planPartnerPerk1, h.planPartnerPerk2, h.planPartnerPerk3],
                 },
               ].map((pkg) => {
                 const Icon = pkg.icon;
@@ -484,11 +471,11 @@ export default function Home() {
             </div>
 
             <p className="mx-auto mt-12 max-w-2xl text-center text-sm leading-relaxed text-gray-500">
-              Final fees for food and service stay between you and your clients. These packages are about your{" "}
-              <strong className="font-semibold text-brand-dark">presence on Bharat Catering</strong> — not guest
-              tickets.{" "}
+              {h.packagesFootnotePrefix}{" "}
+              <strong className="font-semibold text-brand-dark">{h.packagesFootnotePresence}</strong>{" "}
+              {h.packagesFootnoteSuffix}{" "}
               <Link href="/caterers" className="font-semibold text-brand-red underline-offset-2 hover:underline">
-                Looking to hire a caterer? Browse the directory.
+                {h.packagesHireLink}
               </Link>
             </p>
             <p className="mx-auto mt-4 text-center">
@@ -496,7 +483,7 @@ export default function Home() {
                 href="/packages"
                 className="inline-flex items-center gap-2 text-sm font-bold text-brand-red underline-offset-4 hover:underline"
               >
-                Full yearly plans, feature table &amp; how to choose
+                {h.packagesCompareLink}
                 <ArrowRight className="text-base" aria-hidden />
               </Link>
             </p>
@@ -514,33 +501,31 @@ export default function Home() {
             <div className="text-white md:w-1/2">
               <div className="mb-4 inline-block">
                 <span className="paint-stroke-bg green font-heading text-sm font-bold uppercase tracking-widest text-white">
-                  Since 2024
+                  {h.trustEyebrow}
                 </span>
               </div>
               <h2 className="font-heading mb-6 text-4xl font-bold leading-tight md:text-6xl">
-                Why Businesses Trust <span className="text-brand-red">Bharat Catering</span>
+                {h.trustTitle} <span className="text-brand-red">{h.trustTitleHighlight}</span>
               </h2>
-              <p className="mb-8 max-w-lg text-lg text-gray-300">
-                We connect you with the most reliable, hygienic, and highly-rated catering services across India.
-                Quality food for quality moments.
-              </p>
+              <p className="mb-8 max-w-lg text-lg text-gray-300">{h.trustSubtitle}</p>
               <Link
                 href="/register"
                 className="group inline-flex items-center gap-2 rounded-md bg-white px-8 py-4 font-bold text-brand-dark transition-all duration-300 hover:scale-105 hover:bg-gray-200 hover:shadow-lg"
               >
-                Get Started <ArrowRight className="transition-transform group-hover:translate-x-1" />
+                {h.getStarted}{" "}
+                <ArrowRight className="transition-transform group-hover:translate-x-1" />
               </Link>
             </div>
 
             <div className="grid w-full grid-cols-2 gap-6 md:w-1/2">
               {[
                 {
-                  label: "Verified reviews",
+                  label: h.statVerifiedReviews,
                   value: stats?.verifiedReviews != null ? nf.format(stats.verifiedReviews) : "—",
                   accent: "text-brand-yellow",
                 },
                 {
-                  label: "Caterers listed",
+                  label: h.statCaterersListed,
                   value:
                     stats?.cateringServicesListed != null
                       ? `${nf.format(stats.cateringServicesListed)}+`
@@ -549,7 +534,7 @@ export default function Home() {
                   offset: true,
                 },
                 {
-                  label: "Hosts helped",
+                  label: h.statHostsHelped,
                   value:
                     stats?.customersHelped != null
                       ? stats.customersHelped >= 1000
@@ -559,7 +544,7 @@ export default function Home() {
                   accent: "text-blue-400",
                 },
                 {
-                  label: "Guides & articles",
+                  label: h.statGuidesArticles,
                   value: stats?.researchArticles != null ? nf.format(stats.researchArticles) : "—",
                   accent: "text-orange-400",
                   offset: true,
@@ -581,7 +566,7 @@ export default function Home() {
         <section className="bg-gray-50 py-24">
           <div className="mx-auto grid max-w-7xl grid-cols-1 gap-16 px-6 lg:grid-cols-2">
             <div id="testimonials">
-              <h2 className="font-heading mb-8 text-3xl font-bold text-brand-dark">What Our Customers Say</h2>
+              <h2 className="font-heading mb-8 text-3xl font-bold text-brand-dark">{h.testimonialsTitle}</h2>
               <div className="group relative overflow-hidden rounded-2xl shadow-lg">
                 <div className="relative h-[400px] w-full">
                   <Image
@@ -595,17 +580,14 @@ export default function Home() {
                 <div className="absolute inset-0 bg-gradient-to-t from-black/90 via-black/40 to-transparent" />
                 <div className="absolute bottom-0 left-0 p-8 text-white">
                   <Quotes className="mb-4 text-4xl text-brand-yellow opacity-80" weight="fill" />
-                  <p className="mb-6 text-lg italic">
-                    &ldquo;Finding a caterer for our corporate event was a breeze. The quality of food and service was
-                    exceptional. Highly recommended platform!&rdquo;
-                  </p>
+                  <p className="mb-6 text-lg italic">&ldquo;{h.testimonialQuote}&rdquo;</p>
                   <div className="flex items-center gap-4">
                     <div className="flex h-12 w-12 items-center justify-center rounded-full bg-brand-red text-xl font-bold">
                       A
                     </div>
                     <div>
-                      <h4 className="text-lg font-bold">Anthom Bu Spar</h4>
-                      <p className="text-sm text-gray-300">Corporate Manager</p>
+                      <h4 className="text-lg font-bold">{h.testimonialAuthor}</h4>
+                      <p className="text-sm text-gray-300">{h.testimonialRole}</p>
                     </div>
                   </div>
                 </div>
@@ -613,7 +595,7 @@ export default function Home() {
             </div>
 
             <div>
-              <h2 className="font-heading mb-8 text-3xl font-bold text-brand-dark">Latest Insights</h2>
+              <h2 className="font-heading mb-8 text-3xl font-bold text-brand-dark">{h.insightsTitle}</h2>
               {blogQ.isPending ? (
                 <div className="flex flex-col gap-6">
                   {[1, 2].map((i) => (
@@ -629,8 +611,7 @@ export default function Home() {
                 </div>
               ) : blogQ.isError || !blogQ.data?.items.length ? (
                 <p className="rounded-2xl border border-amber-100 bg-amber-50/80 px-4 py-6 text-sm text-amber-900">
-                  Insights will appear here once the blog API is available (run{" "}
-                  <code className="rounded bg-white px-1">npm run migration:run</code> in catering-backend).
+                  {h.blogApiUnavailable}
                 </p>
               ) : (
                 <div className="flex flex-col gap-6">
@@ -668,7 +649,8 @@ export default function Home() {
                 href="/blog"
                 className="group mt-8 inline-flex items-center gap-2 font-bold text-brand-red hover:text-red-800"
               >
-                View all articles <ArrowRight className="transition-transform group-hover:translate-x-2" />
+                {h.viewAllArticles}{" "}
+                <ArrowRight className="transition-transform group-hover:translate-x-2" />
               </Link>
             </div>
           </div>

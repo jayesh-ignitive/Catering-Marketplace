@@ -1,5 +1,6 @@
 "use client";
 
+import { useI18n } from "@/context/LocaleContext";
 import Link from "next/link";
 import { ChefHat } from "@phosphor-icons/react";
 
@@ -27,6 +28,7 @@ export function BrandLogoLink({
   showWordmark = true,
   onClick,
 }: BrandLogoLinkProps) {
+  const { w } = useI18n();
   const linkBase =
     preset === "siteHeader" || preset === "siteFooter"
       ? "flex items-center gap-2"
@@ -72,7 +74,7 @@ export function BrandLogoLink({
                 : "font-logo translate-y-0.5 text-xl leading-none tracking-tight text-[#1c1c1c]"
           }
         >
-          Bharat
+          {w.common.brandPrimary}
         </span>
         <span
           className={
@@ -85,7 +87,7 @@ export function BrandLogoLink({
                 : "relative z-10 -mt-0.5 -rotate-2 w-fit rounded-sm bg-brand-red px-1.5 py-px text-[7px] font-bold uppercase tracking-[0.25em] text-white shadow-sm"
           }
         >
-          Catering
+          {w.common.brandSecondary}
         </span>
       </div>
     ) : (
@@ -108,7 +110,7 @@ export function BrandLogoLink({
                   : "font-logo translate-y-0.5 text-2xl leading-none tracking-tight text-brand-dark"
               }
             >
-              Bharat
+              {w.common.brandPrimary}
             </span>
             <span
               className={
@@ -117,7 +119,7 @@ export function BrandLogoLink({
                   : "relative z-10 -mt-0.5 w-fit -rotate-2 rounded-sm bg-brand-red px-1.5 py-px text-[7px] font-bold uppercase tracking-[0.28em] text-white shadow-sm"
               }
             >
-              Catering
+              {w.common.brandSecondary}
             </span>
           </div>
         ) : null}
@@ -125,7 +127,7 @@ export function BrandLogoLink({
     );
 
   return (
-    <Link href={href} className={mergedLink} aria-label="Bharat Catering home" onClick={onClick}>
+    <Link href={href} className={mergedLink} aria-label={w.common.brandHomeAria} onClick={onClick}>
       {inner}
     </Link>
   );

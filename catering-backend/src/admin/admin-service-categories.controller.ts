@@ -15,6 +15,7 @@ import { RolesGuard } from './roles.guard';
 import { AdminServiceCategoriesService } from './admin-service-categories.service';
 import { CreateServiceCategoryDto } from './dto/create-service-category.dto';
 import { UpdateServiceCategoryDto } from './dto/update-service-category.dto';
+import { UpsertCategoryTranslationDto } from './dto/upsert-category-translation.dto';
 
 @Controller('admin/service-categories')
 @UseGuards(JwtAuthGuard, RolesGuard)
@@ -42,5 +43,21 @@ export class AdminServiceCategoriesController {
   @Delete(':id')
   remove(@Param('id') id: string) {
     return this.adminServiceCategories.remove(id);
+  }
+
+  @Post(':id/translations')
+  upsertTranslation(
+    @Param('id') id: string,
+    @Body() dto: UpsertCategoryTranslationDto,
+  ) {
+    return this.adminServiceCategories.upsertTranslation(id, dto);
+  }
+
+  @Delete(':id/translations/:languageId')
+  removeTranslation(
+    @Param('id') id: string,
+    @Param('languageId') languageId: string,
+  ) {
+    return this.adminServiceCategories.removeTranslation(id, languageId);
   }
 }

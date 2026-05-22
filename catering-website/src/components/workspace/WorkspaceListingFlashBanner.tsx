@@ -1,5 +1,7 @@
 "use client";
 
+import { useI18n } from "@/context/LocaleContext";
+import type { WorkspaceMessages } from "@/i18n/workspace.messages";
 import type { CatererWorkspaceProfile } from "@/lib/catering-api";
 import { Clock, Info, XCircle } from "@phosphor-icons/react";
 import Link from "next/link";
@@ -8,23 +10,27 @@ type FlashVariant = "pending_review" | "rejected";
 
 function flashContent(
   variant: FlashVariant,
-  submittedForReviewAt: string | null
+  submittedForReviewAt: string | null,
+  ws: WorkspaceMessages,
+  trans: (template: string, vars?: Record<string, string | number>) => string,
 ): { title: string; body: string } {
   if (variant === "rejected") {
     return {
-      title: "Listing not approved",
-      body: "Please update your business information and submit again for review. Your profile is not visible on the marketplace.",
+      title: ws.flashBanner.rejectedTitle,
+      body: ws.flashBanner.rejectedBody,
     };
   }
   const submittedLine =
     submittedForReviewAt &&
-    `Submitted on ${new Date(submittedForReviewAt).toLocaleString(undefined, {
-      dateStyle: "medium",
-      timeStyle: "short",
-    })}. `;
+    trans(ws.flashBanner.pendingBodyPrefix, {
+      date: new Date(submittedForReviewAt).toLocaleString(undefined, {
+        dateStyle: "medium",
+        timeStyle: "short",
+      }),
+    });
   return {
-    title: "Admin is reviewing your information",
-    body: `${submittedLine ?? ""}Your listing stays hidden from customers until our team approves it. You can still edit your profile while you wait.`,
+    title: ws.flashBanner.pendingTitle,
+    body: `${submittedLine ?? ""}${ws.flashBanner.pendingBody}`,
   };
 }
 
@@ -35,6 +41,8 @@ export function WorkspaceListingFlashBanner({
   profile: CatererWorkspaceProfile | null | undefined;
   size?: "default" | "prominent";
 }) {
+  const { ws, trans } = useI18n();
+
   if (!profile) return null;
 
   const variant: FlashVariant | null =
@@ -46,7 +54,7 @@ export function WorkspaceListingFlashBanner({
 
   if (!variant) return null;
 
-  const copy = flashContent(variant, profile.submittedForReviewAt);
+  const copy = flashContent(variant, profile.submittedForReviewAt, ws, trans);
   const isProminent = size === "prominent";
   const isPending = variant === "pending_review";
 
@@ -79,14 +87,10 @@ export function WorkspaceListingFlashBanner({
           )}
         </span>
         <div className="min-w-0 flex-1">
-          <p
-            className={`font-bold text-[#232D42] ${isProminent ? "text-base sm:text-lg" : "text-sm"}`}
-          >
+          <p className={`font-bold text-[#232D42] ${isProminent ? "text-base sm:text-lg" : "text-sm"}`}>
             {copy.title}
           </p>
-          <p
-            className={`mt-1 leading-relaxed text-[#6B7280] ${isProminent ? "text-sm sm:text-base" : "text-sm"}`}
-          >
+          <p className={`mt-1 leading-relaxed text-[#6B7280] ${isProminent ? "text-sm sm:text-base" : "text-sm"}`}>
             {copy.body}
           </p>
           {isProminent && variant === "rejected" ? (
@@ -94,7 +98,7 @@ export function WorkspaceListingFlashBanner({
               href="/workspace/profile"
               className="mt-3 inline-flex cursor-pointer items-center gap-1 text-sm font-bold text-brand-red transition hover:text-red-700"
             >
-              Update listing
+              {ws.flashBanner.updateListing}
               <Info size={16} weight="bold" aria-hidden />
             </Link>
           ) : null}
@@ -105,7 +109,7 @@ export function WorkspaceListingFlashBanner({
               isProminent ? "px-4 py-2 text-xs" : "px-3 py-1.5 text-[10px]"
             }`}
           >
-            Awaiting approval
+            {ws.flashBanner.awaitingApproval}
           </span>
         ) : null}
       </div>

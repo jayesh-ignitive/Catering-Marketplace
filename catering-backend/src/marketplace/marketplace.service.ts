@@ -50,6 +50,13 @@ import {
 
 export type MarketplaceCategoryRef = { code: string; name: string };
 
+/** Published-listing city filter option (`city` = English canonical for API filter). */
+export type MarketplaceCityFilter = {
+  city: string;
+  slug: string;
+  displayName: string;
+};
+
 export type MarketplaceKeywordRef = { slug: string; label: string };
 
 export type MarketplaceListItem = {
@@ -546,29 +553,59 @@ export class MarketplaceService {
     );
   }
 
-  async listCities(): Promise<{ city: string }[]> {
-    return this.cities
+  async listCities(locale?: string): Promise<MarketplaceCityFilter[]> {
+    const code = (locale ?? 'en').trim().toLowerCase();
+    const lang = ['en', 'hi', 'gu'].includes(code) ? code : 'en';
+
+    const raw = await this.cities
       .createQueryBuilder('cy')
       .innerJoin(
         'caterer_profiles',
         'cp',
         'cp.city_id = cy.id AND cp.published = :pub',
-        {
-          pub: true,
-        },
+        { pub: true },
+      )
+      .leftJoin(
+        'city_translations',
+        'ct',
+        'ct.city_id = cy.id AND ct.language_id = (SELECT id FROM languages WHERE code = :lang LIMIT 1)',
+        { lang },
       )
       .select('cy.name', 'city')
+      .addSelect('cy.slug', 'slug')
+      .addSelect('COALESCE(ct.name, cy.name)', 'displayName')
       .distinct(true)
       .orderBy('cy.name', 'ASC')
-      .getRawMany<{ city: string }>();
+      .getRawMany<{ city: string; slug: string; displayName: string }>();
+
+    return raw.map((r) => ({
+      city: r.city,
+      slug: r.slug,
+      displayName: r.displayName,
+    }));
   }
 
-  async listAllCitiesForWorkspace(): Promise<{ id: string; name: string }[]> {
-    const rows = await this.cities.find({
-      order: { name: 'ASC' },
-      select: { id: true, name: true },
-    });
-    return rows.map((r) => ({ id: r.id, name: r.name }));
+  async listAllCitiesForWorkspace(
+    locale?: string,
+  ): Promise<{ id: string; name: string }[]> {
+    const code = (locale ?? 'en').trim().toLowerCase();
+    const lang = ['en', 'hi', 'gu'].includes(code) ? code : 'en';
+
+    const rows = await this.cities
+      .createQueryBuilder('cy')
+      .leftJoin(
+        'city_translations',
+        'ct',
+        'ct.city_id = cy.id AND ct.language_id = (SELECT id FROM languages WHERE code = :lang LIMIT 1)',
+        { lang },
+      )
+      .where('cy.is_active = :active', { active: true })
+      .select('cy.id', 'id')
+      .addSelect('COALESCE(ct.name, cy.name)', 'name')
+      .orderBy('cy.name', 'ASC')
+      .getRawMany<{ id: string; name: string }>();
+
+    return rows;
   }
 
   async listPublished(dto: ListMarketplaceQueryDto): Promise<{

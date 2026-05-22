@@ -1,5 +1,7 @@
 "use client";
 
+import { useI18n } from "@/context/LocaleContext";
+import { trans } from "@/i18n";
 import { useCallback, useEffect, useRef } from "react";
 
 const LENGTH = 6;
@@ -27,6 +29,8 @@ export function OtpInput({
   hasError,
   autoFocus,
 }: OtpInputProps) {
+  const { w, trans } = useI18n();
+
   const refs = useRef<(HTMLInputElement | null)[]>([]);
   const parts = cellsFromValue(value);
   const completedRef = useRef(false);
@@ -134,7 +138,7 @@ export function OtpInput({
       <div
         className="grid grid-cols-6 gap-2 sm:gap-3"
         role="group"
-        aria-label="Verification code, 6 digits. You can paste the full code."
+        aria-label={w.auth.otp.groupAria}
       >
         {parts.map((char, index) => (
           <input
@@ -153,14 +157,14 @@ export function OtpInput({
             onKeyDown={(e) => handleKeyDown(index, e)}
             onPaste={handlePaste}
             onFocus={(e) => e.target.select()}
-            aria-label={`Digit ${index + 1} of ${LENGTH}`}
+            aria-label={trans(w.auth.otp.digitAria, { n: index + 1, total: LENGTH })}
             aria-invalid={hasError || undefined}
             className={`${boxBase} ${disabled ? boxDisabled : "cursor-pointer"} ${hasError ? boxErr : boxOk}`}
           />
         ))}
       </div>
       <p className="mt-2 text-xs text-gray-500">
-        Tip: paste your 6-digit code from email — all boxes fill automatically.
+        {w.auth.otp.pasteTip}
       </p>
     </div>
   );

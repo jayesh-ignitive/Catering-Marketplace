@@ -1,7 +1,9 @@
 "use client";
 
+import { useI18n } from "@/context/LocaleContext";
 import type { Icon } from "@phosphor-icons/react";
 import { Crown } from "@phosphor-icons/react";
+import { trans } from "@/i18n";
 import { publicSiteConfig } from "@/lib/site-config";
 import Link from "next/link";
 
@@ -20,8 +22,11 @@ export function WorkspaceModulePlaceholder({
   icon: Icon,
   variant = "comingSoon",
   primaryHref = "/workspace/profile",
-  primaryLabel = "Go to profile",
+  primaryLabel,
 }: WorkspaceModulePlaceholderProps) {
+  const { ws, trans } = useI18n();
+  const resolvedPrimaryLabel = primaryLabel ?? ws.common.goToProfile;
+
   if (variant === "premium") {
     const contactSubject = encodeURIComponent(`Premium workspace — ${title}`);
     const mailtoHref = `mailto:${encodeURIComponent(publicSiteConfig.contactEmail)}?subject=${contactSubject}`;
@@ -33,25 +38,25 @@ export function WorkspaceModulePlaceholder({
         </span>
         <span className="mx-auto mt-5 inline-flex items-center gap-1.5 rounded-full bg-amber-50 px-3 py-1 text-[11px] font-bold uppercase tracking-wider text-amber-900 ring-1 ring-amber-200/80">
           <Crown size={14} weight="fill" aria-hidden />
-          Premium
+          {ws.common.premium}
         </span>
         <h2 className="font-heading mt-4 text-xl font-bold text-brand-text-dark">{title}</h2>
         <p className="mt-3 text-sm leading-relaxed text-brand-text-muted">{description}</p>
         <p className="mt-4 text-sm font-semibold text-brand-text-dark">
-          This module is included in the premium workspace plan.
+          {ws.modules.premiumIncluded}
         </p>
         <div className="mt-8 flex flex-col items-center justify-center gap-3 sm:flex-row">
           <Link
             href="/contact"
             className="inline-flex w-full cursor-pointer items-center justify-center rounded-xl bg-brand-red px-6 py-2.5 text-sm font-bold text-white shadow-md shadow-brand-red/20 transition hover:bg-red-700 sm:w-auto"
           >
-            Contact for Premium
+            {ws.modules.contactForPremium}
           </Link>
           <a
             href={mailtoHref}
             className="inline-flex w-full cursor-pointer items-center justify-center rounded-xl border border-gray-200 bg-white px-6 py-2.5 text-sm font-bold text-brand-text-dark transition hover:bg-brand-page sm:w-auto"
           >
-            Email {publicSiteConfig.contactEmail}
+            {trans(ws.modules.email, { email: publicSiteConfig.contactEmail })}
           </a>
         </div>
       </div>
@@ -66,13 +71,13 @@ export function WorkspaceModulePlaceholder({
       <h2 className="font-heading mt-6 text-xl font-bold text-brand-text-dark">{title}</h2>
       <p className="mt-3 text-sm leading-relaxed text-brand-text-muted">{description}</p>
       <p className="mt-4 text-xs font-semibold uppercase tracking-wider text-brand-text-muted">
-        Coming soon
+        {ws.common.comingSoon}
       </p>
       <Link
         href={primaryHref}
         className="mt-8 inline-flex cursor-pointer items-center justify-center rounded-xl bg-brand-red px-6 py-2.5 text-sm font-bold text-white shadow-md shadow-brand-red/20 transition hover:bg-red-700"
       >
-        {primaryLabel}
+        {resolvedPrimaryLabel}
       </Link>
     </div>
   );

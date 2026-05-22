@@ -1,14 +1,17 @@
 "use client";
 
+import { useI18n } from "@/context/LocaleContext";
 import { ShoppingCart } from "@phosphor-icons/react";
 import { WorkspaceModulePlaceholder } from "@/components/workspace/WorkspaceModulePlaceholder";
 
 export default function WorkspaceOrdersPage() {
+  const { ws, trans } = useI18n();
+
   return (
     <WorkspaceModulePlaceholder
       variant="premium"
-      title="Orders"
-      description="Track incoming enquiries, quotes, and confirmed events in your workspace with Premium."
+      title={ws.modules.orders.title}
+      description={ws.modules.orders.description}
       icon={ShoppingCart}
     />
   );

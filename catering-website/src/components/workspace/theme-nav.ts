@@ -6,6 +6,7 @@ import {
   SquaresFour,
   Storefront,
 } from "@phosphor-icons/react";
+import type { WorkspaceMessages } from "@/i18n/workspace.messages";
 
 export type WorkspaceThemeNavItem = {
   href: string;
@@ -19,30 +20,31 @@ export type WorkspaceNavSection = {
   items: WorkspaceThemeNavItem[];
 };
 
-export const WORKSPACE_NAV_SECTIONS: WorkspaceNavSection[] = [
-  {
-    label: "Overview",
-    items: [{ href: "/workspace", label: "Dashboard", icon: SquaresFour }],
-  },
-  {
-    label: "Business",
-    items: [
-      { href: "/workspace/profile", label: "Profile", icon: Storefront },
-      { href: "/workspace/menu", label: "Menu", icon: ForkKnife },
-    ],
-  },
-  {
-    label: "Operations",
-    items: [
-      { href: "/workspace/orders", label: "Orders", icon: ShoppingCart },
-      { href: "/workspace/analytics", label: "Analytics", icon: ChartLineUp },
-    ],
-  },
-];
+export function getWorkspaceNavSections(ws: WorkspaceMessages): WorkspaceNavSection[] {
+  return [
+    {
+      label: ws.nav.sections.overview,
+      items: [{ href: "/workspace", label: ws.nav.items.dashboard, icon: SquaresFour }],
+    },
+    {
+      label: ws.nav.sections.business,
+      items: [
+        { href: "/workspace/profile", label: ws.nav.items.profile, icon: Storefront },
+        { href: "/workspace/menu", label: ws.nav.items.menu, icon: ForkKnife },
+      ],
+    },
+    {
+      label: ws.nav.sections.operations,
+      items: [
+        { href: "/workspace/orders", label: ws.nav.items.orders, icon: ShoppingCart },
+        { href: "/workspace/analytics", label: ws.nav.items.analytics, icon: ChartLineUp },
+      ],
+    },
+  ];
+}
 
-/** Caterer workspace navigation — admins use `components/admin/admin-nav`. */
-export function getWorkspaceThemeNav(): WorkspaceThemeNavItem[] {
-  return WORKSPACE_NAV_SECTIONS.flatMap((s) => s.items);
+export function getWorkspaceThemeNav(ws: WorkspaceMessages): WorkspaceThemeNavItem[] {
+  return getWorkspaceNavSections(ws).flatMap((s) => s.items);
 }
 
 export function isWorkspaceNavActive(pathname: string, href: string): boolean {
@@ -52,46 +54,46 @@ export function isWorkspaceNavActive(pathname: string, href: string): boolean {
   return pathname === href || pathname.startsWith(`${href}/`);
 }
 
-export function workspaceHeaderTitle(pathname: string): string {
+export function workspaceHeaderTitle(pathname: string, ws: WorkspaceMessages): string {
   if (pathname === "/workspace" || pathname === "/workspace/") {
-    return "Dashboard";
+    return ws.header.titles.dashboard;
   }
   if (pathname.startsWith("/workspace/profile")) {
-    return "Profile";
+    return ws.header.titles.profile;
   }
   if (pathname.startsWith("/workspace/menu")) {
-    return "Menu";
+    return ws.header.titles.menu;
   }
   if (pathname.startsWith("/workspace/orders")) {
-    return "Orders";
+    return ws.header.titles.orders;
   }
   if (pathname.startsWith("/workspace/analytics")) {
-    return "Analytics";
+    return ws.header.titles.analytics;
   }
   if (pathname.startsWith("/workspace/onboarding")) {
-    return "Setup";
+    return ws.header.titles.setup;
   }
-  return "Workspace";
+  return ws.header.titles.workspace;
 }
 
-export function workspaceHeaderSubtitle(pathname: string): string {
+export function workspaceHeaderSubtitle(pathname: string, ws: WorkspaceMessages): string {
   if (pathname === "/workspace" || pathname === "/workspace/") {
-    return "Listing status, quick actions, and marketplace preview.";
+    return ws.header.subtitles.dashboard;
   }
   if (pathname.startsWith("/workspace/profile")) {
-    return "Business details, services, keywords, and gallery for your public listing.";
+    return ws.header.subtitles.profile;
   }
   if (pathname.startsWith("/workspace/menu")) {
-    return "Categories, dishes, and pricing for enquiries and events.";
+    return ws.header.subtitles.menu;
   }
   if (pathname.startsWith("/workspace/orders")) {
-    return "Track enquiries, bookings, and fulfilment in one place.";
+    return ws.header.subtitles.orders;
   }
   if (pathname.startsWith("/workspace/analytics")) {
-    return "Views, leads, and performance insights for your catering business.";
+    return ws.header.subtitles.analytics;
   }
   if (pathname.startsWith("/workspace/onboarding")) {
-    return "Complete your profile before submitting for marketplace review.";
+    return ws.header.subtitles.onboarding;
   }
-  return "Manage your catering business on Bharat Catering.";
+  return ws.header.subtitles.default;
 }

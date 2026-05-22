@@ -1,6 +1,7 @@
 "use client";
 
-import { WORKSPACE_NAV_SECTIONS, isWorkspaceNavActive } from "@/components/workspace/theme-nav";
+import { getWorkspaceNavSections, isWorkspaceNavActive } from "@/components/workspace/theme-nav";
+import { useI18n } from "@/context/LocaleContext";
 import { BrandLogoLink } from "@/components/common/BrandLogoLink";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
@@ -22,14 +23,16 @@ export function WorkspaceSidebar({
   onDesktopHoverEnd,
   onCloseMobile,
 }: WorkspaceSidebarProps) {
+  const { ws } = useI18n();
   const pathname = usePathname();
+  const navSections = getWorkspaceNavSections(ws);
   const compact = collapsed && !hoverExpanded;
 
   return (
     <>
       <button
         type="button"
-        aria-label="Close workspace menu overlay"
+        aria-label={ws.sidebar.closeOverlay}
         className={`fixed inset-0 z-30 bg-black/50 transition md:hidden ${
           mobileOpen ? "cursor-pointer opacity-100" : "pointer-events-none cursor-default opacity-0"
         }`}
@@ -61,7 +64,7 @@ export function WorkspaceSidebar({
               compact ? "p-2" : "p-4"
             }`}
           >
-            {WORKSPACE_NAV_SECTIONS.map((section) => (
+            {navSections.map((section) => (
               <div key={section.label} className="space-y-1">
                 {!compact ? (
                   <div className="menu-header mb-2 mt-4 px-3 text-xs font-bold uppercase tracking-wider text-gray-400 first:mt-0">

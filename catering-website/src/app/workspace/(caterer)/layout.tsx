@@ -1,5 +1,6 @@
 "use client";
 
+import { I18nLoadingFallback } from "@/components/common/I18nLoadingFallback";
 import { WorkspaceThemeLayout } from "@/components/workspace/WorkspaceThemeLayout";
 import { useAuth } from "@/context/AuthContext";
 import { fetchWorkspaceCatererProfile } from "@/lib/catering-api";
@@ -38,25 +39,24 @@ export default function CatererWorkspaceShellLayout({ children }: { children: Re
 
   if (!ready || !user) {
     return (
-      <div className="flex min-h-screen items-center justify-center bg-[var(--background)] text-sm text-[var(--foreground-muted)]">
-        Loading…
+      <div className="flex min-h-screen items-center justify-center bg-[var(--background)]">
+        <I18nLoadingFallback />
       </div>
     );
   }
 
   if (user.role === "admin") {
     return (
-      <div className="flex min-h-screen items-center justify-center bg-[var(--background)] text-sm text-[var(--foreground-muted)]">
-        Redirecting…
+      <div className="flex min-h-screen items-center justify-center bg-[var(--background)]">
+        <I18nLoadingFallback variant="redirect" />
       </div>
     );
   }
 
   if (profileQ.isPending) {
     return (
-      <div className="flex min-h-screen flex-col items-center justify-center gap-3 bg-[var(--background)] text-[var(--foreground-muted)]">
-        <div className="h-10 w-10 animate-spin rounded-full border-4 border-stone-200 border-t-brand-red" />
-        <p className="text-sm font-semibold text-stone-500">Loading workspace…</p>
+      <div className="flex min-h-screen items-center justify-center bg-[var(--background)]">
+        <I18nLoadingFallback variant="workspace" />
       </div>
     );
   }
@@ -71,9 +71,8 @@ export default function CatererWorkspaceShellLayout({ children }: { children: Re
 
   if (profileQ.data && !profileQ.data.completion.isComplete) {
     return (
-      <div className="flex min-h-screen flex-col items-center justify-center gap-3 bg-[var(--background)] text-[var(--foreground-muted)]">
-        <div className="h-10 w-10 animate-spin rounded-full border-4 border-stone-200 border-t-brand-red" />
-        <p className="text-sm font-semibold text-stone-500">Opening business setup…</p>
+      <div className="flex min-h-screen items-center justify-center bg-[var(--background)]">
+        <I18nLoadingFallback variant="openingSetup" />
       </div>
     );
   }

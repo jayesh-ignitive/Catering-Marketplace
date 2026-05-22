@@ -1,3 +1,6 @@
+"use client";
+
+import { useI18n } from "@/context/LocaleContext";
 import {
   BowlFood,
   Crown,
@@ -6,6 +9,7 @@ import {
   SealCheck,
   Users,
 } from "@phosphor-icons/react";
+import { trans } from "@/i18n";
 import Link from "next/link";
 import { RemoteContentImage } from "@/components/common/RemoteContentImage";
 import {
@@ -17,13 +21,13 @@ import {
 
 import { getCatererCardBadge, type ListingViewMode } from "@/lib/caterer-listing-utils";
 
-function locationLine(row: MarketplaceListItem): string {
+function locationLine(row: MarketplaceListItem, locationOnRequest: string): string {
   if (row.streetAddress?.trim()) {
     const area = row.streetAddress.split(",")[0]?.trim();
     if (area && row.city) return `${area}, ${row.city}`;
     return row.streetAddress;
   }
-  return [row.city, row.state].filter(Boolean).join(", ") || "Location on request";
+  return [row.city, row.state].filter(Boolean).join(", ") || locationOnRequest;
 }
 
 const cardShellClass = (
@@ -48,6 +52,8 @@ export function CatererListingCard({
   /** Non-interactive preview (workspace dashboard). */
   preview?: boolean;
 }) {
+  const { w, trans } = useI18n();
+
   const isGrid = viewMode === "grid";
   const badge = getCatererCardBadge(row);
   const capacity = formatMarketplaceCapacityShort(row.capacityGuestMin, row.capacityGuestMax);
@@ -98,7 +104,7 @@ export function CatererListingCard({
               ) : (
                 <SealCheck weight="fill" aria-hidden />
               )}
-              {badge.kind === "top-rated" ? "Top Rated" : "Verified"}
+              {badge.kind === "top-rated" ? w.caterers.card.topRated : w.caterers.card.verified}
             </span>
           </div>
         ) : null}
@@ -122,7 +128,7 @@ export function CatererListingCard({
           </h2>
           <div className="mt-0.5 flex items-center gap-2 text-[11px] text-gray-400">
             <MapPin className="shrink-0 text-brand-red" weight="fill" aria-hidden />
-            <span className="truncate">{locationLine(row)}</span>
+            <span className="truncate">{locationLine(row, w.caterers.card.locationOnRequest)}</span>
           </div>
         </div>
 
@@ -197,7 +203,7 @@ export function CatererListingCard({
                 : "ml-auto px-4 py-2 text-xs",
             ].join(" ")}
           >
-            View Details
+            {w.caterers.card.viewDetails}
           </span>
         </div>
       </div>
@@ -213,7 +219,11 @@ export function CatererListingCard({
   }
 
   return (
-    <Link href={href} aria-label={`View ${row.businessName} profile`} className={shellClass}>
+    <Link
+      href={href}
+      aria-label={trans(w.caterers.card.viewProfileAria, { name: row.businessName })}
+      className={shellClass}
+    >
       {cardBody}
     </Link>
   );

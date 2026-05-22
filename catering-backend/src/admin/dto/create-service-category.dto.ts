@@ -31,7 +31,7 @@ export class CreateServiceCategoryDto {
   @IsString()
   @MaxLength(120)
   @Transform(({ value }: { value: unknown }) => trim(value))
-  name!: string;
+  englishName!: string;
 
   @IsOptional()
   @IsString()

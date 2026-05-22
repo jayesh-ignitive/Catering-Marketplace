@@ -1,5 +1,6 @@
 "use client";
 
+import { useI18n } from "@/context/LocaleContext";
 import { ArrowLeft, CalendarBlank } from "@phosphor-icons/react";
 import { useQuery } from "@tanstack/react-query";
 import Link from "next/link";
@@ -23,6 +24,8 @@ function formatPublished(iso: string) {
 }
 
 export function BlogArticleContent() {
+  const { w, trans } = useI18n();
+
   const params = useParams();
   const router = useRouter();
   const slug = typeof params.slug === "string" ? params.slug : "";
@@ -38,7 +41,7 @@ export function BlogArticleContent() {
   if (!slug) {
     return (
       <div className="mx-auto max-w-3xl px-6 py-24 text-center text-gray-600">
-        Invalid article link.
+        {w.blog.invalidLink}
       </div>
     );
   }
@@ -62,17 +65,17 @@ export function BlogArticleContent() {
     return (
       <div className="mx-auto max-w-xl px-6 py-24 text-center">
         <h1 className="font-heading text-2xl font-bold text-brand-dark">
-          {notFound ? "Article not found" : "Unable to load article"}
+          {notFound ? w.blog.notFoundTitle : w.blog.loadArticleError}
         </h1>
         <p className="mt-3 text-gray-600">
-          {notFound ? "Check the URL or browse all posts." : "Ensure the API is running and try again."}
+          {notFound ? w.blog.notFoundBody : w.blog.loadArticleErrorBody}
         </p>
         <button
           type="button"
           className="mt-8 rounded-xl bg-brand-red px-6 py-3 text-sm font-bold text-white hover:bg-red-700"
           onClick={() => router.push("/blog")}
         >
-          Back to insights
+          {w.blog.backToInsights}
         </button>
       </div>
     );
@@ -105,7 +108,7 @@ export function BlogArticleContent() {
             className="inline-flex items-center gap-2 text-sm font-bold text-brand-red transition hover:text-red-800"
           >
             <ArrowLeft aria-hidden />
-            All insights
+            {w.blog.allInsights}
           </Link>
 
           <div className="mt-8 flex flex-wrap items-center gap-3 text-sm text-gray-500">
@@ -136,7 +139,7 @@ export function BlogArticleContent() {
           className="inline-flex items-center gap-2 rounded-xl border border-gray-200 bg-gray-50 px-5 py-3 text-sm font-bold text-brand-dark transition hover:border-brand-red/30"
         >
           <ArrowLeft aria-hidden />
-          More articles
+          {w.blog.moreArticles}
         </Link>
       </div>
     </article>

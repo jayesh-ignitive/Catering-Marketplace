@@ -1,10 +1,12 @@
 "use client";
 
+import { useI18n } from "@/context/LocaleContext";
 import { CalendarBlank, Newspaper } from "@phosphor-icons/react";
 import { useQuery } from "@tanstack/react-query";
 import Link from "next/link";
 import { useMemo, useState } from "react";
 import { RemoteContentImage } from "@/components/common/RemoteContentImage";
+import { trans } from "@/i18n";
 import { BLOG_QUERY_KEY, BLOG_STALE_MS, fetchBlogPosts, type BlogPostSummary } from "@/lib/blog";
 import { FaChevronLeft, FaChevronRight } from "react-icons/fa";
 
@@ -24,6 +26,7 @@ function formatPublished(iso: string) {
 }
 
 function BlogCard({ post }: { post: BlogPostSummary }) {
+  const { w } = useI18n();
   const img = post.featuredImageUrl ?? FALLBACK_IMG;
   return (
     <article className="group flex flex-col overflow-hidden rounded-3xl border border-gray-100 bg-white shadow-sm transition hover:-translate-y-1 hover:border-brand-red/25 hover:shadow-xl">
@@ -50,7 +53,7 @@ function BlogCard({ post }: { post: BlogPostSummary }) {
             {post.title}
           </h2>
           <p className="mt-3 line-clamp-3 flex-1 text-sm leading-relaxed text-gray-600">{post.excerpt}</p>
-          <span className="mt-6 text-sm font-bold text-brand-red group-hover:underline">Read article →</span>
+          <span className="mt-6 text-sm font-bold text-brand-red group-hover:underline">{w.blog.readArticle}</span>
         </div>
       </Link>
     </article>
@@ -58,6 +61,8 @@ function BlogCard({ post }: { post: BlogPostSummary }) {
 }
 
 export function BlogPageContent() {
+  const { w, trans } = useI18n();
+
   const [page, setPage] = useState(1);
   const limit = 9;
 
@@ -82,22 +87,19 @@ export function BlogPageContent() {
         <div className="relative mx-auto max-w-7xl">
           <nav className="text-sm font-medium text-white/55">
             <Link href="/" className="transition hover:text-brand-yellow">
-              Home
+              {w.common.home}
             </Link>
             <span className="mx-2 text-white/25">/</span>
-            <span className="text-white">Insights</span>
+            <span className="text-white">{w.common.insights}</span>
           </nav>
           <div className="mt-6 inline-flex items-center gap-2 rounded-full border border-white/15 bg-white/10 px-4 py-1.5 text-xs font-bold uppercase tracking-[0.15em] text-white backdrop-blur-md">
             <Newspaper className="text-brand-yellow" weight="fill" aria-hidden />
-            Bharat Catering Blog
+            {w.blog.brandLabel}
           </div>
           <h1 className="font-heading mt-5 max-w-3xl text-4xl font-extrabold tracking-tight text-white sm:text-5xl">
-            Guides, trends &amp; <span className="text-brand-yellow">menu ideas</span>
+            {w.blog.heroTitle} <span className="text-brand-yellow">{w.blog.heroTitleHighlight}</span>
           </h1>
-          <p className="mt-4 max-w-2xl text-lg text-white/75">
-            Practical reads for hosts and planners—shortlist smarter, negotiate menus with confidence, and brief
-            your caterer like a pro.
-          </p>
+          <p className="mt-4 max-w-2xl text-lg text-white/75">{w.blog.heroSubtitle}</p>
         </div>
       </section>
 
@@ -117,22 +119,19 @@ export function BlogPageContent() {
           </div>
         ) : blogQ.isError ? (
           <div className="rounded-3xl border border-red-100 bg-white px-8 py-14 text-center shadow-sm">
-            <p className="font-heading text-lg font-bold text-brand-dark">Could not load articles</p>
-            <p className="mx-auto mt-2 max-w-md text-sm text-gray-500">
-              Ensure the Nest API is running on port 4000 and database migrations are applied (
-              {`npm run migration:run`} in catering-backend).
-            </p>
+            <p className="font-heading text-lg font-bold text-brand-dark">{w.blog.loadErrorTitle}</p>
+            <p className="mx-auto mt-2 max-w-md text-sm text-gray-500">{w.blog.loadErrorBody}</p>
             <button
               type="button"
               className="mt-6 rounded-xl bg-brand-red px-6 py-3 text-sm font-bold text-white shadow-md hover:bg-red-700"
               onClick={() => blogQ.refetch()}
             >
-              Retry
+              {w.common.retry}
             </button>
           </div>
         ) : blogQ.data && blogQ.data.items.length === 0 ? (
           <p className="rounded-3xl border border-gray-100 bg-white py-16 text-center text-gray-600 shadow-sm">
-            No articles published yet.
+            {w.blog.empty}
           </p>
         ) : (
           <>
@@ -142,7 +141,7 @@ export function BlogPageContent() {
               ))}
             </div>
             {totalPages > 1 ? (
-              <nav className="mt-14 flex justify-center" aria-label="Pagination">
+              <nav className="mt-14 flex justify-center" aria-label={w.blog.pagination}>
                 <div className="flex items-center gap-2 rounded-2xl border border-gray-200 bg-white p-1.5 shadow-sm">
                   <button
                     type="button"
@@ -151,10 +150,10 @@ export function BlogPageContent() {
                     className="inline-flex items-center gap-2 rounded-xl px-4 py-2.5 text-sm font-bold text-brand-dark transition hover:bg-gray-50 disabled:cursor-not-allowed disabled:opacity-35"
                   >
                     <FaChevronLeft size={11} aria-hidden />
-                    Prev
+                    {w.common.prev}
                   </button>
                   <span className="min-w-[9rem] border-x border-gray-100 px-4 py-2 text-center text-sm font-semibold tabular-nums text-gray-600">
-                    Page {page} / {totalPages}
+                    {trans(w.blog.pageOf, { page, total: totalPages })}
                   </span>
                   <button
                     type="button"
@@ -162,7 +161,7 @@ export function BlogPageContent() {
                     onClick={() => setPage((p) => p + 1)}
                     className="inline-flex items-center gap-2 rounded-xl px-4 py-2.5 text-sm font-bold text-brand-dark transition hover:bg-gray-50 disabled:cursor-not-allowed disabled:opacity-35"
                   >
-                    Next
+                    {w.common.next}
                     <FaChevronRight size={11} aria-hidden />
                   </button>
                 </div>

@@ -61,10 +61,11 @@ import {
 import { OnboardingStyleStepper } from "./OnboardingStyleStepper";
 import { StepIntro } from "./StepIntro";
 import {
-  EXPERIENCE_PRESETS,
   fieldClassErrored,
   firstIncompleteStep,
-  GUEST_CAPACITY_PRESETS,
+  getExperiencePresets,
+  getGuestCapacityPresets,
+  getPricePerGuestPresets,
   inferExperiencePresetFromYears,
   inferGuestPresetFromNumbers,
   inferPricePresetFromProfile,
@@ -75,13 +76,13 @@ import {
   optionalPriceFromField,
   parsePriceBand,
   parseStreetParts,
-  PRICE_PER_GUEST_PRESETS,
 } from "./utils";
+import { useI18n } from "@/context/LocaleContext";
 import type { ProfileEditorTabId, WizardStepIndex } from "./wizard-metadata";
 import {
+  getWizardSteps,
   PROFILE_TAB_ORDER,
   tabIdToStep,
-  WIZARD_STEPS,
 } from "./wizard-metadata";
 
 export function WorkspaceBusinessWizard({
@@ -107,6 +108,15 @@ export function WorkspaceBusinessWizard({
   /** `tabs` — workspace editor (business / services / gallery); `wizard` — full onboarding flow */
   layout?: "wizard" | "tabs";
 }) {
+  const { ws, trans } = useI18n();
+  const wv = ws.wizard.validation;
+  const wu = ws.wizard.upload;
+  const wp = ws.wizard.presets;
+  const wizardSteps = useMemo(() => getWizardSteps(ws), [ws]);
+  const guestCapacityPresets = useMemo(() => getGuestCapacityPresets(ws), [ws]);
+  const experiencePresets = useMemo(() => getExperiencePresets(ws), [ws]);
+  const pricePerGuestPresets = useMemo(() => getPricePerGuestPresets(ws), [ws]);
+
   const router = useRouter();
   const searchParams = useSearchParams();
   const qc = useQueryClient();
@@ -159,10 +169,10 @@ export function WorkspaceBusinessWizard({
     profile.capacityGuestMax != null ? String(profile.capacityGuestMax) : ""
   );
   const [guestPresetId, setGuestPresetId] = useState(() =>
-    inferGuestPresetFromNumbers(profile.capacityGuestMin ?? null, profile.capacityGuestMax ?? null)
+    inferGuestPresetFromNumbers(profile.capacityGuestMin ?? null, profile.capacityGuestMax ?? null, ws)
   );
   const [experiencePresetId, setExperiencePresetId] = useState(() =>
-    inferExperiencePresetFromYears(profile.yearsInBusiness ?? null)
+    inferExperiencePresetFromYears(profile.yearsInBusiness ?? null, ws)
   );
   const [pricePresetId, setPricePresetId] = useState(() =>
     inferPricePresetFromProfile(profile.priceBand, profile.priceFrom ?? null)
@@ -233,23 +243,23 @@ export function WorkspaceBusinessWizard({
       if (s === 0) {
         if (accountUser) {
           if (businessName.trim().length < 2) {
-            e.businessName = "Enter your business name (at least 2 characters).";
+            e.businessName = wv.businessName;
           }
           if (contactFullName.trim().length < 2) {
-            e.contactFullName = "Enter the contact person’s name (at least 2 characters).";
+            e.contactFullName = wv.contactFullName;
           }
         }
         if (!cityId.trim()) {
-          e.cityId = "Select a city.";
+          e.cityId = wv.cityId;
         }
         if (uiVariant === "onboarding" && pincodeDigits.length !== 6) {
-          e.pincode = "Enter a valid 6-digit pincode.";
+          e.pincode = wv.pincode;
         }
         const aboutTrim = about.trim();
         if (!aboutTrim) {
-          e.about = "Describe your business so customers know what you offer.";
+          e.about = wv.aboutRequired;
         } else if (aboutTrim.length < ABOUT_MIN_LEN) {
-          e.about = `Please add a bit more detail (at least ${ABOUT_MIN_LEN} characters).`;
+          e.about = trans(wv.aboutMinLength, { min: ABOUT_MIN_LEN });
         }
 
         const capMinRaw = capacityGuestMin.trim();
@@ -267,13 +277,13 @@ export function WorkspaceBusinessWizard({
             capMinRaw !== "" &&
             (!Number.isFinite(capMin) || capMin < 1 || !Number.isInteger(capMin))
           ) {
-            e.capacityGuestMin = "Enter a whole number of guests (1 or more), or leave blank.";
+            e.capacityGuestMin = wv.capacityGuestMin;
           }
           if (
             capMaxRaw !== "" &&
             (!Number.isFinite(capMax) || capMax < 1 || !Number.isInteger(capMax))
           ) {
-            e.capacityGuestMax = "Enter a whole number of guests (1 or more), or leave blank.";
+            e.capacityGuestMax = wv.capacityGuestMax;
           }
           if (
             Number.isFinite(capMin) &&
@@ -282,7 +292,7 @@ export function WorkspaceBusinessWizard({
             !e.capacityGuestMax &&
             capMin > capMax
           ) {
-            e.capacityRange = "Minimum guests cannot be greater than maximum.";
+            e.capacityRange = wv.capacityRange;
           }
         }
 
@@ -290,7 +300,7 @@ export function WorkspaceBusinessWizard({
         if (pf !== "" && !skipPriceFromFormat) {
           const n = Number(pf);
           if (!Number.isFinite(n) || n < 0) {
-            e.priceFrom = "Enter a valid price (0 or higher).";
+            e.priceFrom = wv.priceFrom;
           }
         }
 
@@ -299,7 +309,7 @@ export function WorkspaceBusinessWizard({
           if (y !== "") {
             const ny = Number(y);
             if (!Number.isFinite(ny) || ny < 0 || ny > 120 || !Number.isInteger(ny)) {
-              e.yearsInBusiness = "Enter whole years (0–120), or leave blank.";
+              e.yearsInBusiness = wv.yearsInBusiness;
             }
           }
         }
@@ -315,10 +325,10 @@ export function WorkspaceBusinessWizard({
 
         if (servicesLikeOnboarding) {
           if (!guestPresetId) {
-            e.guestServe = "Choose how many guests you can typically serve.";
+            e.guestServe = wv.guestServe;
           } else if (guestPresetId === "cap-custom") {
             if (!capMin1 || !capMax1) {
-              e.guestServe = "Enter minimum and maximum guests, or pick a range above.";
+              e.guestServe = wv.guestServeCustom;
             }
           }
         }
@@ -328,13 +338,13 @@ export function WorkspaceBusinessWizard({
             capMin1 !== "" &&
             (!Number.isFinite(capMinN) || capMinN < 1 || !Number.isInteger(capMinN))
           ) {
-            e.capacityGuestMin = "Enter a whole number of guests (1 or more), or leave blank.";
+            e.capacityGuestMin = wv.capacityGuestMin;
           }
           if (
             capMax1 !== "" &&
             (!Number.isFinite(capMaxN) || capMaxN < 1 || !Number.isInteger(capMaxN))
           ) {
-            e.capacityGuestMax = "Enter a whole number of guests (1 or more), or leave blank.";
+            e.capacityGuestMax = wv.capacityGuestMax;
           }
           if (
             Number.isFinite(capMinN) &&
@@ -343,7 +353,7 @@ export function WorkspaceBusinessWizard({
             !e.capacityGuestMax &&
             capMinN > capMaxN
           ) {
-            e.capacityRange = "Minimum guests cannot be greater than maximum.";
+            e.capacityRange = wv.capacityRange;
           }
         }
 
@@ -356,15 +366,15 @@ export function WorkspaceBusinessWizard({
 
         if (servicesLikeOnboarding) {
           if (!experiencePresetId) {
-            e.experience = "Tell us how experienced you are.";
+            e.experience = wv.experience;
           } else if (experiencePresetId === "exp-custom" && !yearsInBusiness.trim()) {
-            e.experience = "Enter years in business, or choose an option above.";
+            e.experience = wv.experienceCustom;
           }
 
           if (!pricePresetId) {
-            e.priceTier = "Choose a typical price level or enter your own rate.";
+            e.priceTier = wv.priceTier;
           } else if (pricePresetId === "price-custom" && !priceFrom.trim()) {
-            e.priceTier = "Enter your average price per guest (INR).";
+            e.priceTier = wv.priceTierCustom;
           }
         }
 
@@ -372,7 +382,7 @@ export function WorkspaceBusinessWizard({
         if (pfStep1 !== "" && !skipPriceFmtStep1) {
           const n = Number(pfStep1);
           if (!Number.isFinite(n) || n < 0) {
-            e.priceFrom = "Enter a valid price (0 or higher).";
+            e.priceFrom = wv.priceFrom;
           }
         }
 
@@ -381,37 +391,37 @@ export function WorkspaceBusinessWizard({
           if (y !== "") {
             const ny = Number(y);
             if (!Number.isFinite(ny) || ny < 0 || ny > 120 || !Number.isInteger(ny)) {
-              e.yearsInBusiness = "Enter whole years (0–120), or leave blank.";
+              e.yearsInBusiness = wv.yearsInBusiness;
             }
           }
         }
 
         if (categoryCodes.length === 0) {
-          e.categories = "Select at least one category.";
+          e.categories = wv.categories;
         }
         if (serviceOfferingIds.length === 0) {
-          e.services = "Select at least one service.";
+          e.services = wv.services;
         }
         if (keywords.length === 0) {
-          e.keywords = "Add at least one search keyword.";
+          e.keywords = wv.keywords;
         } else if (keywords.length > WORKSPACE_KEYWORD_LIMIT) {
-          e.keywords = `Use at most ${WORKSPACE_KEYWORD_LIMIT} keywords.`;
+          e.keywords = trans(ws.wizard.errors.keywordsMax, { limit: WORKSPACE_KEYWORD_LIMIT });
         }
       } else if (s === 2) {
         const heroTrim = heroImageUrl.trim();
         if (!heroTrim) {
-          e.banner = "Add a banner image for your listing.";
+          e.banner = wv.bannerRequired;
         } else if (!isValidBannerSource(heroImageUrl)) {
-          e.banner = "Use an https URL or upload an image (PNG, JPG, GIF, WebP).";
+          e.banner = wv.bannerInvalid;
         }
         if (galleryImageUrls.length === 0) {
-          e.gallery = "Add at least one gallery photo.";
+          e.gallery = wv.galleryRequired;
         } else if (galleryImageUrls.length > WORKSPACE_GALLERY_MAX) {
-          e.gallery = `Use at most ${WORKSPACE_GALLERY_MAX} gallery photos.`;
+          e.gallery = trans(ws.wizard.errors.galleryMax, { max: WORKSPACE_GALLERY_MAX });
         } else {
           const badIdx = galleryImageUrls.findIndex((url) => !isValidGallerySource(url));
           if (badIdx !== -1) {
-            e.gallery = `Photo ${badIdx + 1}: use https URLs or uploaded images (PNG, JPG, GIF).`;
+            e.gallery = trans(wv.galleryPhotoInvalid, { index: badIdx + 1 });
           }
         }
       }
@@ -445,7 +455,7 @@ export function WorkspaceBusinessWizard({
     mutationFn: async (saveStep: WizardStepIndex) => {
       const accessToken = getStoredToken() ?? token;
       if (!accessToken) {
-        throw new Error("Session expired. Sign in again and continue setup.");
+        throw new Error(wv.sessionExpired);
       }
 
       if (accountUser && saveStep === 0) {
@@ -525,12 +535,12 @@ export function WorkspaceBusinessWizard({
       return;
     }
     if (file.size > MAX_GALLERY_UPLOAD_BYTES) {
-      toast.error("Image is too large. Use a file under 5 MB.");
+      toast.error(wu.imageTooLarge);
       return;
     }
     const accessToken = getStoredToken() ?? token;
     if (!accessToken) {
-      toast.error("Session expired. Sign in again and retry the upload.");
+      toast.error(wu.sessionExpired);
       return;
     }
     if (bannerUploadProgress !== null) {
@@ -544,7 +554,7 @@ export function WorkspaceBusinessWizard({
       setHeroImageUrl(cateringImagePreviewUrl(uploaded));
       clearFieldError("banner");
     } catch (e) {
-      toast.error(e instanceof Error ? e.message : "Could not upload banner.");
+      toast.error(e instanceof Error ? e.message : wu.couldNotUploadBanner);
     } finally {
       setBannerUploadProgress(null);
     }
@@ -560,7 +570,7 @@ export function WorkspaceBusinessWizard({
 
       const accessToken = getStoredToken() ?? token;
       if (!accessToken) {
-        toast.error("Session expired. Sign in again and retry the upload.");
+        toast.error(wu.sessionExpired);
         return;
       }
 
@@ -570,11 +580,13 @@ export function WorkspaceBusinessWizard({
         for (let i = 0; i < list.length; i++) {
           const file = list[i]!;
           if (file.size > MAX_GALLERY_UPLOAD_BYTES) {
-            toast.error(`${file.name} is too large. Use a file under 5 MB.`);
+            toast.error(trans(wu.fileTooLarge, { name: file.name }));
             continue;
           }
           const label =
-            total > 1 ? `Uploading photo ${i + 1} of ${total}…` : "Uploading photo…";
+            total > 1
+              ? trans(wu.uploadingPhotoN, { current: i + 1, total })
+              : wu.uploadingPhoto;
           setGalleryUploadProgress({ percent: 0, label });
           try {
             const uploaded = await uploadCateringImage(accessToken, file, "gallery", {
@@ -584,7 +596,9 @@ export function WorkspaceBusinessWizard({
             });
             accepted.push(cateringImagePreviewUrl(uploaded));
           } catch (e) {
-            toast.error(e instanceof Error ? e.message : `Could not upload ${file.name}.`);
+            toast.error(
+              e instanceof Error ? e.message : trans(wu.couldNotUploadFile, { name: file.name })
+            );
           }
         }
       } finally {
@@ -623,7 +637,7 @@ export function WorkspaceBusinessWizard({
     >
       {/* Stepper (full wizard only) */}
       {layout === "wizard" && uiVariant === "onboarding" ? (
-        <nav aria-label="Progress" className="mb-2">
+        <nav aria-label={ws.wizard.aria.progress} className="mb-2">
           <OnboardingStyleStepper
             step={step}
             navigationDisabled={saveM.isPending}
@@ -635,18 +649,18 @@ export function WorkspaceBusinessWizard({
         </nav>
       ) : layout === "wizard" ? (
         <div className="border-b border-gray-200 bg-gray-50 px-6 py-8 sm:px-12 sm:py-10">
-          <nav aria-label="Progress">
+          <nav aria-label={ws.wizard.aria.progress}>
             <ol role="list" className="flex items-center justify-between">
-              {WIZARD_STEPS.map((stepItem, idx) => {
+              {wizardSteps.map((stepItem, idx) => {
                 const active = idx === step;
                 const done = idx < step;
                 const Icon = stepItem.icon;
                 return (
                   <li
                     key={stepItem.label}
-                    className={`relative flex-1 ${idx !== 0 ? "pl-2" : ""} ${idx !== WIZARD_STEPS.length - 1 ? "pr-2" : "flex-none"}`}
+                    className={`relative flex-1 ${idx !== 0 ? "pl-2" : ""} ${idx !== wizardSteps.length - 1 ? "pr-2" : "flex-none"}`}
                   >
-                    {idx !== WIZARD_STEPS.length - 1 && (
+                    {idx !== wizardSteps.length - 1 && (
                       <div
                         className="absolute top-1/2 left-10 right-2 h-1 -translate-y-1/2 rounded-full bg-stone-200"
                         aria-hidden="true"
@@ -688,14 +702,14 @@ export function WorkspaceBusinessWizard({
       ) : null}
 
       {layout === "tabs" ? (
-        <div role="tablist" aria-label="Listing sections" className="ws-listing-tab-strip">
+        <div role="tablist" aria-label={ws.wizard.aria.listingSections} className="ws-listing-tab-strip">
           {PROFILE_TAB_ORDER.map((tabId) => {
             const label =
               tabId === "business"
-                ? "Business"
+                ? ws.wizard.profileTabs.business
                 : tabId === "services"
-                  ? "Services & Keywords"
-                  : "Gallery";
+                  ? ws.wizard.profileTabs.servicesKeywords
+                  : ws.wizard.profileTabs.gallery;
             const active = profileTab === tabId;
             return (
               <Link
@@ -725,7 +739,7 @@ export function WorkspaceBusinessWizard({
                 <Briefcase weight="fill" className="h-4 w-4" />
               </span>
               <h3 className={`font-heading text-xl font-semibold tracking-tight text-[#374151]`}>
-                Business Information
+                {ws.wizard.sections.businessInfo}
               </h3>
             </div>
           ) : null}
@@ -735,7 +749,7 @@ export function WorkspaceBusinessWizard({
                 <ForkKnife weight="fill" className="h-4 w-4" />
               </span>
               <h3 className={`font-heading text-xl font-semibold tracking-tight text-[#374151]`}>
-                Services & Keywords
+                {ws.wizard.sections.servicesKeywords}
               </h3>
             </div>
           ) : null}
@@ -746,11 +760,11 @@ export function WorkspaceBusinessWizard({
                   <ImageIcon weight="fill" className="h-4 w-4" />
                 </span>
                 <h3 className={`font-heading text-xl font-semibold tracking-tight text-[#374151]`}>
-                  Business Gallery
+                  {ws.wizard.sections.businessGallery}
                 </h3>
               </div>
               <p className={`mt-2 ${workspaceHintTextClass}`}>
-                Upload photos of your food, setup, and previous events.
+                {ws.wizard.sections.galleryHint}
               </p>
             </div>
           ) : null}
@@ -773,7 +787,7 @@ export function WorkspaceBusinessWizard({
                     {...(fieldErrors.businessName ? { "data-invalid-field": "" } : {})}
                   >
                     <InputLabel htmlFor="ws-business-name">
-                      Business name <span className="text-brand-red">*</span>
+                      {ws.wizard.fields.businessName} <span className="text-brand-red">{ws.common.required}</span>
                     </InputLabel>
                     <input
                       id="ws-business-name"
@@ -786,7 +800,7 @@ export function WorkspaceBusinessWizard({
                         setBusinessName(e.target.value);
                         clearFieldError("businessName");
                       }}
-                      placeholder="e.g. Royal Rajputana Caterers"
+                      placeholder={ws.wizard.placeholders.businessName}
                       maxLength={120}
                     />
                     <FieldError id="ws-business-name-err" message={fieldErrors.businessName} />
@@ -796,7 +810,7 @@ export function WorkspaceBusinessWizard({
                     {...(fieldErrors.contactFullName ? { "data-invalid-field": "" } : {})}
                   >
                     <InputLabel htmlFor="ws-contact-name">
-                      Contact person <span className="text-brand-red">*</span>
+                      {ws.wizard.fields.contactPerson} <span className="text-brand-red">{ws.common.required}</span>
                     </InputLabel>
                     <input
                       id="ws-contact-name"
@@ -809,7 +823,7 @@ export function WorkspaceBusinessWizard({
                         setContactFullName(e.target.value);
                         clearFieldError("contactFullName");
                       }}
-                      placeholder="Full name"
+                      placeholder={ws.wizard.placeholders.contactName}
                       maxLength={120}
                     />
                     <FieldError id="ws-contact-name-err" message={fieldErrors.contactFullName} />
@@ -819,20 +833,20 @@ export function WorkspaceBusinessWizard({
 
               <div className="md:col-span-2">
                 <InputLabel>
-                  Street / area{" "}
-                  <span className={`font-normal ${workspaceHintTextClass}`}>(optional)</span>
+                  {ws.wizard.fields.streetArea}{" "}
+                  <span className={`font-normal ${workspaceHintTextClass}`}>{ws.common.optional}</span>
                 </InputLabel>
                 <input
                   value={streetLine}
                   onChange={(e) => setStreetLine(e.target.value)}
-                  placeholder="e.g. Unit 3, Link Road"
+                  placeholder={ws.wizard.placeholders.street}
                   className={fieldInput}
                   autoComplete="street-address"
                 />
               </div>
               <div {...(fieldErrors.cityId ? { "data-invalid-field": "" } : {})}>
                 <InputLabel>
-                  City <span className="text-brand-red">*</span>
+                  {ws.wizard.fields.city} <span className="text-brand-red">{ws.common.required}</span>
                 </InputLabel>
                 <SearchableSingleSelect
                   id="ws-city-search"
@@ -842,8 +856,8 @@ export function WorkspaceBusinessWizard({
                     setCityId(nextId);
                     clearFieldError("cityId");
                   }}
-                  placeholder="Search or select your city…"
-                  searchPlaceholder="Type to filter cities…"
+                  placeholder={ws.wizard.placeholders.citySearch}
+                  searchPlaceholder={ws.wizard.placeholders.cityFilter}
                   aria-invalid={Boolean(fieldErrors.cityId)}
                   aria-describedby={fieldErrors.cityId ? "ws-city-err" : undefined}
                   errored={Boolean(fieldErrors.cityId)}
@@ -852,8 +866,8 @@ export function WorkspaceBusinessWizard({
               </div>
               <div {...(fieldErrors.pincode ? { "data-invalid-field": "" } : {})}>
                 <InputLabel htmlFor="ws-pincode">
-                  Pincode{" "}
-                  {uiVariant === "onboarding" ? <span className="text-brand-red">*</span> : null}
+                  {ws.wizard.fields.pincode}{" "}
+                  {uiVariant === "onboarding" ? <span className="text-brand-red">{ws.common.required}</span> : null}
                 </InputLabel>
                 <input
                   id="ws-pincode"
@@ -870,7 +884,7 @@ export function WorkspaceBusinessWizard({
                     setPincode(e.target.value.replace(/\D/g, "").slice(0, 6));
                     clearFieldError("pincode");
                   }}
-                  placeholder="e.g. 400001"
+                  placeholder={ws.wizard.placeholders.pincode}
                   className={fieldClassErrored(fieldInput, Boolean(fieldErrors.pincode))}
                   inputMode="numeric"
                   autoComplete="postal-code"
@@ -880,23 +894,23 @@ export function WorkspaceBusinessWizard({
                   <FieldError id="ws-pincode-err" message={fieldErrors.pincode} />
                 ) : uiVariant === "onboarding" ? (
                   <p id="ws-pincode-hint" className={`mt-1 ${workspaceHintTextClass}`}>
-                    6-digit postal code
+                    {ws.wizard.fields.pincodeHint}
                   </p>
                 ) : null}
               </div>
 
               <div className="md:col-span-2">
-                <InputLabel>Tagline</InputLabel>
+                <InputLabel>{ws.wizard.fields.tagline}</InputLabel>
                 <input
                   value={tagline}
                   onChange={(e) => setTagline(e.target.value)}
-                  placeholder="e.g. Creating unforgettable culinary experiences"
+                  placeholder={ws.wizard.placeholders.tagline}
                   className={fieldInput}
                 />
               </div>
               <div className="md:col-span-2" {...(fieldErrors.about ? { "data-invalid-field": "" } : {})}>
                 <InputLabel htmlFor="ws-about">
-                  About <span className="text-brand-red">*</span>
+                  {ws.wizard.fields.about} <span className="text-brand-red">{ws.common.required}</span>
                 </InputLabel>
                 <textarea
                   id="ws-about"
@@ -908,7 +922,7 @@ export function WorkspaceBusinessWizard({
                     setAbout(e.target.value);
                     clearFieldError("about");
                   }}
-                  placeholder="Describe your catering business, your story, and what makes you unique..."
+                  placeholder={ws.wizard.placeholders.about}
                   className={fieldClassErrored(fieldTextarea, Boolean(fieldErrors.about))}
                 />
                 <FieldError id="ws-about-err" message={fieldErrors.about} />
@@ -923,7 +937,7 @@ export function WorkspaceBusinessWizard({
                   : {})}
               >
                 <div>
-                  <InputLabel htmlFor="ws-cap-min">Min capacity (guests)</InputLabel>
+                  <InputLabel htmlFor="ws-cap-min">{ws.wizard.fields.minCapacity}</InputLabel>
                   <input
                     id="ws-cap-min"
                     type="number"
@@ -936,7 +950,7 @@ export function WorkspaceBusinessWizard({
                           ? "ws-cap-range-err"
                           : undefined
                     }
-                    placeholder="e.g. 50"
+                    placeholder={ws.wizard.placeholders.capacityMin}
                     value={capacityGuestMin}
                     onChange={(e) => {
                       setCapacityGuestMin(e.target.value);
@@ -951,7 +965,7 @@ export function WorkspaceBusinessWizard({
                   <FieldError id="ws-cap-min-err" message={fieldErrors.capacityGuestMin} />
                 </div>
                 <div>
-                  <InputLabel htmlFor="ws-cap-max">Max capacity (guests)</InputLabel>
+                  <InputLabel htmlFor="ws-cap-max">{ws.wizard.fields.maxCapacity}</InputLabel>
                   <input
                     id="ws-cap-max"
                     type="number"
@@ -964,7 +978,7 @@ export function WorkspaceBusinessWizard({
                           ? "ws-cap-range-err"
                           : undefined
                     }
-                    placeholder="e.g. 1000"
+                    placeholder={ws.wizard.placeholders.capacityMax}
                     value={capacityGuestMax}
                     onChange={(e) => {
                       setCapacityGuestMax(e.target.value);
@@ -985,14 +999,14 @@ export function WorkspaceBusinessWizard({
                 </div>
               ) : null}
               <div className="md:col-span-2" {...(fieldErrors.yearsInBusiness ? { "data-invalid-field": "" } : {})}>
-                <InputLabel htmlFor="ws-years">Years in business</InputLabel>
+                <InputLabel htmlFor="ws-years">{ws.wizard.fields.yearsInBusiness}</InputLabel>
                 <input
                   id="ws-years"
                   type="number"
                   min={0}
                   aria-invalid={Boolean(fieldErrors.yearsInBusiness)}
                   aria-describedby={fieldErrors.yearsInBusiness ? "ws-years-err" : undefined}
-                  placeholder="e.g. 5"
+                  placeholder={ws.wizard.placeholders.years}
                   value={yearsInBusiness}
                   onChange={(e) => {
                     setYearsInBusiness(e.target.value);
@@ -1003,29 +1017,29 @@ export function WorkspaceBusinessWizard({
                 <FieldError id="ws-years-err" message={fieldErrors.yearsInBusiness} />
               </div>
               <div>
-                <InputLabel htmlFor="ws-price-band">Price band</InputLabel>
+                <InputLabel htmlFor="ws-price-band">{ws.wizard.fields.priceBand}</InputLabel>
                 <select
                   id="ws-price-band"
                   value={priceBand}
                   onChange={(e) => setPriceBand(e.target.value)}
                   className={fieldInput}
                 >
-                  <option value="">Select price band</option>
-                  <option value="budget">Budget-Friendly</option>
-                  <option value="mid">Mid-Range</option>
-                  <option value="premium">Premium / Luxury</option>
-                  <option value="custom">Custom Pricing</option>
+                  <option value="">{ws.wizard.priceBand.select}</option>
+                  <option value="budget">{ws.wizard.priceBand.budgetFriendly}</option>
+                  <option value="mid">{ws.wizard.priceBand.midRange}</option>
+                  <option value="premium">{ws.wizard.priceBand.premiumLuxury}</option>
+                  <option value="custom">{ws.wizard.priceBand.customPricing}</option>
                 </select>
               </div>
               <div {...(fieldErrors.priceFrom ? { "data-invalid-field": "" } : {})}>
-                <InputLabel htmlFor="ws-price-from">Price from (INR per guest)</InputLabel>
+                <InputLabel htmlFor="ws-price-from">{ws.wizard.fields.priceFrom}</InputLabel>
                 <input
                   id="ws-price-from"
                   type="number"
                   min={0}
                   aria-invalid={Boolean(fieldErrors.priceFrom)}
                   aria-describedby={fieldErrors.priceFrom ? "ws-price-from-err" : undefined}
-                  placeholder="e.g. 500"
+                  placeholder={ws.wizard.placeholders.priceFrom}
                   value={priceFrom}
                   onChange={(e) => {
                     setPriceFrom(e.target.value);
@@ -1053,14 +1067,13 @@ export function WorkspaceBusinessWizard({
                   >
                     <div>
                       <h3 id="ws-q-guests" className={workspaceLabelTextClass}>
-                        How many guests can you serve? <span className="text-brand-red">*</span>
+                        {ws.wizard.questions.guestCapacity}{" "}
+                        <span className="text-brand-red">{ws.common.required}</span>
                       </h3>
-                      <p className={`mt-1 ${workspaceHintTextClass}`}>
-                        Pick the range that best matches most of your events.
-                      </p>
+                      <p className={`mt-1 ${workspaceHintTextClass}`}>{ws.wizard.hints.guestRange}</p>
                     </div>
                     <div className="flex flex-col gap-2 sm:flex-row sm:flex-wrap">
-                      {GUEST_CAPACITY_PRESETS.map((p) => (
+                      {guestCapacityPresets.map((p) => (
                         <ChoiceChip
                           key={p.id}
                           selected={guestPresetId === p.id}
@@ -1082,14 +1095,14 @@ export function WorkspaceBusinessWizard({
                           setGuestPresetId("cap-custom");
                           clearFieldError("guestServe");
                         }}
-                        title="Custom range"
-                        subtitle="Enter min & max guests"
+                        title={wp.customRange}
+                        subtitle={wp.customRangeSubtitle}
                       />
                     </div>
                     {guestPresetId === "cap-custom" ? (
                       <div className="grid max-w-xl grid-cols-1 gap-4 pt-2 sm:grid-cols-2">
                         <div>
-                          <InputLabel htmlFor="ws-cap-min-onb">Minimum guests</InputLabel>
+                          <InputLabel htmlFor="ws-cap-min-onb">{ws.wizard.fields.minimumGuests}</InputLabel>
                           <input
                             id="ws-cap-min-onb"
                             type="number"
@@ -1106,12 +1119,12 @@ export function WorkspaceBusinessWizard({
                               fieldInput,
                               Boolean(fieldErrors.capacityGuestMin || fieldErrors.capacityRange)
                             )}
-                            placeholder="e.g. 50"
+                            placeholder={ws.wizard.placeholders.capacityMin}
                           />
                           <FieldError message={fieldErrors.capacityGuestMin} />
                         </div>
                         <div>
-                          <InputLabel htmlFor="ws-cap-max-onb">Maximum guests</InputLabel>
+                          <InputLabel htmlFor="ws-cap-max-onb">{ws.wizard.fields.maximumGuests}</InputLabel>
                           <input
                             id="ws-cap-max-onb"
                             type="number"
@@ -1128,7 +1141,7 @@ export function WorkspaceBusinessWizard({
                               fieldInput,
                               Boolean(fieldErrors.capacityGuestMax || fieldErrors.capacityRange)
                             )}
-                            placeholder="e.g. 500"
+                            placeholder={ws.wizard.placeholders.capacityMaxOnb}
                           />
                           <FieldError message={fieldErrors.capacityGuestMax} />
                         </div>
@@ -1147,12 +1160,13 @@ export function WorkspaceBusinessWizard({
                   >
                     <div>
                       <h3 id="ws-q-experience" className={workspaceLabelTextClass}>
-                        How experienced are you? <span className="text-brand-red">*</span>
+                        {ws.wizard.questions.experience}{" "}
+                        <span className="text-brand-red">{ws.common.required}</span>
                       </h3>
-                      <p className={`mt-1 ${workspaceHintTextClass}`}>Rough tenure is fine — customers trust honesty.</p>
+                      <p className={`mt-1 ${workspaceHintTextClass}`}>{ws.wizard.questions.experienceHint}</p>
                     </div>
                     <div className="flex flex-col gap-2 sm:flex-row sm:flex-wrap">
-                      {EXPERIENCE_PRESETS.map((p) => (
+                      {experiencePresets.map((p) => (
                         <ChoiceChip
                           key={p.id}
                           selected={experiencePresetId === p.id}
@@ -1171,13 +1185,13 @@ export function WorkspaceBusinessWizard({
                           setExperiencePresetId("exp-custom");
                           clearFieldError("experience");
                         }}
-                        title="Custom"
-                        subtitle="Enter exact years"
+                        title={wp.custom}
+                        subtitle={wp.customSubtitle}
                       />
                     </div>
                     {experiencePresetId === "exp-custom" ? (
                       <div className="max-w-xs pt-2">
-                        <InputLabel htmlFor="ws-years-onb">Years in business</InputLabel>
+                        <InputLabel htmlFor="ws-years-onb">{ws.wizard.fields.yearsInBusiness}</InputLabel>
                         <input
                           id="ws-years-onb"
                           type="number"
@@ -1191,7 +1205,7 @@ export function WorkspaceBusinessWizard({
                             clearFieldError("yearsInBusiness");
                           }}
                           className={fieldClassErrored(fieldInput, Boolean(fieldErrors.yearsInBusiness))}
-                          placeholder="e.g. 5"
+                          placeholder={ws.wizard.placeholders.years}
                         />
                         <FieldError id="ws-years-onb-err" message={fieldErrors.yearsInBusiness} />
                       </div>
@@ -1206,14 +1220,13 @@ export function WorkspaceBusinessWizard({
                   >
                     <div>
                       <h3 id="ws-q-price-guest" className={workspaceLabelTextClass}>
-                        What&apos;s your average price per guest? <span className="text-brand-red">*</span>
+                        {ws.wizard.questions.pricePerGuest}{" "}
+                        <span className="text-brand-red">{ws.common.required}</span>
                       </h3>
-                      <p className={`mt-1 ${workspaceHintTextClass}`}>
-                        Typical starting rate — you can refine details later.
-                      </p>
+                      <p className={`mt-1 ${workspaceHintTextClass}`}>{ws.wizard.hints.priceRate}</p>
                     </div>
                     <div className="flex flex-col gap-2 sm:flex-row sm:flex-wrap">
-                      {PRICE_PER_GUEST_PRESETS.map((p) => (
+                      {pricePerGuestPresets.map((p) => (
                         <ChoiceChip
                           key={p.id}
                           selected={pricePresetId === p.id}
@@ -1236,14 +1249,14 @@ export function WorkspaceBusinessWizard({
                           clearFieldError("priceTier");
                           clearFieldError("priceFrom");
                         }}
-                        title={"I'll enter my rate"}
-                        subtitle="INR per guest + band"
+                        title={wp.enterRate}
+                        subtitle={wp.enterRateSubtitle}
                       />
                     </div>
                     {pricePresetId === "price-custom" ? (
                       <div className="grid max-w-2xl grid-cols-1 gap-4 pt-2 sm:grid-cols-2">
                         <div>
-                          <InputLabel htmlFor="ws-price-from-onb">Average price per guest (INR)</InputLabel>
+                          <InputLabel htmlFor="ws-price-from-onb">{ws.wizard.fields.averagePricePerGuest}</InputLabel>
                           <input
                             id="ws-price-from-onb"
                             type="number"
@@ -1259,12 +1272,12 @@ export function WorkspaceBusinessWizard({
                               fieldInput,
                               Boolean(fieldErrors.priceFrom || fieldErrors.priceTier)
                             )}
-                            placeholder="e.g. 550"
+                            placeholder={ws.wizard.placeholders.priceFromOnb}
                           />
                           <FieldError id="ws-price-from-onb-err" message={fieldErrors.priceFrom} />
                         </div>
                         <div>
-                          <InputLabel htmlFor="ws-price-band-onb">Price band</InputLabel>
+                          <InputLabel htmlFor="ws-price-band-onb">{ws.wizard.fields.priceBand}</InputLabel>
                           <select
                             id="ws-price-band-onb"
                             value={priceBand}
@@ -1275,10 +1288,10 @@ export function WorkspaceBusinessWizard({
                             }}
                             className={fieldInput}
                           >
-                            <option value="custom">Custom</option>
-                            <option value="budget">Budget-friendly</option>
-                            <option value="mid">Mid-range</option>
-                            <option value="premium">Premium</option>
+                            <option value="custom">{ws.wizard.priceBand.custom}</option>
+                            <option value="budget">{ws.wizard.priceBand.budget}</option>
+                            <option value="mid">{ws.wizard.priceBand.mid}</option>
+                            <option value="premium">{ws.wizard.priceBand.premium}</option>
                           </select>
                         </div>
                       </div>
@@ -1293,10 +1306,10 @@ export function WorkspaceBusinessWizard({
                   >
                     <div>
                       <h3 id="ws-q-categories" className={workspaceLabelTextClass}>
-                        What types of catering do you specialize in?{" "}
-                        <span className="text-brand-red">*</span>
+                        {ws.wizard.questions.categories}{" "}
+                        <span className="text-brand-red">{ws.common.required}</span>
                       </h3>
-                      <p className={`mt-1 ${workspaceHintTextClass}`}>Select all that apply — tap to add or remove.</p>
+                      <p className={`mt-1 ${workspaceHintTextClass}`}>{ws.wizard.questions.categoriesHint}</p>
                     </div>
                     <div className="flex flex-wrap gap-2">
                       {categories.map((c) => {
@@ -1327,11 +1340,10 @@ export function WorkspaceBusinessWizard({
                   >
                     <div>
                       <h3 id="ws-q-services" className={workspaceLabelTextClass}>
-                        Which services do you actually provide? <span className="text-brand-red">*</span>
+                        {ws.wizard.questions.services}{" "}
+                        <span className="text-brand-red">{ws.common.required}</span>
                       </h3>
-                      <p className={`mt-1 ${workspaceHintTextClass}`}>
-                        Search by name, then tap a row to add or remove — like a compact multi-select.
-                      </p>
+                      <p className={`mt-1 ${workspaceHintTextClass}`}>{ws.wizard.hints.servicesMultiSelect}</p>
                     </div>
                     <SearchableMultiSelect
                       id="ws-services-search"
@@ -1341,8 +1353,8 @@ export function WorkspaceBusinessWizard({
                         setServiceOfferingIds(next);
                         clearFieldError("services");
                       }}
-                      placeholder="Search services…"
-                      searchPlaceholder="Filter or add more services…"
+                      placeholder={ws.wizard.placeholders.searchServices}
+                      searchPlaceholder={ws.wizard.placeholders.searchServicesFilter}
                       aria-invalid={Boolean(fieldErrors.services)}
                       aria-describedby={fieldErrors.services ? "ws-services-err" : undefined}
                       errored={Boolean(fieldErrors.services)}
@@ -1357,12 +1369,12 @@ export function WorkspaceBusinessWizard({
                   >
                     <div>
                       <h3 id="ws-q-keywords" className={workspaceLabelTextClass}>
-                        What should people type to find you in search?{" "}
-                        <span className="text-brand-red">*</span>
+                        {ws.wizard.questions.keywords}{" "}
+                        <span className="text-brand-red">{ws.common.required}</span>
                       </h3>
                       <p id="ws-keywords-hint" className={`mt-1 ${workspaceHintTextClass}`}>
-                        Search suggestions from other listings, or add your own phrases — Enter or click &quot;Add&quot;.
-                        Up to {WORKSPACE_KEYWORD_LIMIT} keywords.
+                        {ws.wizard.hints.keywordsRich}{" "}
+                        {trans(ws.wizard.hints.keywordsRichLimit, { limit: WORKSPACE_KEYWORD_LIMIT })}
                       </p>
                     </div>
                     <SearchableKeywordTags
@@ -1374,8 +1386,8 @@ export function WorkspaceBusinessWizard({
                       }}
                       fetchSuggestions={fetchKeywordSuggestions}
                       browseCatalog={keywordBrowseCatalog}
-                      placeholder="Search keywords or type a phrase to add…"
-                      searchPlaceholder="Add another keyword…"
+                      placeholder={ws.wizard.placeholders.searchKeywords}
+                      searchPlaceholder={ws.wizard.placeholders.searchKeywordsAdd}
                       aria-invalid={Boolean(fieldErrors.keywords)}
                       aria-describedby={
                         fieldErrors.keywords ? "ws-keywords-err ws-keywords-hint" : "ws-keywords-hint"
@@ -1389,10 +1401,10 @@ export function WorkspaceBusinessWizard({
                 <>
                   <div className="md:col-span-1" {...(fieldErrors.categories ? { "data-invalid-field": "" } : {})}>
                     <InputLabel htmlFor="ws-categories">
-                      Categories <span className="text-brand-red">*</span>
+                      {ws.wizard.fields.categories} <span className="text-brand-red">{ws.common.required}</span>
                     </InputLabel>
                     <p className={`mb-3 mt-1 ${workspaceHintTextClass}`}>
-                      Hold Ctrl (Windows) or Cmd (Mac) to select multiple categories.
+                      {ws.wizard.hints.categoriesMultiSelect}
                     </p>
                     <select
                       id="ws-categories"
@@ -1417,11 +1429,10 @@ export function WorkspaceBusinessWizard({
 
                   <div className="md:col-span-1" {...(fieldErrors.services ? { "data-invalid-field": "" } : {})}>
                     <InputLabel htmlFor="ws-services-search-default">
-                      Services offered <span className="text-brand-red">*</span>
+                      {ws.wizard.fields.servicesOffered}{" "}
+                      <span className="text-brand-red">{ws.common.required}</span>
                     </InputLabel>
-                    <p className={`mb-3 mt-1 ${workspaceHintTextClass}`}>
-                      Search and pick services — multi-select with a clearer layout than a plain list box.
-                    </p>
+                    <p className={`mb-3 mt-1 ${workspaceHintTextClass}`}>{ws.wizard.hints.servicesDefault}</p>
                     <SearchableMultiSelect
                       id="ws-services-search-default"
                       options={offerings.map((o) => ({ id: o.id, label: o.name }))}
@@ -1430,8 +1441,8 @@ export function WorkspaceBusinessWizard({
                         setServiceOfferingIds(next);
                         clearFieldError("services");
                       }}
-                      placeholder="Search services…"
-                      searchPlaceholder="Filter or add more…"
+                      placeholder={ws.wizard.placeholders.searchServices}
+                      searchPlaceholder={ws.wizard.placeholders.searchServicesFilterShort}
                       aria-invalid={Boolean(fieldErrors.services)}
                       aria-describedby={fieldErrors.services ? "ws-services-err" : undefined}
                       errored={Boolean(fieldErrors.services)}
@@ -1441,11 +1452,10 @@ export function WorkspaceBusinessWizard({
 
                   <div className="md:col-span-2" {...(fieldErrors.keywords ? { "data-invalid-field": "" } : {})}>
                     <InputLabel htmlFor="ws-keywords">
-                      Keywords <span className="text-brand-red">*</span>
+                      {ws.wizard.fields.keywords} <span className="text-brand-red">{ws.common.required}</span>
                     </InputLabel>
                     <p id="ws-keywords-hint-default" className={`mb-2 mt-1 ${workspaceHintTextClass}`}>
-                      Search suggestions from other listings, or add your own phrases — Enter or click &quot;Add&quot;. Up
-                      to 10 keywords only.
+                      {trans(ws.wizard.hints.keywordsDefault, { limit: WORKSPACE_KEYWORD_LIMIT })}
                     </p>
                     <SearchableKeywordTags
                       id="ws-keywords-default"
@@ -1456,8 +1466,8 @@ export function WorkspaceBusinessWizard({
                       }}
                       fetchSuggestions={fetchKeywordSuggestions}
                       browseCatalog={keywordBrowseCatalog}
-                      placeholder="Search or type keywords to add…"
-                      searchPlaceholder="Add more…"
+                      placeholder={ws.wizard.placeholders.searchKeywordsAlt}
+                      searchPlaceholder={ws.wizard.placeholders.searchKeywordsMore}
                       aria-invalid={Boolean(fieldErrors.keywords)}
                       aria-describedby={
                         fieldErrors.keywords
@@ -1482,13 +1492,13 @@ export function WorkspaceBusinessWizard({
                 {...(fieldErrors.banner ? { "data-invalid-field": "" } : {})}
               >
                 <InputLabel>
-                  Banner image <span className="text-brand-red">*</span>
+                  {ws.wizard.fields.bannerImage} <span className="text-brand-red">{ws.common.required}</span>
                 </InputLabel>
                 <p
                   id="ws-banner-hint"
                   className={`mt-1 ${workspaceHintTextClass}`}
                 >
-                  Wide hero shown across the top of your listing.
+                  {ws.wizard.hints.bannerWide}
                 </p>
                 <div
                   className={`relative flex min-h-[168px] w-full flex-col items-center justify-center overflow-hidden ${surfaceRound} border-2 border-dashed p-8 text-center transition-all duration-300 ${fieldClassErrored("", Boolean(fieldErrors.banner))} ${
@@ -1538,12 +1548,12 @@ export function WorkspaceBusinessWizard({
                       {/* eslint-disable-next-line @next/next/no-img-element */}
                       <img
                         src={bannerDisplayUrl}
-                        alt="Banner preview"
+                        alt={ws.wizard.aria.bannerPreview}
                         className="h-full w-full object-cover opacity-60"
                       />
                       <div className="absolute inset-0 flex items-center justify-center bg-black/40 opacity-0 transition-opacity hover:opacity-100">
                         <span className="flex items-center gap-2 rounded-sm bg-black/50 px-4 py-2 text-sm font-semibold text-white backdrop-blur-sm">
-                          <UploadSimple weight="bold" aria-hidden /> Click or drag to replace
+                          <UploadSimple weight="bold" aria-hidden /> {ws.wizard.gallery.clickOrDragReplace}
                         </span>
                       </div>
                     </div>
@@ -1552,14 +1562,14 @@ export function WorkspaceBusinessWizard({
                       <div className="mb-3 flex h-12 w-12 items-center justify-center rounded-full bg-red-50 text-brand-red">
                         <UploadSimple className="h-6 w-6" weight="bold" aria-hidden />
                       </div>
-                      <p className={`mb-1 ${workspaceLabelTextClass}`}>Banner — click or drag one image</p>
-                      <p className={workspaceHintTextClass}>PNG, JPG or GIF — wide ratio works best</p>
+                      <p className={`mb-1 ${workspaceLabelTextClass}`}>{ws.wizard.gallery.bannerLabel}</p>
+                      <p className={workspaceHintTextClass}>{ws.wizard.gallery.bannerHint}</p>
                     </>
                   )}
                   {bannerUploadProgress !== null ? (
                     <ImageUploadProgressOverlay
                       percent={bannerUploadProgress}
-                      label="Uploading banner…"
+                      label={ws.wizard.gallery.uploadingBanner}
                     />
                   ) : null}
                 </div>
@@ -1569,16 +1579,17 @@ export function WorkspaceBusinessWizard({
               <section className="space-y-3" {...(fieldErrors.gallery ? { "data-invalid-field": "" } : {})}>
                 <div>
                   <InputLabel htmlFor="ws-gallery-files-trigger">
-                    Gallery photos <span className="text-brand-red">*</span>
+                    {ws.wizard.fields.galleryPhotos}{" "}
+                    <span className="text-brand-red">{ws.common.required}</span>
                   </InputLabel>
                   <p id="ws-gallery-hint" className={`mt-1 ${workspaceHintTextClass}`}>
-                    Up to {WORKSPACE_GALLERY_MAX} images (~5 MB each). The first tile adds photos (drag, drop, or click); new shots appear in the same grid. Trash removes a photo.
+                    {trans(ws.wizard.gallery.galleryHelp, { max: WORKSPACE_GALLERY_MAX })}
                   </p>
                 </div>
 
                 <ul
                   className="list-none grid grid-cols-2 gap-3 p-0 sm:grid-cols-3 md:grid-cols-4"
-                  aria-label="Gallery upload and photo previews"
+                  aria-label={ws.wizard.aria.galleryUpload}
                 >
                   <li className={`relative aspect-square min-h-0 min-w-0 ${surfaceRound}`}>
                     <div
@@ -1643,8 +1654,10 @@ export function WorkspaceBusinessWizard({
                       <div className="mb-1 flex h-9 w-9 shrink-0 items-center justify-center rounded-full bg-red-50 text-brand-red sm:h-10 sm:w-10">
                         <Images className="h-4 w-4 sm:h-5 sm:w-5" weight="bold" aria-hidden />
                       </div>
-                      <p className={workspaceCardTitleClass}>Add photos</p>
-                      <p className={`mt-0.5 hidden ${workspaceHintTextClass} sm:block`}>Drop or click</p>
+                      <p className={workspaceCardTitleClass}>{ws.wizard.gallery.addPhotos}</p>
+                      <p className={`mt-0.5 hidden ${workspaceHintTextClass} sm:block`}>
+                        {ws.wizard.gallery.dropOrClick}
+                      </p>
                       {galleryUploadProgress !== null ? (
                         <ImageUploadProgressOverlay
                           percent={galleryUploadProgress.percent}
@@ -1666,7 +1679,7 @@ export function WorkspaceBusinessWizard({
                       />
                       <button
                         type="button"
-                        aria-label={`Remove gallery photo ${idx + 1}`}
+                        aria-label={trans(ws.wizard.aria.removeGalleryPhoto, { index: idx + 1 })}
                         className="absolute top-2 right-2 z-10 flex h-10 w-10 cursor-pointer items-center justify-center rounded-full bg-white text-brand-red shadow-md ring-1 ring-black/10 transition hover:scale-105 hover:bg-red-50 hover:shadow-lg focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand-red focus-visible:ring-offset-2 active:scale-95"
                         onClick={(e) => {
                           e.preventDefault();
@@ -1692,12 +1705,9 @@ export function WorkspaceBusinessWizard({
                 <div className="border-b border-gray-200 bg-gray-50 px-6 py-5 sm:px-8">
                   <h3 className={`flex items-center gap-2 ${workspaceLabelTextClass}`}>
                     <PaperPlaneRight className="text-brand-red" weight="fill" aria-hidden />
-                    Submit for admin review
+                    {ws.wizard.submitReview.title}
                   </h3>
-                  <p className={`mt-1 ${workspaceHintTextClass}`}>
-                    Complete the checklist, then submit. We review every profile before it appears in
-                    caterer search and listings.
-                  </p>
+                  <p className={`mt-1 ${workspaceHintTextClass}`}>{ws.wizard.submitReview.intro}</p>
                 </div>
                 <div className="p-6 sm:p-8">
                   <ul className="grid gap-6 sm:grid-cols-2">
@@ -1708,8 +1718,10 @@ export function WorkspaceBusinessWizard({
                         <XCircle className="mt-0.5 h-6 w-6 shrink-0 text-gray-300" weight="fill" />
                       )}
                       <div>
-                         <p className={workspaceCardTitleClass}>Business details</p>
-                         <p className={`mt-1 ${workspaceHintTextClass}`}>City and about are required.</p>
+                         <p className={workspaceCardTitleClass}>{ws.wizard.submitReview.businessDetails}</p>
+                         <p className={`mt-1 ${workspaceHintTextClass}`}>
+                           {ws.wizard.submitReview.businessDetailsHint}
+                         </p>
                       </div>
                     </li>
                     <li className="flex items-start gap-4">
@@ -1719,8 +1731,10 @@ export function WorkspaceBusinessWizard({
                          <XCircle className="mt-0.5 h-6 w-6 shrink-0 text-gray-300" weight="fill" />
                       )}
                       <div>
-                         <p className={workspaceCardTitleClass}>Categories</p>
-                         <p className={`mt-1 ${workspaceHintTextClass}`}>Select at least one category.</p>
+                         <p className={workspaceCardTitleClass}>{ws.wizard.submitReview.categories}</p>
+                         <p className={`mt-1 ${workspaceHintTextClass}`}>
+                           {ws.wizard.submitReview.categoriesHint}
+                         </p>
                       </div>
                     </li>
                     <li className="flex items-start gap-4">
@@ -1730,8 +1744,10 @@ export function WorkspaceBusinessWizard({
                          <XCircle className="mt-0.5 h-6 w-6 shrink-0 text-gray-300" weight="fill" />
                       )}
                       <div>
-                         <p className={workspaceCardTitleClass}>Services & keywords</p>
-                         <p className={`mt-1 ${workspaceHintTextClass}`}>Pick services and add search keywords.</p>
+                         <p className={workspaceCardTitleClass}>{ws.wizard.submitReview.servicesKeywords}</p>
+                         <p className={`mt-1 ${workspaceHintTextClass}`}>
+                           {ws.wizard.submitReview.servicesKeywordsHint}
+                         </p>
                       </div>
                     </li>
                     <li className="flex items-start gap-4">
@@ -1741,24 +1757,26 @@ export function WorkspaceBusinessWizard({
                          <XCircle className="mt-0.5 h-6 w-6 shrink-0 text-gray-300" weight="fill" />
                       )}
                       <div>
-                         <p className={workspaceCardTitleClass}>Banner & gallery</p>
+                         <p className={workspaceCardTitleClass}>{ws.wizard.submitReview.bannerGallery}</p>
                          <p className={`mt-1 ${workspaceHintTextClass}`}>
-                           Upload a banner image and add at least one gallery photo.
+                           {ws.wizard.submitReview.bannerGalleryHint}
                          </p>
                       </div>
                     </li>
                   </ul>
 
                   <div className={`mt-8 ${fieldRadius} border border-gray-200 bg-gray-50/80 p-5 sm:p-6`}>
-                    <p className={workspaceCardTitleClass}>What happens after you submit</p>
+                    <p className={workspaceCardTitleClass}>{ws.wizard.submitReview.afterSubmit}</p>
                     <ol className={`mt-4 space-y-4 ${workspaceHintTextClass}`}>
                       <li className="flex gap-3">
                         <span className="flex h-7 w-7 shrink-0 items-center justify-center rounded-full bg-brand-red text-xs font-bold text-white">
                           1
                         </span>
                         <span>
-                          <span className="font-semibold text-brand-text-dark">You submit</span> — we save
-                          your profile and mark it as pending review (not visible to customers yet).
+                          <span className="font-semibold text-brand-text-dark">
+                            {ws.wizard.submitReview.stepYouSubmit}
+                          </span>{" "}
+                          — {ws.wizard.submitReview.stepYouSubmitDetail}
                         </span>
                       </li>
                       <li className="flex gap-3">
@@ -1766,8 +1784,10 @@ export function WorkspaceBusinessWizard({
                           2
                         </span>
                         <span>
-                          <span className="font-semibold text-brand-text-dark">Admin review</span> — our
-                          team checks your business details, services, and photos for quality and accuracy.
+                          <span className="font-semibold text-brand-text-dark">
+                            {ws.wizard.submitReview.stepAdminReview}
+                          </span>{" "}
+                          — {ws.wizard.submitReview.stepAdminReviewDetail}
                         </span>
                       </li>
                       <li className="flex gap-3">
@@ -1775,9 +1795,10 @@ export function WorkspaceBusinessWizard({
                           3
                         </span>
                         <span>
-                          <span className="font-semibold text-brand-text-dark">Goes live</span> — once
-                          approved, your listing appears in marketplace search and on your public profile
-                          page.
+                          <span className="font-semibold text-brand-text-dark">
+                            {ws.wizard.submitReview.stepGoesLive}
+                          </span>{" "}
+                          — {ws.wizard.submitReview.stepGoesLiveDetail}
                         </span>
                       </li>
                     </ol>
@@ -1815,7 +1836,7 @@ export function WorkspaceBusinessWizard({
               disabled={saveM.isPending}
               className="cursor-pointer rounded-2xl bg-brand-red px-10 py-4 text-sm font-bold text-white shadow-[0_8px_20px_rgba(229,57,53,0.3)] transition-all duration-300 hover:-translate-y-1 hover:bg-red-700 hover:shadow-[0_12px_25px_rgba(229,57,53,0.4)] disabled:cursor-not-allowed disabled:opacity-60 disabled:transform-none"
             >
-              {saveM.isPending ? "Saving…" : "Save changes"}
+              {saveM.isPending ? ws.common.saving : ws.common.saveChanges}
             </button>
           </div>
         ) : null}
@@ -1836,7 +1857,7 @@ export function WorkspaceBusinessWizard({
                   : "cursor-pointer rounded-sm border border-gray-300 bg-white px-6 py-3 text-sm font-bold text-gray-600 shadow-sm transition-colors hover:bg-gray-50 hover:text-[#1c1c1c] disabled:cursor-not-allowed disabled:opacity-50"
               }
             >
-              {uiVariant === "onboarding" ? "Back" : "Previous Step"}
+              {uiVariant === "onboarding" ? ws.common.back : ws.common.previousStep}
             </button>
             <button
               type="button"
@@ -1874,9 +1895,7 @@ export function WorkspaceBusinessWizard({
                 saveM.mutate(step, {
                   onSuccess: () => {
                     if (step === 3) {
-                      toast.success(
-                        "Submitted for admin review. Your listing will appear after approval."
-                      );
+                      toast.success(ws.wizard.submitReview.successToast);
                       router.replace("/workspace");
                       return;
                     }
@@ -1893,15 +1912,13 @@ export function WorkspaceBusinessWizard({
             >
               {saveM.isPending
                 ? step === 3
-                  ? "Submitting..."
-                  : "Saving..."
+                  ? ws.common.submittingEllipsis
+                  : ws.common.savingEllipsis
                 : step === 3
-                  ? uiVariant === "onboarding"
-                    ? "Submit for review"
-                    : "Submit for review"
+                  ? ws.wizard.buttons.submitForReview
                   : uiVariant === "onboarding"
-                    ? "Next step"
-                    : "Save & Continue"}
+                    ? ws.common.nextStep
+                    : ws.wizard.buttons.saveAndContinue}
               {!saveM.isPending && step !== 3 && uiVariant === "onboarding" && (
                 <ArrowRight weight="bold" className="h-4 w-4 transition-transform group-hover:translate-x-0.5" />
               )}
@@ -1921,37 +1938,20 @@ export function WorkspaceBusinessWizard({
 
 function marketplaceVisibilityCopy(
   approvalStatus: CatererWorkspaceProfile["approvalStatus"],
-  published: boolean
+  published: boolean,
+  ws: import("@/i18n/workspace.messages").WorkspaceMessages,
 ): { title: string; message: string; tone: "success" | "pending" | "rejected" | "info" } {
+  const v = ws.wizard.visibility;
   if (published && approvalStatus === "approved") {
-    return {
-      title: "Live on marketplace",
-      message: "Your listing is visible to customers searching for caterers.",
-      tone: "success",
-    };
+    return { title: v.liveTitle, message: v.liveMessage, tone: "success" };
   }
   if (approvalStatus === "pending_review") {
-    return {
-      title: "Pending admin review",
-      message:
-        "We received your submission. An admin will review your profile before it appears in listings.",
-      tone: "pending",
-    };
+    return { title: v.pendingTitle, message: v.pendingMessage, tone: "pending" };
   }
   if (approvalStatus === "rejected") {
-    return {
-      title: "Not approved",
-      message:
-        "Your last submission was not approved. Update your profile and submit again for another review.",
-      tone: "rejected",
-    };
+    return { title: v.rejectedTitle, message: v.rejectedMessage, tone: "rejected" };
   }
-  return {
-    title: "Marketplace visibility",
-    message:
-      "When every item above is complete and you submit, our team reviews your listing before it goes live for customers.",
-    tone: "info",
-  };
+  return { title: v.infoTitle, message: v.infoMessage, tone: "info" };
 }
 
 function MarketplaceVisibilityNotice({
@@ -1961,7 +1961,8 @@ function MarketplaceVisibilityNotice({
   approvalStatus: CatererWorkspaceProfile["approvalStatus"];
   published: boolean;
 }) {
-  const copy = marketplaceVisibilityCopy(approvalStatus, published);
+  const { ws } = useI18n();
+  const copy = marketplaceVisibilityCopy(approvalStatus, published, ws);
   const boxClass =
     copy.tone === "success"
       ? "border-[#4CAF50]/25 bg-[#4CAF50]/10"

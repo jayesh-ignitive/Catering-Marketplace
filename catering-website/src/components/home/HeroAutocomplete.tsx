@@ -1,5 +1,6 @@
 "use client";
 
+import { useI18n } from "@/context/LocaleContext";
 import { CaretDown, MagnifyingGlass } from "@phosphor-icons/react";
 import { useCallback, useEffect, useId, useMemo, useRef, useState } from "react";
 
@@ -26,6 +27,8 @@ export function HeroAutocomplete({
   onChange,
   disabled,
 }: HeroAutocompleteProps) {
+  const { w } = useI18n();
+
   const baseId = useId();
   const listId = `${baseId}-list`;
   const inputRef = useRef<HTMLInputElement>(null);
@@ -188,7 +191,7 @@ export function HeroAutocomplete({
 
       {open && !disabled && query && filtered.length === 0 ? (
         <div className="absolute left-0 right-0 top-full z-50 mt-1.5 rounded-lg border border-white/15 bg-brand-dark/98 px-3 py-3 text-sm text-white/70 shadow-xl backdrop-blur-md">
-          No matches — try another spelling.
+          {w.heroAutocomplete.noMatches}
         </div>
       ) : null}
     </div>

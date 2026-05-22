@@ -12,8 +12,9 @@ import { FormFieldError } from "@/components/common/FormFieldError";
 import { OtpInput } from "@/components/common/OtpInput";
 import { setStoredToken, verifyOtp, resendVerificationEmail } from "@/lib/auth-api";
 import { clearPendingVerifyEmail, getPendingVerifyEmail } from "@/lib/pending-verify-email";
+import { useI18n } from "@/context/LocaleContext";
 import { postAuthPath } from "@/lib/post-auth-path";
-import { verifyOtpFormSchema, zodFieldErrors } from "@/lib/validation/auth-forms";
+import { createVerifyOtpFormSchema, zodFieldErrors } from "@/lib/validation/auth-forms";
 import { ArrowRight } from "@phosphor-icons/react";
 import Link from "next/link";
 import { useSearchParams } from "next/navigation";
@@ -23,13 +24,10 @@ import { z } from "zod";
 
 type FieldErrors = Partial<Record<"email" | "code", string>>;
 
-const emailOnlySchema = z
-  .string()
-  .trim()
-  .min(1, "Enter your email address")
-  .email("Enter a valid email address");
-
 function VerifyOtpForm() {
+  const { w } = useI18n();
+  const v = w.auth.validation;
+  const emailOnlySchema = z.string().trim().min(1, v.enterEmail).email(v.validEmail);
   const params = useSearchParams();
   const fromLogin = params.get("from") === "login";
   const [email, setEmail] = useState("");
@@ -59,7 +57,7 @@ function VerifyOtpForm() {
 
   const runVerify = useCallback(
     async (codeStr: string) => {
-      const parsed = verifyOtpFormSchema.safeParse({ email, code: codeStr });
+      const parsed = createVerifyOtpFormSchema(v).safeParse({ email, code: codeStr });
       if (!parsed.success) {
         setErrors(zodFieldErrors(parsed.error) as FieldErrors);
         return;
@@ -72,12 +70,12 @@ function VerifyOtpForm() {
         const res = await verifyOtp(parsed.data);
         clearPendingVerifyEmail();
         setStoredToken(res.accessToken);
-        toast.success("Email verified — you’re signed in");
+        toast.success(w.auth.verifyOtp.emailVerified);
         window.location.assign(postAuthPath(res.user));
       } catch (err) {
         setCode("");
-        setErrors({ code: "Invalid or expired code. Try again or request a new code." });
-        toast.error(err instanceof Error ? err.message : "Verification failed");
+        setErrors({ code: w.auth.verifyOtp.invalidCode });
+        toast.error(err instanceof Error ? err.message : w.auth.verifyOtp.verificationFailed);
       } finally {
         inFlightRef.current = false;
         setSubmitting(false);
@@ -94,17 +92,17 @@ function VerifyOtpForm() {
   async function onResend() {
     const parsed = emailOnlySchema.safeParse(email);
     if (!parsed.success) {
-      setErrors({ email: parsed.error.issues[0]?.message ?? "Invalid email" });
+      setErrors({ email: parsed.error.issues[0]?.message ?? w.auth.verifyOtp.invalidEmail });
       return;
     }
     setErrors((e) => ({ ...e, email: undefined }));
     setResending(true);
     try {
       await resendVerificationEmail(parsed.data);
-      toast.success("If this account exists and is unverified, we sent a new code.");
+      toast.success(w.auth.verifyOtp.resendSuccess);
       setCode("");
     } catch (err) {
-      toast.error(err instanceof Error ? err.message : "Could not resend");
+      toast.error(err instanceof Error ? err.message : w.auth.verifyOtp.resendFailed);
     } finally {
       setResending(false);
     }
@@ -112,12 +110,8 @@ function VerifyOtpForm() {
 
   return (
     <PartnerOnboardingAuthShell
-      title="Verification"
-      subtitle={
-        <p>
-          Enter the 6-digit code we sent to your email. Codes expire in 15 minutes — you can paste the full code.
-        </p>
-      }
+      title={w.auth.verifyOtp.title}
+      subtitle={<p>{w.auth.verifyOtp.subtitle}</p>}
     >
       {fromLogin ? (
         <div className="mb-6 rounded-lg border border-gray-200 bg-gray-50 px-4 py-3">
@@ -130,7 +124,7 @@ function VerifyOtpForm() {
       <form noValidate onSubmit={onSubmit} className="space-y-5">
         <div>
           <label htmlFor="otp-email" className={obLabel}>
-            Email address *
+            {w.auth.verifyOtp.email}
           </label>
           <input
             id="otp-email"
@@ -153,7 +147,7 @@ function VerifyOtpForm() {
         </div>
 
         <div>
-          <p className={obLabel}>One-time code *</p>
+          <p className={obLabel}>{w.auth.verifyOtp.otpLabel}</p>
           <OtpInput
             value={code}
             onChange={(digits) => {
@@ -176,7 +170,7 @@ function VerifyOtpForm() {
 
         <div className="flex flex-col gap-4 pt-2">
           <button type="submit" disabled={submitting || code.length !== 6} className={`group ${obPrimaryBtn}`}>
-            <span>{submitting ? "Verifying…" : "Verify and continue"}</span>
+            <span>{submitting ? w.auth.verifyOtp.submitting : w.auth.verifyOtp.submit}</span>
             {!submitting ? (
               <ArrowRight
                 className="text-lg transition-transform duration-300 group-hover:translate-x-0.5"
@@ -191,18 +185,18 @@ function VerifyOtpForm() {
             onClick={onResend}
             className={`${obSecondaryOutlineBtn} py-2.5 text-sm`}
           >
-            {resending ? "Sending…" : "Resend code"}
+            {resending ? w.auth.verifyOtp.resending : w.auth.verifyOtp.resend}
           </button>
         </div>
       </form>
 
       <p className="mt-10 text-center text-sm text-gray-600">
         <Link href="/login" className={obTextLink}>
-          Back to log in
+          {w.auth.verifyOtp.backToLogin}
         </Link>
         {" · "}
         <Link href="/register" className={obTextLink}>
-          Create an account
+          {w.auth.verifyOtp.createAccount}
         </Link>
       </p>
     </PartnerOnboardingAuthShell>
@@ -210,6 +204,7 @@ function VerifyOtpForm() {
 }
 
 export default function VerifyOtpPage() {
+  const { w } = useI18n();
   return (
     <Suspense
       fallback={
@@ -219,7 +214,9 @@ export default function VerifyOtpPage() {
               className="h-10 w-10 animate-spin rounded-full border-2 border-brand-red border-t-transparent"
               aria-hidden
             />
-            <p className="font-heading text-sm font-semibold text-brand-dark">Loading verification…</p>
+            <p className="font-heading text-sm font-semibold text-brand-dark">
+              {w.auth.verifyOtp.loadingVerification}
+            </p>
           </div>
         </main>
       }

@@ -1,5 +1,6 @@
 "use client";
 
+import { useI18n } from "@/context/LocaleContext";
 import type { AuthUser } from "@/lib/auth-api";
 import { SignOut, UserCircle } from "@phosphor-icons/react";
 import Link from "next/link";
@@ -21,6 +22,7 @@ function UserAvatarButton({
   onToggle: () => void;
   buttonRef: React.RefObject<HTMLButtonElement | null>;
 }) {
+  const { w } = useI18n();
   const avatarUrl = `https://ui-avatars.com/api/?name=${encodeURIComponent(
     user.fullName
   )}&background=ff3b30&color=fff&bold=true`;
@@ -32,8 +34,8 @@ function UserAvatarButton({
       onClick={onToggle}
       aria-expanded={expanded}
       aria-haspopup="menu"
-      aria-label="Account menu"
-      title="Account menu"
+      aria-label={w.common.accountMenu}
+      title={w.common.accountMenu}
       className={`group relative flex h-10 w-10 shrink-0 cursor-pointer items-center justify-center rounded-full border border-gray-200 bg-white p-0.5 shadow-sm transition-all duration-300 hover:scale-110 hover:border-brand-red hover:shadow-md focus-visible:outline focus-visible:ring-2 focus-visible:ring-brand-red/35 focus-visible:ring-offset-2 ${
         expanded ? "border-brand-red ring-2 ring-brand-red/25" : ""
       }`}
@@ -50,7 +52,7 @@ function UserAvatarButton({
       <span
         className="pointer-events-none absolute bottom-0 right-0 h-2.5 w-2.5 rounded-full bg-green-500 ring-2 ring-white"
         aria-hidden
-        title="Online"
+        title={w.common.online}
       />
     </button>
   );
@@ -67,6 +69,7 @@ type Props = {
  * Same profile avatar + dropdown as the public site header (desktop).
  */
 export function UserAccountMenu({ user, onLogout, align = "right" }: Props) {
+  const { w } = useI18n();
   const [menuOpen, setMenuOpen] = useState(false);
   const wrapRef = useRef<HTMLDivElement>(null);
   const buttonRef = useRef<HTMLButtonElement>(null);
@@ -109,7 +112,7 @@ export function UserAccountMenu({ user, onLogout, align = "right" }: Props) {
             <p className="truncate text-sm font-bold text-stone-900">{user.fullName}</p>
             <p className="truncate text-xs text-stone-500">{user.email}</p>
             <span className="mt-2 inline-block rounded-sm bg-stone-100 px-1.5 py-0.5 text-[9px] font-bold uppercase tracking-widest text-stone-600">
-              {user.role === "admin" ? "Administrator" : "Caterer Profile"}
+              {user.role === "admin" ? w.auth.accountMenu.administrator : w.auth.accountMenu.catererProfile}
             </span>
           </div>
           <Link
@@ -124,7 +127,7 @@ export function UserAccountMenu({ user, onLogout, align = "right" }: Props) {
               weight="bold"
               aria-hidden
             />
-            Profile Settings
+            {w.auth.accountMenu.profileSettings}
           </Link>
           <button
             type="button"
@@ -141,7 +144,7 @@ export function UserAccountMenu({ user, onLogout, align = "right" }: Props) {
               weight="bold"
               aria-hidden
             />
-            Sign out
+            {w.auth.accountMenu.signOut}
           </button>
         </div>
       ) : null}

@@ -587,6 +587,15 @@ export async function deleteAdminLanguage(accessToken: string, languageId: strin
   return parseJson<{ success: true }>(res);
 }
 
+export type AdminServiceCategoryTranslationItem = {
+  id: string;
+  languageId: string;
+  languageCode: string;
+  languageName: string;
+  name: string;
+  shortDescription: string;
+};
+
 export type AdminServiceCategoryItem = {
   id: string;
   code: string;
@@ -603,6 +612,7 @@ export type AdminServiceCategoryItem = {
   profileLinkCount: number;
   createdAt: string;
   updatedAt: string;
+  translations: AdminServiceCategoryTranslationItem[];
 };
 
 export async function fetchAdminServiceCategories(
@@ -619,7 +629,7 @@ export async function createAdminServiceCategory(
   accessToken: string,
   payload: {
     code: string;
-    name: string;
+    englishName: string;
     slug?: string;
     shortDescription: string;
     iconKey?: string;
@@ -648,9 +658,7 @@ export async function updateAdminServiceCategory(
   id: string,
   payload: Partial<{
     code: string;
-    name: string;
     slug: string;
-    shortDescription: string;
     iconKey: string;
     iconUrl: string | null;
     borderClass: string;
@@ -675,6 +683,156 @@ export async function updateAdminServiceCategory(
   return parseJson<AdminServiceCategoryItem>(res);
 }
 
+// --- Cities -----------------------------------------------------------------
+
+export type AdminCityTranslationItem = {
+  id: string;
+  languageId: string;
+  languageCode: string;
+  languageName: string;
+  name: string;
+};
+
+export type AdminStateOption = {
+  id: string;
+  name: string;
+  countryName: string;
+};
+
+export type AdminCityItem = {
+  id: string;
+  slug: string;
+  legacyCatalogId: string | null;
+  stateId: string;
+  stateName: string;
+  countryName: string;
+  name: string;
+  displayOrder: number;
+  isActive: boolean;
+  profileLinkCount: number;
+  createdAt: string;
+  updatedAt: string;
+  translations: AdminCityTranslationItem[];
+};
+
+export async function fetchAdminCityStates(
+  accessToken: string,
+): Promise<AdminStateOption[]> {
+  const res = await fetch(`${getAdminApiBase()}/api/admin/cities/states`, {
+    ...fetchOpts,
+    headers: bearer(accessToken),
+  });
+  return parseJson<AdminStateOption[]>(res);
+}
+
+export async function fetchAdminCities(accessToken: string): Promise<AdminCityItem[]> {
+  const res = await fetch(`${getAdminApiBase()}/api/admin/cities`, {
+    ...fetchOpts,
+    headers: bearer(accessToken),
+  });
+  return parseJson<AdminCityItem[]>(res);
+}
+
+export async function createAdminCity(
+  accessToken: string,
+  payload: {
+    stateId: string;
+    englishName: string;
+    slug?: string;
+    legacyCatalogId?: string | null;
+    displayOrder?: number;
+    isActive?: boolean;
+  },
+): Promise<AdminCityItem> {
+  const res = await fetch(`${getAdminApiBase()}/api/admin/cities`, {
+    ...fetchOpts,
+    method: "POST",
+    headers: { ...bearer(accessToken), "Content-Type": "application/json" },
+    body: JSON.stringify(payload),
+  });
+  if (!res.ok) {
+    throw new Error(`API error ${res.status}`);
+  }
+  return parseJson<AdminCityItem>(res);
+}
+
+export async function updateAdminCity(
+  accessToken: string,
+  id: string,
+  payload: Partial<{
+    stateId: string;
+    slug: string;
+    legacyCatalogId: string | null;
+    displayOrder: number;
+    isActive: boolean;
+  }>,
+): Promise<AdminCityItem> {
+  const res = await fetch(`${getAdminApiBase()}/api/admin/cities/${encodeURIComponent(id)}`, {
+    ...fetchOpts,
+    method: "PATCH",
+    headers: { ...bearer(accessToken), "Content-Type": "application/json" },
+    body: JSON.stringify(payload),
+  });
+  if (!res.ok) {
+    throw new Error(`API error ${res.status}`);
+  }
+  return parseJson<AdminCityItem>(res);
+}
+
+export async function deleteAdminCity(
+  accessToken: string,
+  id: string,
+): Promise<{ success: true }> {
+  const res = await fetch(`${getAdminApiBase()}/api/admin/cities/${encodeURIComponent(id)}`, {
+    ...fetchOpts,
+    method: "DELETE",
+    headers: bearer(accessToken),
+  });
+  if (!res.ok) {
+    throw new Error(`API error ${res.status}`);
+  }
+  return parseJson<{ success: true }>(res);
+}
+
+export async function upsertAdminCityTranslation(
+  accessToken: string,
+  cityId: string,
+  payload: { languageId: number; name: string },
+): Promise<AdminCityItem> {
+  const res = await fetch(
+    `${getAdminApiBase()}/api/admin/cities/${encodeURIComponent(cityId)}/translations`,
+    {
+      ...fetchOpts,
+      method: "POST",
+      headers: { ...bearer(accessToken), "Content-Type": "application/json" },
+      body: JSON.stringify(payload),
+    },
+  );
+  if (!res.ok) {
+    throw new Error(`API error ${res.status}`);
+  }
+  return parseJson<AdminCityItem>(res);
+}
+
+export async function deleteAdminCityTranslation(
+  accessToken: string,
+  cityId: string,
+  languageId: string,
+): Promise<AdminCityItem> {
+  const res = await fetch(
+    `${getAdminApiBase()}/api/admin/cities/${encodeURIComponent(cityId)}/translations/${encodeURIComponent(languageId)}`,
+    {
+      ...fetchOpts,
+      method: "DELETE",
+      headers: bearer(accessToken),
+    },
+  );
+  if (!res.ok) {
+    throw new Error(`API error ${res.status}`);
+  }
+  return parseJson<AdminCityItem>(res);
+}
+
 export async function deleteAdminServiceCategory(
   accessToken: string,
   id: string,
@@ -691,6 +849,49 @@ export async function deleteAdminServiceCategory(
     throw new Error(`API error ${res.status}`);
   }
   return parseJson<{ success: true }>(res);
+}
+
+export async function upsertAdminServiceCategoryTranslation(
+  accessToken: string,
+  categoryId: string,
+  payload: {
+    languageId: number;
+    name: string;
+    shortDescription: string;
+  },
+): Promise<AdminServiceCategoryItem> {
+  const res = await fetch(
+    `${getAdminApiBase()}/api/admin/service-categories/${encodeURIComponent(categoryId)}/translations`,
+    {
+      ...fetchOpts,
+      method: "POST",
+      headers: { ...bearer(accessToken), "Content-Type": "application/json" },
+      body: JSON.stringify(payload),
+    },
+  );
+  if (!res.ok) {
+    throw new Error(`API error ${res.status}`);
+  }
+  return parseJson<AdminServiceCategoryItem>(res);
+}
+
+export async function deleteAdminServiceCategoryTranslation(
+  accessToken: string,
+  categoryId: string,
+  languageId: string,
+): Promise<AdminServiceCategoryItem> {
+  const res = await fetch(
+    `${getAdminApiBase()}/api/admin/service-categories/${encodeURIComponent(categoryId)}/translations/${encodeURIComponent(languageId)}`,
+    {
+      ...fetchOpts,
+      method: "DELETE",
+      headers: bearer(accessToken),
+    },
+  );
+  if (!res.ok) {
+    throw new Error(`API error ${res.status}`);
+  }
+  return parseJson<AdminServiceCategoryItem>(res);
 }
 
 export type AdminHomeBannerItem = {
@@ -1633,4 +1834,272 @@ export async function deleteAdminMenuItemAttribute(
     },
   );
   return parseJson<AdminMenuItemItem>(res);
+}
+
+// --- Legal pages (Terms & Privacy CMS) ---------------------------------------
+
+export type AdminLegalPageSlug = "terms" | "privacy";
+
+export type AdminLegalPageTranslationItem = {
+  id: string;
+  languageId: string;
+  languageCode: string;
+  languageName: string;
+  title: string;
+  lastUpdatedLabel: string;
+  bodyHtml: string;
+  updatedAt: string;
+};
+
+export type AdminLegalPageItem = {
+  id: string;
+  slug: AdminLegalPageSlug;
+  label: string;
+  isPublished: boolean;
+  createdAt: string;
+  updatedAt: string;
+  translations: AdminLegalPageTranslationItem[];
+};
+
+export async function fetchAdminLegalPages(
+  accessToken: string,
+): Promise<AdminLegalPageItem[]> {
+  const res = await fetch(`${getAdminApiBase()}/api/admin/legal-pages`, {
+    ...fetchOpts,
+    headers: bearer(accessToken),
+  });
+  return parseJson<AdminLegalPageItem[]>(res);
+}
+
+export async function updateAdminLegalPage(
+  accessToken: string,
+  id: string,
+  payload: { isPublished?: boolean },
+): Promise<AdminLegalPageItem> {
+  const res = await fetch(`${getAdminApiBase()}/api/admin/legal-pages/${encodeURIComponent(id)}`, {
+    ...fetchOpts,
+    method: "PATCH",
+    headers: { ...bearer(accessToken), "Content-Type": "application/json" },
+    body: JSON.stringify(payload),
+  });
+  return parseJson<AdminLegalPageItem>(res);
+}
+
+export async function upsertAdminLegalPageTranslation(
+  accessToken: string,
+  pageId: string,
+  payload: {
+    languageId: number;
+    title: string;
+    lastUpdatedLabel: string;
+    bodyHtml: string;
+  },
+): Promise<AdminLegalPageItem> {
+  const res = await fetch(
+    `${getAdminApiBase()}/api/admin/legal-pages/${encodeURIComponent(pageId)}/translations`,
+    {
+      ...fetchOpts,
+      method: "POST",
+      headers: { ...bearer(accessToken), "Content-Type": "application/json" },
+      body: JSON.stringify(payload),
+    },
+  );
+  return parseJson<AdminLegalPageItem>(res);
+}
+
+export async function deleteAdminLegalPageTranslation(
+  accessToken: string,
+  pageId: string,
+  languageId: string,
+): Promise<AdminLegalPageItem> {
+  const res = await fetch(
+    `${getAdminApiBase()}/api/admin/legal-pages/${encodeURIComponent(pageId)}/translations/${encodeURIComponent(languageId)}`,
+    {
+      ...fetchOpts,
+      method: "DELETE",
+      headers: bearer(accessToken),
+    },
+  );
+  return parseJson<AdminLegalPageItem>(res);
+}
+
+// --- Listing packages (/packages CMS) ----------------------------------------
+
+export type AdminListingPackagesPageTranslation = {
+  id: string;
+  languageId: string;
+  languageCode: string;
+  languageName: string;
+  heroEyebrow: string;
+  heroTitle: string;
+  heroSubtitle: string;
+  valueTitle: string;
+  valueBody: string;
+  discoverTitle: string;
+  discoverSubtitle: string;
+  comparisonTitle: string;
+  comparisonHint: string;
+  featureColumnLabel: string;
+  tierEssentialLabel: string;
+  tierGrowthLabel: string;
+  tierPremierLabel: string;
+  recommendedBadge: string;
+  audienceTitle: string;
+  audienceSubtitle: string;
+  audienceTags: string[];
+  helpTitle: string;
+  helpBody: string;
+  browseDirectoryLabel: string;
+  disclaimerText: string;
+  updatedAt: string;
+};
+
+export type AdminListingPlanTranslation = {
+  id: string;
+  languageId: string;
+  languageCode: string;
+  languageName: string;
+  name: string;
+  subtitle: string;
+  periodLabel: string;
+  ctaLabel: string;
+  features: string[];
+  updatedAt: string;
+};
+
+export type AdminListingPlan = {
+  id: string;
+  code: string;
+  priceDisplay: string;
+  icon: string;
+  isRecommended: boolean;
+  isDarkTheme: boolean;
+  displayOrder: number;
+  isActive: boolean;
+  contactTopic: string;
+  createdAt: string;
+  updatedAt: string;
+  translations: AdminListingPlanTranslation[];
+};
+
+export type AdminListingComparisonTranslation = {
+  id: string;
+  languageId: string;
+  languageCode: string;
+  languageName: string;
+  label: string;
+  essentialValue: string;
+  growthValue: string;
+  premierValue: string;
+  updatedAt: string;
+};
+
+export type AdminListingComparisonRow = {
+  id: string;
+  sortOrder: number;
+  isActive: boolean;
+  createdAt: string;
+  updatedAt: string;
+  translations: AdminListingComparisonTranslation[];
+};
+
+export type AdminListingPackagesBundle = {
+  pageTranslations: AdminListingPackagesPageTranslation[];
+  plans: AdminListingPlan[];
+  comparisonRows: AdminListingComparisonRow[];
+};
+
+export async function fetchAdminListingPackages(
+  accessToken: string,
+): Promise<AdminListingPackagesBundle> {
+  const res = await fetch(`${getAdminApiBase()}/api/admin/listing-packages`, {
+    ...fetchOpts,
+    headers: bearer(accessToken),
+  });
+  return parseJson<AdminListingPackagesBundle>(res);
+}
+
+export async function upsertAdminListingPackagesPageTranslation(
+  accessToken: string,
+  payload: Omit<AdminListingPackagesPageTranslation, "id" | "languageCode" | "languageName" | "updatedAt">,
+): Promise<AdminListingPackagesBundle> {
+  const res = await fetch(`${getAdminApiBase()}/api/admin/listing-packages/page/translations`, {
+    ...fetchOpts,
+    method: "POST",
+    headers: { ...bearer(accessToken), "Content-Type": "application/json" },
+    body: JSON.stringify(payload),
+  });
+  return parseJson<AdminListingPackagesBundle>(res);
+}
+
+export async function updateAdminListingPlan(
+  accessToken: string,
+  planId: string,
+  payload: Partial<{
+    priceDisplay: string;
+    icon: string;
+    isRecommended: boolean;
+    isDarkTheme: boolean;
+    displayOrder: number;
+    isActive: boolean;
+    contactTopic: string;
+  }>,
+): Promise<AdminListingPackagesBundle> {
+  const res = await fetch(
+    `${getAdminApiBase()}/api/admin/listing-packages/plans/${encodeURIComponent(planId)}`,
+    {
+      ...fetchOpts,
+      method: "PATCH",
+      headers: { ...bearer(accessToken), "Content-Type": "application/json" },
+      body: JSON.stringify(payload),
+    },
+  );
+  return parseJson<AdminListingPackagesBundle>(res);
+}
+
+export async function upsertAdminListingPlanTranslation(
+  accessToken: string,
+  planId: string,
+  payload: {
+    languageId: string;
+    name: string;
+    subtitle: string;
+    periodLabel: string;
+    ctaLabel: string;
+    features: string[];
+  },
+): Promise<AdminListingPackagesBundle> {
+  const res = await fetch(
+    `${getAdminApiBase()}/api/admin/listing-packages/plans/${encodeURIComponent(planId)}/translations`,
+    {
+      ...fetchOpts,
+      method: "POST",
+      headers: { ...bearer(accessToken), "Content-Type": "application/json" },
+      body: JSON.stringify(payload),
+    },
+  );
+  return parseJson<AdminListingPackagesBundle>(res);
+}
+
+export async function upsertAdminListingComparisonTranslation(
+  accessToken: string,
+  rowId: string,
+  payload: {
+    languageId: string;
+    label: string;
+    essentialValue: string;
+    growthValue: string;
+    premierValue: string;
+  },
+): Promise<AdminListingPackagesBundle> {
+  const res = await fetch(
+    `${getAdminApiBase()}/api/admin/listing-packages/comparison-rows/${encodeURIComponent(rowId)}/translations`,
+    {
+      ...fetchOpts,
+      method: "POST",
+      headers: { ...bearer(accessToken), "Content-Type": "application/json" },
+      body: JSON.stringify(payload),
+    },
+  );
+  return parseJson<AdminListingPackagesBundle>(res);
 }

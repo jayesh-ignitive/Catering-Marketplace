@@ -8,6 +8,7 @@ import { CatalogModule } from './catalog/catalog.module';
 import { ContactModule } from './contact/contact.module';
 import { MarketplaceModule } from './marketplace/marketplace.module';
 import { UploadModule } from './upload/upload.module';
+import { LegalModule } from './legal/legal.module';
 
 @Module({
   imports: [
@@ -28,6 +29,7 @@ import { UploadModule } from './upload/upload.module';
       inject: [ConfigService],
     }),
     CatalogModule,
+    LegalModule,
     ContactModule,
     MarketplaceModule,
     UploadModule,

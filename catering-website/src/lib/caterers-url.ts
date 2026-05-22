@@ -9,10 +9,14 @@ export function slugifyCitySegment(name: string): string {
 
 export function findMarketplaceCityNameBySlug(
   slug: string,
-  cities: { city: string }[]
+  cities: { city: string; slug?: string }[]
 ): string | null {
   const s = slug.trim().toLowerCase();
-  const hit = cities.find((c) => slugifyCitySegment(c.city) === s);
+  const hit = cities.find(
+    (c) =>
+      (c.slug && c.slug.toLowerCase() === s) ||
+      slugifyCitySegment(c.city) === s,
+  );
   return hit?.city ?? null;
 }
 

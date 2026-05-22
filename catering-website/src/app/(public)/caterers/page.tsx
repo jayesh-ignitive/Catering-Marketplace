@@ -2,21 +2,12 @@
 
 import { Suspense } from "react";
 import { CaterersLegacyQueryRedirect } from "@/components/caterers/CaterersLegacyQueryRedirect";
+import { I18nLoadingFallback } from "@/components/common/I18nLoadingFallback";
 import { CaterersListingLazy } from "@/components/caterers/CaterersListingLazy";
-
-const listingFallback = (
-  <div className="flex min-h-screen flex-col items-center justify-center bg-gray-50 px-6">
-    <div
-      className="h-10 w-10 animate-spin rounded-full border-2 border-brand-red border-t-transparent"
-      aria-hidden
-    />
-    <p className="mt-4 font-heading text-sm font-semibold text-brand-dark">Loading caterers…</p>
-  </div>
-);
 
 export default function CaterersPage() {
   return (
-    <Suspense fallback={listingFallback}>
+    <Suspense fallback={<I18nLoadingFallback variant="caterers" />}>
       <CaterersLegacyQueryRedirect />
       <CaterersListingLazy key="browse" />
     </Suspense>

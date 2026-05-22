@@ -3,12 +3,13 @@ import {
   PublicHomeBanner,
   HomeBannersService,
 } from '../marketplace/home-banners.service';
+import { CitiesService, PublicCity } from '../marketplace/cities.service';
 import {
   PublicServiceCategory,
   ServiceCategoriesService,
 } from '../marketplace/service-categories.service';
 
-export type City = { id: string; name: string; slug: string };
+export type City = PublicCity;
 export type ServiceCategory = PublicServiceCategory;
 export type TrustStats = {
   verifiedReviews: number;
@@ -32,20 +33,8 @@ export class CatalogService {
   constructor(
     private readonly serviceCategories: ServiceCategoriesService,
     private readonly homeBanners: HomeBannersService,
+    private readonly cities: CitiesService,
   ) {}
-
-  private readonly cities: City[] = [
-    { id: '1', name: 'Mumbai', slug: 'mumbai' },
-    { id: '2', name: 'Delhi', slug: 'delhi' },
-    { id: '3', name: 'Bangalore', slug: 'bangalore' },
-    { id: '4', name: 'Hyderabad', slug: 'hyderabad' },
-    { id: '5', name: 'Ahmedabad', slug: 'ahmedabad' },
-    { id: '6', name: 'Chennai', slug: 'chennai' },
-    { id: '7', name: 'Kolkata', slug: 'kolkata' },
-    { id: '8', name: 'Pune', slug: 'pune' },
-    { id: '9', name: 'Surat', slug: 'surat' },
-    { id: '10', name: 'Jaipur', slug: 'jaipur' },
-  ];
 
   private readonly listings: CatererListing[] = [
     {
@@ -100,12 +89,12 @@ export class CatalogService {
     },
   ];
 
-  getCities(): City[] {
-    return this.cities;
+  getCities(locale?: string): Promise<City[]> {
+    return this.cities.listPublicActive(locale);
   }
 
-  getServiceCategories(): Promise<ServiceCategory[]> {
-    return this.serviceCategories.listPublicActive();
+  getServiceCategories(locale?: string): Promise<ServiceCategory[]> {
+    return this.serviceCategories.listPublicActive(locale);
   }
 
   /** Hero carousel slides for the home page first section only. */
@@ -125,6 +114,7 @@ export class CatalogService {
   async search(
     cityId?: string,
     categoryId?: string,
+    locale?: string,
   ): Promise<{
     caterers: CatererListing[];
     city?: City;
@@ -141,10 +131,21 @@ export class CatalogService {
       caterers = caterers.filter((l) => l.categoryId === cat);
     }
 
-    const city = c ? this.cities.find((x) => x.id === c) : undefined;
-    const categories = await this.serviceCategories.listPublicActive();
+    const [categories, catalogCities] = await Promise.all([
+      this.serviceCategories.listPublicActive(locale),
+      this.cities.listPublicActive(locale),
+    ]);
     const category = cat
       ? categories.find((x) => x.id === cat || x.code === cat)
+      : undefined;
+    const city = c
+      ? catalogCities.find(
+          (x) =>
+            x.id === c ||
+            x.slug === c ||
+            x.legacyCatalogId === c ||
+            x.name === c,
+        )
       : undefined;
 
     return { caterers, city, category };

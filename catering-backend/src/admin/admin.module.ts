@@ -17,7 +17,20 @@ import { MenuItemIngredient } from '../catalog/menu-item-ingredient.entity';
 import { MenuItemTranslation } from '../catalog/menu-item-translation.entity';
 import { MenuItem } from '../catalog/menu-item.entity';
 import { Language } from '../localization/language.entity';
+import { LegalPageTranslation } from '../legal/legal-page-translation.entity';
+import { LegalPage } from '../legal/legal-page.entity';
+import { ListingPlanComparisonRowTranslation } from '../listing-packages/listing-plan-comparison-row-translation.entity';
+import { ListingPlanComparisonRow } from '../listing-packages/listing-plan-comparison-row.entity';
+import { ListingPlanTranslation } from '../listing-packages/listing-plan-translation.entity';
+import { ListingPlan } from '../listing-packages/listing-plan.entity';
+import { ListingPackagesPageTranslation } from '../listing-packages/listing-packages-page-translation.entity';
+import { ListingPackagesModule } from '../listing-packages/listing-packages.module';
+import { CitiesModule } from '../marketplace/cities.module';
+import { CityTranslation } from '../marketplace/city-translation.entity';
+import { City } from '../marketplace/city.entity';
+import { CategoryTranslation } from '../marketplace/category-translation.entity';
 import { Category } from '../marketplace/category.entity';
+import { State } from '../marketplace/state.entity';
 import { CatererMarketplaceListing } from '../marketplace/caterer-marketplace-listing.entity';
 import { CatererReview } from '../marketplace/caterer-review.entity';
 import { HomeBanner } from '../marketplace/home-banner.entity';
@@ -49,6 +62,12 @@ import { AdminContactSubmissionsController } from './admin-contact-submissions.c
 import { AdminContactSubmissionsService } from './admin-contact-submissions.service';
 import { AdminHomeBannersController } from './admin-home-banners.controller';
 import { AdminHomeBannersService } from './admin-home-banners.service';
+import { AdminLegalPagesController } from './admin-legal-pages.controller';
+import { AdminLegalPagesService } from './admin-legal-pages.service';
+import { AdminListingPackagesController } from './admin-listing-packages.controller';
+import { AdminListingPackagesService } from './admin-listing-packages.service';
+import { AdminCitiesController } from './admin-cities.controller';
+import { AdminCitiesService } from './admin-cities.service';
 import { AdminServiceCategoriesController } from './admin-service-categories.controller';
 import { AdminServiceCategoriesService } from './admin-service-categories.service';
 import { AdminUsersController } from './admin-users.controller';
@@ -60,15 +79,21 @@ import { RolesGuard } from './roles.guard';
     AuthModule,
     StorageModule,
     ServiceCategoriesModule,
+    CitiesModule,
     HomeBannersModule,
     MarketplaceModule,
     CatalogModule,
+    ListingPackagesModule,
     TypeOrmModule.forFeature([
       BlogPost,
       User,
       Tenant,
       ContactSubmission,
       Category,
+      CategoryTranslation,
+      City,
+      CityTranslation,
+      State,
       HomeBanner,
       CatererMarketplaceListing,
       CatererReview,
@@ -85,6 +110,13 @@ import { RolesGuard } from './roles.guard';
       MenuItemAttribute,
       Attribute,
       AttributeTranslation,
+      LegalPage,
+      LegalPageTranslation,
+      ListingPackagesPageTranslation,
+      ListingPlan,
+      ListingPlanTranslation,
+      ListingPlanComparisonRow,
+      ListingPlanComparisonRowTranslation,
     ]),
   ],
   controllers: [
@@ -98,9 +130,12 @@ import { RolesGuard } from './roles.guard';
     AdminMenuItemsController,
     AdminAttributesController,
     AdminServiceCategoriesController,
+    AdminCitiesController,
     AdminHomeBannersController,
     AdminBlogPostsController,
     AdminContactSubmissionsController,
+    AdminLegalPagesController,
+    AdminListingPackagesController,
   ],
   providers: [
     AdminDashboardService,
@@ -113,9 +148,12 @@ import { RolesGuard } from './roles.guard';
     AdminMenuItemsService,
     AdminAttributesService,
     AdminServiceCategoriesService,
+    AdminCitiesService,
     AdminHomeBannersService,
     AdminBlogPostsService,
     AdminContactSubmissionsService,
+    AdminLegalPagesService,
+    AdminListingPackagesService,
     RolesGuard,
   ],
 })

@@ -8,7 +8,10 @@ import {
   Images,
   ListBullets,
   ListDashes,
+  MapPin,
   Newspaper,
+  Package,
+  Scales,
   SquaresFour,
   Storefront,
   Tag,
@@ -51,6 +54,7 @@ export const ADMIN_NAV_SECTIONS: AdminNavSection[] = [
       { href: "/admin/caterers", label: "Caterers", icon: Storefront },
       { href: "/admin/users", label: "Users", icon: UsersThree },
       { href: "/admin/service-categories", label: "Service categories", icon: ListDashes },
+      { href: "/admin/cities", label: "Cities", icon: MapPin },
     ],
   },
   {
@@ -59,6 +63,8 @@ export const ADMIN_NAV_SECTIONS: AdminNavSection[] = [
       { href: "/admin/contact-inquiries", label: "Contact inquiries", icon: EnvelopeSimple },
       { href: "/admin/home-banners", label: "Home banners", icon: Images },
       { href: "/admin/blog-posts", label: "Blog posts", icon: Newspaper },
+      { href: "/admin/legal-pages", label: "Legal pages", icon: Scales },
+      { href: "/admin/listing-packages", label: "Listing packages", icon: Package },
     ],
   },
   {

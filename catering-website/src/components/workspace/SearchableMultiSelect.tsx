@@ -1,5 +1,6 @@
 "use client";
 
+import { useI18n } from "@/context/LocaleContext";
 import { CaretDown, Check, MagnifyingGlass, X } from "@phosphor-icons/react";
 import { useEffect, useMemo, useRef, useState } from "react";
 import { createPortal } from "react-dom";
@@ -27,15 +28,20 @@ export function SearchableMultiSelect({
   options,
   value,
   onChange,
-  placeholder = "Search to select…",
-  searchPlaceholder = "Search to add more…",
-  emptyMessage = "No matching options.",
+  placeholder,
+  searchPlaceholder,
+  emptyMessage,
   id,
   "aria-invalid": ariaInvalid,
   "aria-describedby": ariaDescribedBy,
   errored = false,
   className = "",
 }: SearchableMultiSelectProps) {
+  const { ws } = useI18n();
+  const resolvedPlaceholder = placeholder ?? ws.select.searchToSelect;
+  const resolvedSearchPlaceholder = searchPlaceholder ?? ws.select.searchToAddMore;
+  const resolvedEmptyMessage = emptyMessage ?? ws.select.noMatchingOptions;
+
   const listboxId = `${id ?? "search-ms"}-listbox`;
   const rootRef = useRef<HTMLDivElement>(null);
   const anchorRef = useRef<HTMLDivElement>(null);
@@ -138,7 +144,7 @@ export function SearchableMultiSelect({
           aria-describedby={ariaDescribedBy}
           aria-autocomplete="list"
           autoComplete="off"
-          placeholder={value.length ? searchPlaceholder : placeholder}
+          placeholder={value.length ? resolvedSearchPlaceholder : resolvedPlaceholder}
           value={query}
           onChange={(e) => {
             setQuery(e.target.value);
@@ -173,7 +179,7 @@ export function SearchableMultiSelect({
               className="overflow-auto rounded-sm border border-[#E5E7EB] bg-white py-1 shadow-lg"
             >
           {filtered.length === 0 ? (
-            <li className="px-3 py-3 text-sm text-[#6B7280]">{emptyMessage}</li>
+            <li className="px-3 py-3 text-sm text-[#6B7280]">{resolvedEmptyMessage}</li>
           ) : (
             filtered.map((opt) => {
               const selected = value.includes(opt.id);

@@ -18,8 +18,9 @@ import {
   flagEmoji,
 } from "@/lib/phone-country-options";
 import { setPendingVerifyEmail } from "@/lib/pending-verify-email";
+import { useI18n } from "@/context/LocaleContext";
 import { postAuthPath } from "@/lib/post-auth-path";
-import { registerFormSchema, zodFieldErrors } from "@/lib/validation/auth-forms";
+import { createRegisterFormSchema, zodFieldErrors } from "@/lib/validation/auth-forms";
 import { ArrowRight } from "@phosphor-icons/react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
@@ -37,6 +38,7 @@ type RegFields =
 type FieldErrors = Partial<Record<RegFields, string>>;
 
 export default function RegisterPage() {
+  const { w, trans } = useI18n();
   const { register, user, ready } = useAuth();
   const router = useRouter();
   const [fullName, setFullName] = useState("");
@@ -84,7 +86,7 @@ export default function RegisterPage() {
 
   async function onSubmit(e: React.FormEvent) {
     e.preventDefault();
-    const parsed = registerFormSchema.safeParse({
+    const parsed = createRegisterFormSchema(w.auth.validation).safeParse({
       fullName,
       email,
       businessName,
@@ -101,10 +103,10 @@ export default function RegisterPage() {
     try {
       await register(parsed.data);
       setPendingVerifyEmail(parsed.data.email.trim().toLowerCase());
-      toast.success("We sent a verification code to your email");
+      toast.success(w.auth.register.verificationSent);
       router.replace("/verify-otp");
     } catch (err) {
-      toast.error(err instanceof Error ? err.message : "Registration failed");
+      toast.error(err instanceof Error ? err.message : w.auth.register.registrationFailed);
     } finally {
       setSubmitting(false);
     }
@@ -118,7 +120,7 @@ export default function RegisterPage() {
             className="h-10 w-10 animate-spin rounded-full border-2 border-brand-red border-t-transparent"
             aria-hidden
           />
-          <p className="font-heading text-sm font-semibold text-brand-dark">Setting the table…</p>
+          <p className="font-heading text-sm font-semibold text-brand-dark">{w.auth.settingTable}</p>
         </div>
       </main>
     );
@@ -131,13 +133,12 @@ export default function RegisterPage() {
 
   return (
     <PartnerOnboardingAuthShell
-      title="Tell us about your business"
+      title={w.auth.register.title}
       subtitle={
         <p>
-          Let&apos;s start with the basics — then we&apos;ll email you a code to verify your address. Already
-          registered?{" "}
+          {w.auth.register.subtitlePrefix}{" "}
           <Link href="/login" className={obTextLink}>
-            Log in
+            {w.auth.register.subtitleLink}
           </Link>
         </p>
       }
@@ -145,14 +146,14 @@ export default function RegisterPage() {
       <form noValidate onSubmit={onSubmit} className="space-y-6">
         <div>
           <label htmlFor="reg-business" className={obLabel}>
-            Business name *
+            {w.auth.register.businessName}
           </label>
           <input
             id="reg-business"
             name="businessName"
             type="text"
             autoComplete="organization"
-            placeholder="e.g. Royal Rajputana Caterers"
+            placeholder={w.auth.register.businessNamePlaceholder}
             value={businessName}
             onChange={(e) => {
               setBusinessName(e.target.value);
@@ -168,14 +169,14 @@ export default function RegisterPage() {
         <div className="grid grid-cols-1 gap-x-8 gap-y-6 md:grid-cols-2">
           <div>
             <label htmlFor="reg-name" className={obLabel}>
-              Contact person *
+              {w.auth.register.contactPerson}
             </label>
             <input
               id="reg-name"
               name="fullName"
               type="text"
               autoComplete="name"
-              placeholder="Full name"
+              placeholder={w.auth.register.contactPersonPlaceholder}
               value={fullName}
               onChange={(e) => {
                 setFullName(e.target.value);
@@ -189,7 +190,7 @@ export default function RegisterPage() {
           </div>
           <div>
             <label htmlFor="reg-phone" className={obLabel}>
-              Mobile number *
+              {w.auth.register.mobileNumber}
             </label>
             <div className={`flex min-w-0 items-stretch overflow-hidden bg-white ${phoneShell}`}>
               <div className="flex shrink-0 items-center gap-2 border-r border-[#E5E7EB] px-3 py-3 sm:px-4">
@@ -200,7 +201,7 @@ export default function RegisterPage() {
                   <select
                     id="reg-country"
                     name="country"
-                    aria-label={`Country code, ${selectedCountry.name}`}
+                    aria-label={trans(w.auth.register.countryCodeAria, { country: selectedCountry.name })}
                     value={countryIso}
                     onChange={(e) => {
                       setCountryIso(e.target.value);
@@ -243,14 +244,14 @@ export default function RegisterPage() {
 
         <div>
           <label htmlFor="reg-email" className={obLabel}>
-            Email address *
+            {w.auth.register.email}
           </label>
           <input
             id="reg-email"
             name="email"
             type="email"
             autoComplete="email"
-            placeholder="hello@yourbusiness.com"
+            placeholder={w.auth.register.emailPlaceholder}
             value={email}
             onChange={(e) => {
               setEmail(e.target.value);
@@ -265,14 +266,14 @@ export default function RegisterPage() {
 
         <div>
           <label htmlFor="reg-password" className={obLabel}>
-            Password *
+            {w.auth.register.password}
           </label>
           <input
             id="reg-password"
             name="password"
             type="password"
             autoComplete="new-password"
-            placeholder="Choose a strong password"
+            placeholder={w.auth.register.passwordPlaceholder}
             value={password}
             onChange={(e) => {
               setPassword(e.target.value);
@@ -286,7 +287,7 @@ export default function RegisterPage() {
         </div>
 
         <button type="submit" disabled={submitting} className={`group mt-4 ${obPrimaryBtn}`}>
-          <span>{submitting ? "Creating your workspace…" : "Continue — verify email next"}</span>
+          <span>{submitting ? w.auth.register.submitting : w.auth.register.submit}</span>
           {!submitting ? (
             <ArrowRight
               className="text-lg transition-transform duration-300 group-hover:translate-x-0.5"
@@ -297,7 +298,7 @@ export default function RegisterPage() {
         </button>
 
         <p className="text-center text-sm text-gray-600">
-          By continuing you agree we&apos;ll email you a one-time code to confirm this address.
+          {w.auth.register.agreeOtp}
         </p>
       </form>
     </PartnerOnboardingAuthShell>

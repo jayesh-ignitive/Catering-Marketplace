@@ -2,9 +2,11 @@ import {
   Column,
   CreateDateColumn,
   Entity,
+  OneToMany,
   PrimaryGeneratedColumn,
   UpdateDateColumn,
 } from 'typeorm';
+import { CategoryTranslation } from './category-translation.entity';
 
 /** Marketplace service category (replaces free-form `primary_category_id` codes on profiles). */
 @Entity('categories')
@@ -52,4 +54,7 @@ export class Category {
 
   @UpdateDateColumn({ name: 'updated_at', type: 'datetime', precision: 6 })
   updatedAt!: Date;
+
+  @OneToMany(() => CategoryTranslation, (t) => t.category)
+  translations!: CategoryTranslation[];
 }

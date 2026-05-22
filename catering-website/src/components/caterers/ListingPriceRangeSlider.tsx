@@ -1,5 +1,6 @@
 "use client";
 
+import { useI18n } from "@/context/LocaleContext";
 import {
   LISTING_PRICE_MAX,
   LISTING_PRICE_MIN,
@@ -19,6 +20,8 @@ type ListingPriceRangeSliderProps = {
 };
 
 export function ListingPriceRangeSlider({ min, max, onChange }: ListingPriceRangeSliderProps) {
+  const { w, trans } = useI18n();
+
   const floor = LISTING_PRICE_MIN;
   const ceiling = LISTING_PRICE_MAX;
   const span = ceiling - floor;
@@ -43,7 +46,7 @@ export function ListingPriceRangeSlider({ min, max, onChange }: ListingPriceRang
     <div className="space-y-3">
       <div className="flex items-center justify-between text-xs font-bold text-brand-dark">
         <span>{inr.format(min)}</span>
-        <span className="text-gray-400">per plate</span>
+        <span className="text-gray-400">{w.caterers.listing.perPlate}</span>
         <span>{inr.format(max)}</span>
       </div>
       <div className="relative mx-1 h-8">
@@ -60,7 +63,7 @@ export function ListingPriceRangeSlider({ min, max, onChange }: ListingPriceRang
           step={LISTING_PRICE_STEP}
           value={min}
           onChange={(e) => clampPair(Number(e.target.value), max)}
-          aria-label="Minimum price per plate"
+          aria-label={w.caterers.listing.minPriceAria}
           className="listing-price-range-input absolute inset-0 z-[2] w-full cursor-pointer appearance-none bg-transparent"
         />
         <input
@@ -70,7 +73,7 @@ export function ListingPriceRangeSlider({ min, max, onChange }: ListingPriceRang
           step={LISTING_PRICE_STEP}
           value={max}
           onChange={(e) => clampPair(min, Number(e.target.value))}
-          aria-label="Maximum price per plate"
+          aria-label={w.caterers.listing.maxPriceAria}
           className="listing-price-range-input absolute inset-0 z-[3] w-full cursor-pointer appearance-none bg-transparent"
         />
       </div>

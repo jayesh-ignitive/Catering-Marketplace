@@ -3,7 +3,8 @@
 import { FormFieldError } from "@/components/common/FormFieldError";
 import { postContact } from "@/lib/catering-api";
 import { zodFieldErrors } from "@/lib/validation/auth-forms";
-import { contactFormSchema } from "@/lib/validation/contact-form";
+import { createContactFormSchema } from "@/lib/validation/contact-form";
+import { useI18n } from "@/context/LocaleContext";
 import {
   CaretRight,
   ChatsCircle,
@@ -21,6 +22,7 @@ type FieldKey = "name" | "email" | "phone" | "subject" | "message";
 type FieldErrors = Partial<Record<FieldKey, string>>;
 
 export default function ContactPage() {
+  const { w } = useI18n();
   const nameId = useId();
   const emailId = useId();
   const phoneId = useId();
@@ -47,7 +49,7 @@ export default function ContactPage() {
 
   async function onSubmit(e: React.FormEvent) {
     e.preventDefault();
-    const parsed = contactFormSchema.safeParse({
+    const parsed = createContactFormSchema(w.contact.validation).safeParse({
       name,
       email,
       phone,
@@ -69,7 +71,7 @@ export default function ContactPage() {
         subject: data.subject.trim(),
         message: data.message.trim(),
       });
-      toast.success("Thanks — your message was sent.");
+      toast.success(w.contact.messageSent);
       setSent(true);
       setName("");
       setEmail("");
@@ -77,7 +79,7 @@ export default function ContactPage() {
       setSubject("");
       setMessage("");
     } catch (err) {
-      toast.error(err instanceof Error ? err.message : "Something went wrong");
+      toast.error(err instanceof Error ? err.message : w.contact.somethingWrong);
     } finally {
       setSubmitting(false);
     }
@@ -104,25 +106,22 @@ export default function ContactPage() {
         <div className="relative mx-auto max-w-7xl">
           <nav className="text-sm font-medium text-white/55">
             <Link href="/" className="transition hover:text-brand-yellow">
-              Home
+              {w.common.home}
             </Link>
             <span className="mx-2 text-white/35" aria-hidden>
               /
             </span>
-            <span className="text-white/90">Contact</span>
+            <span className="text-white/90">{w.contact.heroLabel}</span>
           </nav>
           <div className="mt-8 flex flex-col gap-4 sm:flex-row sm:items-end sm:justify-between">
             <div>
               <p className="text-xs font-bold uppercase tracking-[0.2em] text-brand-yellow">
-                Sales &amp; support
+                {w.common.salesSupport}
               </p>
               <h1 className="font-heading mt-2 text-3xl font-extrabold tracking-tight text-white sm:text-4xl">
-                Contact us
+                {w.contact.pageTitle}
               </h1>
-              <p className="mt-3 max-w-xl text-base text-white/75">
-                Questions about listings, partnerships, or press? Send a note — we typically reply within one
-                business day.
-              </p>
+              <p className="mt-3 max-w-xl text-base text-white/75">{w.contact.heroSubtitle}</p>
             </div>
             <div className="flex items-center gap-3 rounded-2xl border border-white/15 bg-white/10 px-4 py-3 text-sm text-white/90 backdrop-blur-sm">
               <PaperPlaneTilt className="text-xl text-brand-yellow" weight="duotone" aria-hidden />
@@ -144,27 +143,23 @@ export default function ContactPage() {
                 <div className="inline-flex items-center gap-2 rounded-full border border-brand-red/15 bg-brand-red/[0.06] px-3 py-1.5">
                   <ChatsCircle className="text-lg text-brand-red" weight="duotone" aria-hidden />
                   <span className="text-[11px] font-bold uppercase tracking-[0.18em] text-brand-red">
-                    Message the team
+                    {w.contact.formEyebrow}
                   </span>
                 </div>
-                <h2 className="font-heading mt-4 text-xl font-extrabold text-brand-dark">Send us a message</h2>
-                <p className="mt-2 text-sm text-gray-500">
-                  Fields marked Required help us route your enquiry faster.
-                </p>
+                <h2 className="font-heading mt-4 text-xl font-extrabold text-brand-dark">{w.contact.formTitle}</h2>
+                <p className="mt-2 text-sm text-gray-500">{w.contact.formHint}</p>
               </div>
 
               {sent ? (
                 <div className="rounded-2xl border border-brand-green/25 bg-brand-green/5 px-5 py-10 text-center">
-                  <p className="font-heading text-lg font-bold text-brand-dark">Message received</p>
-                  <p className="mt-2 text-sm text-gray-600">
-                    Thanks for reaching out. If you need anything else, send us another note.
-                  </p>
+                  <p className="font-heading text-lg font-bold text-brand-dark">{w.contact.successTitle}</p>
+                  <p className="mt-2 text-sm text-gray-600">{w.contact.successBody}</p>
                   <button
                     type="button"
                     className="mt-6 rounded-xl border border-gray-200 bg-white px-5 py-2.5 text-sm font-bold text-brand-dark transition hover:border-brand-red/30"
                     onClick={() => setSent(false)}
                   >
-                    Send another message
+                    {w.contact.sendAnother}
                   </button>
                 </div>
               ) : (
@@ -172,9 +167,9 @@ export default function ContactPage() {
                 <div className="grid gap-6 sm:grid-cols-2">
                   <div className="space-y-2">
                     <label htmlFor={nameId} className="flex items-center justify-between gap-2">
-                      <span className="text-[13px] font-semibold text-brand-dark">Your name</span>
+                      <span className="text-[13px] font-semibold text-brand-dark">{w.contact.yourName}</span>
                       <span className="text-[11px] font-medium uppercase tracking-wider text-gray-400">
-                        Required
+                        {w.common.required}
                       </span>
                     </label>
                     <div className={`${fieldWrap} ${errors.name ? fieldWrapErr : fieldWrapOk}`}>
@@ -188,7 +183,7 @@ export default function ContactPage() {
                         name="name"
                         type="text"
                         autoComplete="name"
-                        placeholder="Full name"
+                        placeholder={w.contact.yourNamePlaceholder}
                         value={name}
                         onChange={(e) => {
                           setName(e.target.value);
@@ -204,9 +199,9 @@ export default function ContactPage() {
 
                   <div className="space-y-2">
                     <label htmlFor={emailId} className="flex items-center justify-between gap-2">
-                      <span className="text-[13px] font-semibold text-brand-dark">Email</span>
+                      <span className="text-[13px] font-semibold text-brand-dark">{w.contact.email}</span>
                       <span className="text-[11px] font-medium uppercase tracking-wider text-gray-400">
-                        Required
+                        {w.common.required}
                       </span>
                     </label>
                     <div className={`${fieldWrap} ${errors.email ? fieldWrapErr : fieldWrapOk}`}>
@@ -220,7 +215,7 @@ export default function ContactPage() {
                         name="email"
                         type="email"
                         autoComplete="email"
-                        placeholder="you@example.com"
+                        placeholder={w.contact.emailPlaceholder}
                         value={email}
                         onChange={(e) => {
                           setEmail(e.target.value);
@@ -237,9 +232,9 @@ export default function ContactPage() {
 
                 <div className="space-y-2">
                   <label htmlFor={phoneId} className="flex items-center justify-between gap-2">
-                    <span className="text-[13px] font-semibold text-brand-dark">Phone</span>
+                    <span className="text-[13px] font-semibold text-brand-dark">{w.contact.phone}</span>
                     <span className="text-[11px] font-medium uppercase tracking-wider text-gray-400">
-                      Optional
+                      {w.common.optional}
                     </span>
                   </label>
                   <div className={`${fieldWrap} ${errors.phone ? fieldWrapErr : fieldWrapOk}`}>
@@ -253,7 +248,7 @@ export default function ContactPage() {
                       name="phone"
                       type="tel"
                       autoComplete="tel"
-                      placeholder="+91 …"
+                      placeholder={w.contact.phonePlaceholder}
                       value={phone}
                       onChange={(e) => {
                         setPhone(e.target.value);
@@ -269,9 +264,9 @@ export default function ContactPage() {
 
                 <div className="space-y-2">
                   <label htmlFor={subjectId} className="flex items-center justify-between gap-2">
-                    <span className="text-[13px] font-semibold text-brand-dark">Subject</span>
+                    <span className="text-[13px] font-semibold text-brand-dark">{w.contact.subject}</span>
                     <span className="text-[11px] font-medium uppercase tracking-wider text-gray-400">
-                      Required
+                      {w.common.required}
                     </span>
                   </label>
                   <div className={`${fieldWrap} ${errors.subject ? fieldWrapErr : fieldWrapOk}`}>
@@ -282,7 +277,7 @@ export default function ContactPage() {
                       id={subjectId}
                       name="subject"
                       type="text"
-                      placeholder="What is this about?"
+                      placeholder={w.contact.subjectPlaceholder}
                       value={subject}
                       onChange={(e) => {
                         setSubject(e.target.value);
@@ -298,9 +293,9 @@ export default function ContactPage() {
 
                 <div className="space-y-2">
                   <label htmlFor={messageId} className="flex items-center justify-between gap-2">
-                    <span className="text-[13px] font-semibold text-brand-dark">Message</span>
+                    <span className="text-[13px] font-semibold text-brand-dark">{w.contact.message}</span>
                     <span className="text-[11px] font-medium uppercase tracking-wider text-gray-400">
-                      Required
+                      {w.common.required}
                     </span>
                   </label>
                   <div className={`${fieldWrap} ${errors.message ? fieldWrapErr : fieldWrapOk}`}>
@@ -313,7 +308,7 @@ export default function ContactPage() {
                       id={messageId}
                       name="message"
                       rows={6}
-                      placeholder="Tell us how we can help…"
+                      placeholder={w.contact.messagePlaceholder}
                       value={message}
                       onChange={(e) => {
                         setMessage(e.target.value);
@@ -332,7 +327,7 @@ export default function ContactPage() {
                   disabled={submitting}
                   className="group mt-2 flex h-[52px] w-full cursor-pointer items-center justify-center gap-2 rounded-2xl bg-brand-red text-[15px] font-bold text-white shadow-[0_8px_28px_-6px_rgba(229,57,53,0.55)] transition hover:-translate-y-0.5 hover:bg-red-700 hover:shadow-[0_14px_36px_-8px_rgba(229,57,53,0.45)] active:translate-y-0 disabled:cursor-not-allowed disabled:translate-y-0 disabled:opacity-55 disabled:shadow-none"
                 >
-                  <span>{submitting ? "Sending…" : "Send message"}</span>
+                  <span>{submitting ? w.contact.submitting : w.contact.submit}</span>
                   {!submitting ? (
                     <CaretRight
                       className="pointer-events-none text-xl transition-transform duration-300 group-hover:translate-x-0.5"
@@ -348,17 +343,17 @@ export default function ContactPage() {
 
         <aside className="space-y-6 lg:sticky lg:top-24 lg:self-start">
           <div className="rounded-2xl border border-gray-100 bg-white p-6 shadow-sm">
-            <h3 className="font-heading text-lg font-extrabold text-brand-dark">Prefer email?</h3>
+            <h3 className="font-heading text-lg font-extrabold text-brand-dark">{w.contact.preferEmail}</h3>
             <p className="mt-2 text-sm text-gray-600">
-              For urgent catering quotes, browse{" "}
+              {w.contact.preferEmailBodyPrefix}{" "}
               <Link href="/caterers" className="font-bold text-brand-red underline-offset-2 hover:underline">
-                caterers near you
+                {w.contact.preferEmailLink}
               </Link>{" "}
-              and use each profile&apos;s enquiry options.
+              {w.contact.preferEmailBodySuffix}
             </p>
           </div>
           <div className="rounded-2xl border border-brand-red/20 bg-gradient-to-br from-brand-red/5 to-white p-6 shadow-sm">
-            <h3 className="text-xs font-bold uppercase tracking-wider text-brand-red">Office</h3>
+            <h3 className="text-xs font-bold uppercase tracking-wider text-brand-red">{w.contact.office}</h3>
             <p className="mt-3 text-sm leading-relaxed text-gray-700">
               {publicSiteConfig.contactAddressLine1}
               <br />

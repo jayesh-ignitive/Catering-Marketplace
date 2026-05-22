@@ -12,6 +12,8 @@ import { CatererProfileKeyword } from './caterer-profile-keyword.entity';
 import { CatererProfileServiceOffering } from './caterer-profile-service-offering.entity';
 import { Category } from './category.entity';
 import { Cuisine } from './cuisine.entity';
+import { CitiesModule } from './cities.module';
+import { CityTranslation } from './city-translation.entity';
 import { City } from './city.entity';
 import { Country } from './country.entity';
 import { CatererReview } from './caterer-review.entity';
@@ -25,6 +27,7 @@ import { MarketplaceService } from './marketplace.service';
   imports: [
     StorageModule,
     TenantProvisioningModule,
+    CitiesModule,
     TypeOrmModule.forFeature([
       CatererMarketplaceListing,
       CatererReview,
@@ -34,6 +37,7 @@ import { MarketplaceService } from './marketplace.service';
       Country,
       State,
       City,
+      CityTranslation,
       CatererProfileCategory,
       CatererProfileGalleryImage,
       Cuisine,

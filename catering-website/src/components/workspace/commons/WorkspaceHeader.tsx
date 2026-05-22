@@ -15,6 +15,7 @@ import Link from "next/link";
 import { useEffect, useRef, useState } from "react";
 import { usePathname } from "next/navigation";
 import { useAuth } from "@/context/AuthContext";
+import { useI18n } from "@/context/LocaleContext";
 import { workspaceHeaderSubtitle, workspaceHeaderTitle } from "../theme-nav";
 
 type WorkspaceHeaderProps = {
@@ -23,10 +24,11 @@ type WorkspaceHeaderProps = {
 };
 
 export function WorkspaceHeader({ user, onToggleSidebar }: WorkspaceHeaderProps) {
+  const { ws } = useI18n();
   const { logout } = useAuth();
   const pathname = usePathname();
-  const title = workspaceHeaderTitle(pathname);
-  const subtitle = workspaceHeaderSubtitle(pathname);
+  const title = workspaceHeaderTitle(pathname, ws);
+  const subtitle = workspaceHeaderSubtitle(pathname, ws);
   const [menuOpen, setMenuOpen] = useState(false);
   const menuRef = useRef<HTMLDivElement>(null);
 
@@ -63,7 +65,7 @@ export function WorkspaceHeader({ user, onToggleSidebar }: WorkspaceHeaderProps)
           type="button"
           onClick={onToggleSidebar}
           className="grid h-10 w-10 shrink-0 cursor-pointer place-items-center rounded-xl text-brand-text-muted transition-colors hover:bg-brand-red/10 hover:text-brand-red focus-visible:outline focus-visible:ring-2 focus-visible:ring-brand-red/30 focus-visible:ring-offset-2"
-          aria-label="Toggle workspace navigation"
+          aria-label={ws.header.toggleNav}
         >
           <List size={26} weight="regular" aria-hidden />
         </button>
@@ -84,8 +86,8 @@ export function WorkspaceHeader({ user, onToggleSidebar }: WorkspaceHeaderProps)
           }`}
           aria-expanded={menuOpen}
           aria-haspopup="menu"
-          aria-label="Account menu"
-          title="Account menu"
+          aria-label={ws.header.accountMenu}
+          title={ws.header.accountMenu}
         >
           <div className="relative h-full w-full overflow-hidden rounded-full">
             <Image
@@ -109,7 +111,7 @@ export function WorkspaceHeader({ user, onToggleSidebar }: WorkspaceHeaderProps)
               <p className="truncate text-sm font-bold text-brand-text-dark">{user.fullName}</p>
               <p className="truncate text-xs text-brand-text-muted">{user.email}</p>
               <span className="mt-2 inline-block rounded-full bg-brand-red-light px-2 py-0.5 text-[9px] font-bold uppercase tracking-widest text-brand-red">
-                Caterer
+                {ws.header.roleCaterer}
               </span>
             </div>
             <Link
@@ -119,7 +121,7 @@ export function WorkspaceHeader({ user, onToggleSidebar }: WorkspaceHeaderProps)
               onClick={() => setMenuOpen(false)}
             >
               <SquaresFour size={18} weight="bold" className="text-brand-text-muted" aria-hidden />
-              Dashboard
+              {ws.nav.items.dashboard}
             </Link>
             <Link
               href="/workspace/profile"
@@ -128,7 +130,7 @@ export function WorkspaceHeader({ user, onToggleSidebar }: WorkspaceHeaderProps)
               onClick={() => setMenuOpen(false)}
             >
               <Storefront size={18} weight="bold" className="text-brand-text-muted" aria-hidden />
-              Profile
+              {ws.nav.items.profile}
             </Link>
             <Link
               href="/workspace/menu"
@@ -137,7 +139,7 @@ export function WorkspaceHeader({ user, onToggleSidebar }: WorkspaceHeaderProps)
               onClick={() => setMenuOpen(false)}
             >
               <ForkKnife size={18} weight="bold" className="text-brand-text-muted" aria-hidden />
-              Menu
+              {ws.nav.items.menu}
             </Link>
             <Link
               href="/workspace/orders"
@@ -146,7 +148,7 @@ export function WorkspaceHeader({ user, onToggleSidebar }: WorkspaceHeaderProps)
               onClick={() => setMenuOpen(false)}
             >
               <ShoppingCart size={18} weight="bold" className="text-brand-text-muted" aria-hidden />
-              Orders
+              {ws.nav.items.orders}
             </Link>
             <Link
               href="/workspace/analytics"
@@ -155,7 +157,7 @@ export function WorkspaceHeader({ user, onToggleSidebar }: WorkspaceHeaderProps)
               onClick={() => setMenuOpen(false)}
             >
               <ChartLineUp size={18} weight="bold" className="text-brand-text-muted" aria-hidden />
-              Analytics
+              {ws.nav.items.analytics}
             </Link>
             <button
               type="button"
@@ -167,7 +169,7 @@ export function WorkspaceHeader({ user, onToggleSidebar }: WorkspaceHeaderProps)
               }}
             >
               <SignOut size={18} weight="bold" className="text-brand-text-muted" aria-hidden />
-              Sign out
+              {ws.header.signOut}
             </button>
           </div>
         ) : null}

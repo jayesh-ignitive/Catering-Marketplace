@@ -1,5 +1,7 @@
 "use client";
 
+import { useI18n } from "@/context/LocaleContext";
+import type { WebsiteMessages } from "@/i18n/website.messages";
 import {
   ArrowLeft,
   Calendar,
@@ -29,6 +31,7 @@ import { RemoteContentImage } from "@/components/common/RemoteContentImage";
 import { getCatererCardBadge } from "@/lib/caterer-listing-utils";
 import { publicSiteConfig } from "@/lib/site-config";
 import { CatererDetailGallery } from "@/components/caterers/CatererDetailGallery";
+import { trans } from "@/i18n";
 
 const nf = new Intl.NumberFormat("en-IN");
 
@@ -36,14 +39,16 @@ type DetailTab = "about" | "menu" | "gallery" | "reviews";
 
 const SPECIALTY_ICONS = [Fire, CookingPot, Hamburger, IceCream] as const;
 
-function locationDisplay(d: MarketplaceDetail): string {
+function locationDisplay(d: MarketplaceDetail, msg: WebsiteMessages["caterers"]["detail"]): string {
   if (d.streetAddress?.trim()) {
     return [d.streetAddress, d.city].filter(Boolean).join(", ");
   }
-  return [d.city, d.state, d.country].filter(Boolean).join(", ") || "Location on request";
+  return [d.city, d.state, d.country].filter(Boolean).join(", ") || msg.locationOnRequest;
 }
 
 function WriteReviewForm({ slug }: { slug: string }) {
+  const { w, trans } = useI18n();
+  const msg = w.caterers.detail;
   const qc = useQueryClient();
   const [authorName, setAuthorName] = useState("");
   const [rating, setRating] = useState(5);
@@ -59,7 +64,7 @@ function WriteReviewForm({ slug }: { slug: string }) {
         comment: comment.trim(),
       }),
     onSuccess: () => {
-      toast.success("Thanks — your review was posted.");
+      toast.success(msg.reviewPosted);
       setAuthorName("");
       setTitle("");
       setComment("");
@@ -77,22 +82,22 @@ function WriteReviewForm({ slug }: { slug: string }) {
         m.mutate();
       }}
     >
-      <h3 className="font-heading text-base font-bold text-brand-dark">Write a review</h3>
-      <p className="mt-1 text-xs text-gray-500">Share your experience (public, not verified purchases).</p>
+      <h3 className="font-heading text-base font-bold text-brand-dark">{msg.writeReview}</h3>
+      <p className="mt-1 text-xs text-gray-500">{msg.writeReviewHint}</p>
       <div className="mt-4 grid gap-4 sm:grid-cols-2">
         <label className="block text-xs font-bold uppercase tracking-wider text-gray-500">
-          Your name
+          {msg.yourName}
           <input
             required
             maxLength={120}
             value={authorName}
             onChange={(e) => setAuthorName(e.target.value)}
             className="mt-2 w-full rounded-xl border border-gray-100 bg-white px-3 py-2.5 text-sm outline-none focus:border-brand-red"
-            placeholder="e.g. Priya S."
+            placeholder={msg.yourNamePlaceholder}
           />
         </label>
         <label className="block text-xs font-bold uppercase tracking-wider text-gray-500">
-          Rating
+          {msg.rating}
           <select
             value={rating}
             onChange={(e) => setRating(Number(e.target.value))}
@@ -100,14 +105,14 @@ function WriteReviewForm({ slug }: { slug: string }) {
           >
             {[5, 4, 3, 2, 1].map((n) => (
               <option key={n} value={n}>
-                {n} stars
+                {trans(msg.stars, { n })}
               </option>
             ))}
           </select>
         </label>
       </div>
       <label className="mt-4 block text-xs font-bold uppercase tracking-wider text-gray-500">
-        Short title (optional)
+        {msg.shortTitleOptional}
         <input
           maxLength={200}
           value={title}
@@ -116,7 +121,7 @@ function WriteReviewForm({ slug }: { slug: string }) {
         />
       </label>
       <label className="mt-4 block text-xs font-bold uppercase tracking-wider text-gray-500">
-        Your review
+        {msg.yourReview}
         <textarea
           required
           minLength={10}
@@ -132,16 +137,18 @@ function WriteReviewForm({ slug }: { slug: string }) {
         disabled={m.isPending}
         className="mt-5 cursor-pointer rounded-2xl bg-brand-red px-6 py-3 text-sm font-bold text-white hover:bg-red-700 disabled:opacity-60"
       >
-        {m.isPending ? "Posting…" : "Post review"}
+        {m.isPending ? msg.posting : msg.postReview}
       </button>
     </form>
   );
 }
 
 function InquiryForm({ businessName }: { businessName: string }) {
+  const { w } = useI18n();
+  const msg = w.caterers.detail;
   const [eventDate, setEventDate] = useState("");
   const [guests, setGuests] = useState("");
-  const [eventType, setEventType] = useState("Wedding Reception");
+  const [eventType, setEventType] = useState<string>(msg.eventWedding);
 
   const onSubmit = (e: React.FormEvent) => {
     e.preventDefault();
@@ -156,15 +163,13 @@ function InquiryForm({ businessName }: { businessName: string }) {
     <aside className="w-full lg:w-96">
       <div className="overflow-hidden rounded-2xl border border-gray-100 bg-white shadow-xl sm:rounded-3xl sm:shadow-2xl lg:sticky lg:top-24">
         <div className="bg-brand-dark p-4 text-center text-white sm:p-6">
-          <h3 className="font-heading text-lg font-bold sm:text-xl">Check Availability</h3>
-          <p className="text-xs font-semibold uppercase tracking-widest text-gray-400">
-            Get a free quote today
-          </p>
+          <h3 className="font-heading text-lg font-bold sm:text-xl">{msg.checkAvailability}</h3>
+          <p className="text-xs font-semibold uppercase tracking-widest text-gray-400">{msg.freeQuoteToday}</p>
         </div>
         <form id="inquiry" className="space-y-4 p-5 sm:space-y-5 sm:p-8" onSubmit={onSubmit}>
           <label className="block">
             <span className="mb-2 block text-xs font-bold uppercase tracking-wider text-gray-500">
-              Event Date
+              {msg.eventDate}
             </span>
             <input
               type="date"
@@ -175,48 +180,48 @@ function InquiryForm({ businessName }: { businessName: string }) {
           </label>
           <label className="block">
             <span className="mb-2 block text-xs font-bold uppercase tracking-wider text-gray-500">
-              Guest Count
+              {msg.guestCount}
             </span>
             <select
               value={guests}
               onChange={(e) => setGuests(e.target.value)}
               className="w-full rounded-xl border border-gray-100 bg-gray-50 px-4 py-3 outline-none focus:border-brand-red"
             >
-              <option value="">Select range</option>
-              <option>150 – 300 Guests</option>
-              <option>300 – 500 Guests</option>
-              <option>500+ Guests</option>
+              <option value="">{msg.selectRange}</option>
+              <option>{msg.guests150to300}</option>
+              <option>{msg.guests300to500}</option>
+              <option>{msg.guests500plus}</option>
             </select>
           </label>
           <label className="block">
             <span className="mb-2 block text-xs font-bold uppercase tracking-wider text-gray-500">
-              Event Type
+              {msg.eventType}
             </span>
             <select
               value={eventType}
               onChange={(e) => setEventType(e.target.value)}
               className="w-full rounded-xl border border-gray-100 bg-gray-50 px-4 py-3 outline-none focus:border-brand-red"
             >
-              <option>Wedding Reception</option>
-              <option>Corporate Event</option>
-              <option>Birthday Party</option>
-              <option>Other</option>
+              <option>{msg.eventWedding}</option>
+              <option>{msg.eventCorporate}</option>
+              <option>{msg.eventBirthday}</option>
+              <option>{msg.eventOther}</option>
             </select>
           </label>
           <button
             type="submit"
             className="w-full cursor-pointer rounded-2xl bg-brand-red py-3 text-base font-bold text-white shadow-xl shadow-red-500/30 transition hover:-translate-y-0.5 hover:bg-red-700 sm:py-4 sm:text-lg"
           >
-            Send Inquiry
+            {msg.sendInquiry}
           </button>
           <p className="text-center text-[10px] text-gray-400">
-            By clicking send, you agree to our{" "}
+            {msg.inquiryTermsPrefix}{" "}
             <Link href="/terms" className="underline">
-              Terms
+              {msg.terms}
             </Link>{" "}
-            &{" "}
+            {msg.inquiryTermsAnd}{" "}
             <Link href="/privacy" className="underline">
-              Privacy Policy
+              {msg.privacyPolicy}
             </Link>
           </p>
         </form>
@@ -232,7 +237,7 @@ function InquiryForm({ businessName }: { businessName: string }) {
               +5
             </span>
           </div>
-          <span className="text-[11px] font-bold uppercase text-gray-500">Trusted by clients</span>
+          <span className="text-[11px] font-bold uppercase text-gray-500">{msg.trustedByClients}</span>
         </div>
       </div>
     </aside>
@@ -241,6 +246,8 @@ function InquiryForm({ businessName }: { businessName: string }) {
 
 /** Back + Get Quote overlaid on the top of the hero banner. */
 function DetailHeroToolbar() {
+  const { w } = useI18n();
+  const msg = w.caterers.detail;
   return (
     <div className="absolute inset-x-0 top-0 z-20">
       <div className="mx-auto flex max-w-7xl items-center justify-between gap-3 px-4 py-3 sm:px-6 sm:py-4">
@@ -249,7 +256,7 @@ function DetailHeroToolbar() {
           className="flex min-w-0 items-center gap-1.5 rounded-lg bg-black/35 px-2.5 py-2 text-xs font-bold text-white backdrop-blur-sm transition hover:bg-black/50 sm:gap-2 sm:px-3 sm:py-2.5 sm:text-sm"
         >
           <ArrowLeft className="size-4 shrink-0 sm:size-5" aria-hidden />
-          <span className="truncate">Back to Listing</span>
+          <span className="truncate">{msg.backToListing}</span>
         </Link>
         <a
           href="#inquiry"
@@ -259,7 +266,7 @@ function DetailHeroToolbar() {
             document.getElementById("inquiry")?.scrollIntoView({ behavior: "smooth" });
           }}
         >
-          Get Quote
+          {msg.getQuote}
         </a>
       </div>
     </div>
@@ -267,6 +274,8 @@ function DetailHeroToolbar() {
 }
 
 function ProfileBody({ d, slug }: { d: MarketplaceDetail; slug: string }) {
+  const { w, trans } = useI18n();
+  const msg = w.caterers.detail;
   const [tab, setTab] = useState<DetailTab>("about");
   const badge = getCatererCardBadge(d);
   const priceLine = formatMarketplacePriceFromInr(d.priceFrom);
@@ -276,13 +285,13 @@ function ProfileBody({ d, slug }: { d: MarketplaceDetail; slug: string }) {
     if (fromServices.length >= 2) {
       return fromServices.map((name, i) => ({
         name,
-        hint: d.keywords[i]?.label ?? "Popular with our guests",
+        hint: d.keywords[i]?.label ?? msg.popularWithGuests,
         Icon: SPECIALTY_ICONS[i % SPECIALTY_ICONS.length]!,
       }));
     }
     return (d.keywords ?? []).slice(0, 4).map((k, i) => ({
       name: k.label,
-      hint: "Signature offering",
+      hint: msg.signatureOffering,
       Icon: SPECIALTY_ICONS[i % SPECIALTY_ICONS.length]!,
     }));
   }, [d]);
@@ -294,17 +303,17 @@ function ProfileBody({ d, slug }: { d: MarketplaceDetail; slug: string }) {
   }, []);
 
   const tabs: { id: DetailTab; label: string }[] = [
-    { id: "about", label: "About" },
-    { id: "menu", label: "Menu & Pricing" },
-    { id: "gallery", label: "Gallery" },
-    { id: "reviews", label: "Reviews" },
+    { id: "about", label: msg.tabAbout },
+    { id: "menu", label: msg.tabMenu },
+    { id: "gallery", label: msg.tabGallery },
+    { id: "reviews", label: msg.tabReviews },
   ];
 
   const profileActions = (
     <div className="flex shrink-0 gap-1.5 sm:gap-2">
       <button
         type="button"
-        aria-label="Share profile"
+        aria-label={msg.shareProfile}
         className="flex size-9 cursor-pointer items-center justify-center rounded-lg border border-gray-200 text-gray-600 transition hover:bg-gray-50 sm:size-11 sm:rounded-xl"
         onClick={() => {
           const url = window.location.href;
@@ -312,7 +321,7 @@ function ProfileBody({ d, slug }: { d: MarketplaceDetail; slug: string }) {
             void navigator.share({ title: d.businessName, url });
           } else {
             void navigator.clipboard.writeText(url);
-            toast.success("Link copied");
+            toast.success(msg.linkCopied);
           }
         }}
       >
@@ -320,9 +329,9 @@ function ProfileBody({ d, slug }: { d: MarketplaceDetail; slug: string }) {
       </button>
       <button
         type="button"
-        aria-label="Save to favorites"
+        aria-label={msg.saveFavorites}
         className="flex size-9 cursor-pointer items-center justify-center rounded-lg border border-gray-200 text-gray-600 transition hover:bg-gray-50 sm:size-11 sm:rounded-xl"
-        onClick={() => toast.info("Favorites coming soon")}
+        onClick={() => toast.info(msg.favoritesComingSoon)}
       >
         <Heart className="text-lg sm:text-xl" aria-hidden />
       </button>
@@ -377,7 +386,7 @@ function ProfileBody({ d, slug }: { d: MarketplaceDetail; slug: string }) {
                     {badge?.kind === "verified" || badge?.kind === "top-rated" ? (
                       <span className="mt-1.5 inline-flex items-center gap-1 rounded-full bg-brand-green/10 px-2.5 py-0.5 text-[10px] font-bold uppercase tracking-wider text-brand-green">
                         <SealCheck weight="fill" className="size-3.5" aria-hidden />
-                        {badge.kind === "top-rated" ? "Top rated" : "Verified"}
+                        {badge.kind === "top-rated" ? msg.topRated : msg.verified}
                       </span>
                     ) : null}
                   </div>
@@ -411,7 +420,7 @@ function ProfileBody({ d, slug }: { d: MarketplaceDetail; slug: string }) {
                   {badge?.kind === "verified" || badge?.kind === "top-rated" ? (
                     <span className="flex w-fit items-center gap-1 rounded-full bg-brand-green/10 px-3 py-1 text-[10px] font-bold uppercase tracking-wider text-brand-green">
                       <SealCheck weight="fill" aria-hidden />
-                      {badge.kind === "top-rated" ? "Top rated" : "Verified"}
+                      {badge.kind === "top-rated" ? msg.topRated : msg.verified}
                     </span>
                   ) : null}
                 </div>
@@ -427,12 +436,12 @@ function ProfileBody({ d, slug }: { d: MarketplaceDetail; slug: string }) {
                   </span>
                   <span className="flex max-w-md items-center gap-2">
                     <MapPin className="shrink-0 text-lg text-brand-red" weight="fill" aria-hidden />
-                    {locationDisplay(d)}
+                    {locationDisplay(d, msg)}
                   </span>
                   {d.yearsInBusiness != null ? (
                     <span className="flex items-center gap-2">
                       <Calendar className="text-lg text-blue-500" weight="fill" aria-hidden />
-                      {d.yearsInBusiness}+ Years Experience
+                      {trans(msg.yearsExperience, { n: d.yearsInBusiness })}
                     </span>
                   ) : null}
                 </div>
@@ -456,12 +465,12 @@ function ProfileBody({ d, slug }: { d: MarketplaceDetail; slug: string }) {
               {d.yearsInBusiness != null ? (
                 <li className="flex min-w-0 items-center gap-2 rounded-lg bg-gray-50 px-3 py-2">
                   <Calendar className="size-4 shrink-0 text-blue-500 sm:size-5" weight="fill" aria-hidden />
-                  <span className="truncate">{d.yearsInBusiness}+ years experience</span>
+                  <span className="truncate">{trans(msg.yearsExperienceShort, { n: d.yearsInBusiness })}</span>
                 </li>
               ) : null}
               <li className="flex min-w-0 items-start gap-2 rounded-lg bg-gray-50 px-3 py-2 sm:col-span-2">
                 <MapPin className="mt-0.5 size-4 shrink-0 text-brand-red sm:size-5" weight="fill" aria-hidden />
-                <span className="line-clamp-2 leading-snug">{locationDisplay(d)}</span>
+                <span className="line-clamp-2 leading-snug">{locationDisplay(d, msg)}</span>
               </li>
             </ul>
           </div>
@@ -492,12 +501,11 @@ function ProfileBody({ d, slug }: { d: MarketplaceDetail; slug: string }) {
             <section id="caterer-about">
               <h2 className="mb-6 flex items-center gap-3 font-heading text-2xl font-bold text-brand-dark">
                 <span className="h-8 w-1.5 rounded-full bg-brand-red" aria-hidden />
-                About the Caterer
+                {msg.aboutTitle}
               </h2>
               <div className="space-y-4 leading-relaxed text-gray-600">
                 <p className="whitespace-pre-line">
-                  {d.about ||
-                    `${d.businessName} is a catering partner on Bharat Catering. Complete your profile in the workspace to add a full story here.`}
+                  {d.about || trans(msg.aboutPlaceholder, { name: d.businessName })}
                 </p>
               </div>
             </section>
@@ -506,7 +514,7 @@ function ProfileBody({ d, slug }: { d: MarketplaceDetail; slug: string }) {
               <section id="caterer-menu">
                 <h2 className="mb-6 flex items-center gap-3 font-heading text-2xl font-bold text-brand-dark">
                   <span className="h-8 w-1.5 rounded-full bg-brand-green" aria-hidden />
-                  Our Specialties
+                  {msg.ourSpecialties}
                 </h2>
                 <div className="grid grid-cols-1 gap-4 md:grid-cols-2">
                   {specialties.map(({ name, hint, Icon }) => (
@@ -536,13 +544,13 @@ function ProfileBody({ d, slug }: { d: MarketplaceDetail; slug: string }) {
                       ) : null}
                       {priceLine ? (
                         <div className="flex justify-between gap-4">
-                          <dt className="text-gray-500">Indicative price</dt>
+                          <dt className="text-gray-500">{msg.indicativePrice}</dt>
                           <dd className="font-bold text-brand-dark">{priceLine}</dd>
                         </div>
                       ) : null}
                       {capacityLine ? (
                         <div className="flex justify-between gap-4">
-                          <dt className="text-gray-500">Guest capacity</dt>
+                          <dt className="text-gray-500">{msg.guestCapacity}</dt>
                           <dd className="font-bold text-brand-dark">{capacityLine}</dd>
                         </div>
                       ) : null}
@@ -566,25 +574,25 @@ function ProfileBody({ d, slug }: { d: MarketplaceDetail; slug: string }) {
               <section id="caterer-menu">
                 <h2 className="mb-6 flex items-center gap-3 font-heading text-2xl font-bold text-brand-dark">
                   <span className="h-8 w-1.5 rounded-full bg-brand-green" aria-hidden />
-                  Menu &amp; Pricing
+                  {msg.menuPricingTitle}
                 </h2>
                 <div className="rounded-2xl border border-gray-100 bg-white p-6 shadow-sm">
                   <dl className="space-y-3 text-sm">
                     {d.primaryCategoryName ? (
                       <div className="flex justify-between gap-4">
-                        <dt className="text-gray-500">Service focus</dt>
+                        <dt className="text-gray-500">{msg.serviceFocus}</dt>
                         <dd className="font-bold text-brand-dark">{d.primaryCategoryName}</dd>
                       </div>
                     ) : null}
                     {priceLine ? (
                       <div className="flex justify-between gap-4">
-                        <dt className="text-gray-500">Indicative price</dt>
+                        <dt className="text-gray-500">{msg.indicativePrice}</dt>
                         <dd className="font-bold text-brand-dark">{priceLine}</dd>
                       </div>
                     ) : null}
                     {capacityLine ? (
                       <div className="flex justify-between gap-4">
-                        <dt className="text-gray-500">Guest capacity</dt>
+                        <dt className="text-gray-500">{msg.guestCapacity}</dt>
                         <dd className="font-bold text-brand-dark">{capacityLine}</dd>
                       </div>
                     ) : null}
@@ -602,10 +610,10 @@ function ProfileBody({ d, slug }: { d: MarketplaceDetail; slug: string }) {
             <section id="caterer-reviews">
               <h2 className="mb-6 flex items-center gap-3 font-heading text-2xl font-bold text-brand-dark">
                 <span className="h-8 w-1.5 rounded-full bg-brand-yellow" aria-hidden />
-                Reviews
+                {msg.tabReviews}
               </h2>
               {d.reviews.length === 0 ? (
-                <p className="text-sm text-gray-500">No reviews yet — be the first.</p>
+                <p className="text-sm text-gray-500">{msg.noReviewsYet}</p>
               ) : (
                 <ul className="space-y-6">
                   {d.reviews.map((r) => (
@@ -643,6 +651,9 @@ function ProfileBody({ d, slug }: { d: MarketplaceDetail; slug: string }) {
 }
 
 export function CatererDetailView() {
+  const { w, trans } = useI18n();
+  const msg = w.caterers.detail;
+
   const params = useParams();
   const slug = typeof params.slug === "string" ? params.slug : "";
 
@@ -654,7 +665,7 @@ export function CatererDetailView() {
 
   if (!slug) {
     return (
-      <div className="mx-auto max-w-7xl px-6 py-20 text-center text-gray-600">Invalid profile link.</div>
+      <div className="mx-auto max-w-7xl px-6 py-20 text-center text-gray-600">{msg.invalidProfileLink}</div>
     );
   }
 
@@ -670,13 +681,13 @@ export function CatererDetailView() {
   if (q.isError || !q.data) {
     return (
       <div className="mx-auto max-w-7xl px-6 py-24 text-center">
-        <h1 className="font-heading text-2xl font-bold text-brand-dark">Profile not found</h1>
-        <p className="mt-3 text-gray-500">This caterer may be unpublished or the link is incorrect.</p>
+        <h1 className="font-heading text-2xl font-bold text-brand-dark">{msg.profileNotFound}</h1>
+        <p className="mt-3 text-gray-500">{msg.profileNotFoundBody}</p>
         <Link
           href="/caterers"
           className="mt-8 inline-flex items-center gap-2 rounded-lg bg-brand-red px-6 py-3 text-sm font-bold text-white hover:bg-red-700"
         >
-          Browse all caterers
+          {msg.browseAllCaterers}
         </Link>
       </div>
     );

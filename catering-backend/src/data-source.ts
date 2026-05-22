@@ -22,10 +22,12 @@ import { CatererProfileCuisine } from './marketplace/caterer-profile-cuisine.ent
 import { CatererProfileGalleryImage } from './marketplace/caterer-profile-gallery-image.entity';
 import { CatererProfileKeyword } from './marketplace/caterer-profile-keyword.entity';
 import { CatererProfileServiceOffering } from './marketplace/caterer-profile-service-offering.entity';
+import { CategoryTranslation } from './marketplace/category-translation.entity';
+import { CityTranslation } from './marketplace/city-translation.entity';
+import { City } from './marketplace/city.entity';
 import { Category } from './marketplace/category.entity';
 import { HomeBanner } from './marketplace/home-banner.entity';
 import { Cuisine } from './marketplace/cuisine.entity';
-import { City } from './marketplace/city.entity';
 import { Country } from './marketplace/country.entity';
 import { Keyword } from './marketplace/keyword.entity';
 import { CatererReview } from './marketplace/caterer-review.entity';
@@ -66,10 +68,12 @@ const AppDataSource = new DataSource({
     CatererMarketplaceListing,
     CatererReview,
     Category,
+    CategoryTranslation,
+    City,
+    CityTranslation,
     HomeBanner,
     Country,
     State,
-    City,
     CatererProfileCategory,
     CatererProfileGalleryImage,
     Cuisine,

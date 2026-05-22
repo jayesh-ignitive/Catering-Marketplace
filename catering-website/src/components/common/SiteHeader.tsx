@@ -14,6 +14,7 @@ import {
   getCategoryIconWrapBase,
   getServiceCategoryIcon,
 } from "@/lib/service-category-icons";
+import { useI18n } from "@/context/LocaleContext";
 import { useState } from "react";
 
 function initialsFromName(name: string) {
@@ -60,21 +61,22 @@ function HeaderCategoryLink({
 }
 
 export function SiteHeader() {
+  const { w, trans, locale } = useI18n();
   const [open, setOpen] = useState(false);
   const { user, ready, logout } = useAuth();
   const categoriesQ = useQuery({
-    queryKey: ["catalog", "service-categories"],
-    queryFn: fetchServiceCategories,
+    queryKey: ["catalog", "service-categories", locale],
+    queryFn: () => fetchServiceCategories(locale),
   });
   const categories = categoriesQ.data ?? [];
 
   return (
     <>
       <div className="flex items-center justify-between bg-black px-6 py-2 text-[11px] font-medium tracking-wide text-gray-300">
-        <div>Sales &amp; Support: {publicSiteConfig.supportPhoneDisplay}</div>
-        <div className="hidden sm:block">
-          India&apos;s Trusted Catering Directory · 10,000+ Happy Customers
+        <div>
+          {trans(w.header.salesSupportLine, { phone: publicSiteConfig.supportPhoneDisplay })}
         </div>
+        <div className="hidden sm:block">{w.header.tagline}</div>
       </div>
 
       <header className="sticky top-0 z-50 bg-white shadow-sm">
@@ -84,10 +86,10 @@ export function SiteHeader() {
           <nav className="hidden items-center md:flex">
             <div className="group relative flex cursor-pointer flex-col border-l border-gray-200 px-6">
               <span className="mb-0.5 text-[9px] font-bold uppercase tracking-widest text-brand-red">
-                Catering Services
+                {w.header.cateringServices}
               </span>
               <div className="font-heading flex items-center gap-1 font-medium text-brand-dark transition group-hover:text-brand-red">
-                Service Categories{" "}
+                {w.header.serviceCategories}{" "}
                 <CaretDown
                   className="text-sm text-gray-400 transition-transform duration-300 group-hover:rotate-180 group-hover:text-brand-red"
                   aria-hidden
@@ -96,16 +98,16 @@ export function SiteHeader() {
               <div className="invisible absolute left-0 top-full z-50 mt-4 max-h-[min(24rem,70vh)] w-72 translate-y-2 overflow-hidden overflow-y-auto rounded-lg border border-gray-100 bg-white opacity-0 shadow-2xl transition-all duration-300 group-hover:visible group-hover:translate-y-0 group-hover:opacity-100">
                 <div className="p-2">
                   {categoriesQ.isPending ? (
-                    <p className="px-4 py-3 text-sm text-gray-500">Loading categories…</p>
+                    <p className="px-4 py-3 text-sm text-gray-500">{w.common.loadingCategories}</p>
                   ) : categories.length === 0 ? (
-                    <p className="px-4 py-3 text-sm text-gray-500">No categories available</p>
+                    <p className="px-4 py-3 text-sm text-gray-500">{w.common.noCategories}</p>
                   ) : (
                     categories.map((cat) => <HeaderCategoryLink key={cat.uuid} cat={cat} />)
                   )}
                 </div>
                 <div className="border-t border-gray-100 bg-gray-50 p-4 text-center">
                   <Link href="/caterers" className="text-sm font-bold text-brand-red hover:text-red-700">
-                    View All Services →
+                    {w.header.viewAllServices}
                   </Link>
                 </div>
               </div>
@@ -116,10 +118,10 @@ export function SiteHeader() {
               className="group flex cursor-pointer flex-col border-l border-gray-200 px-6"
             >
               <span className="mb-0.5 text-[9px] font-bold uppercase tracking-widest text-brand-red">
-                For caterers
+                {w.header.forCaterers}
               </span>
               <span className="font-heading font-medium text-brand-dark transition group-hover:text-brand-red">
-                Packages
+                {w.header.packages}
               </span>
             </Link>
 
@@ -128,10 +130,10 @@ export function SiteHeader() {
               className="group flex cursor-pointer flex-col border-l border-gray-200 px-6"
             >
               <span className="mb-0.5 text-[9px] font-bold uppercase tracking-widest text-brand-red">
-                Read
+                {w.header.read}
               </span>
               <span className="font-heading font-medium text-brand-dark transition group-hover:text-brand-red">
-                Insights
+                {w.header.insights}
               </span>
             </Link>
 
@@ -140,10 +142,10 @@ export function SiteHeader() {
               className="group flex cursor-pointer flex-col border-l border-gray-200 pl-6 pr-12"
             >
               <span className="mb-0.5 text-[9px] font-bold uppercase tracking-widest text-brand-red">
-                Get In Touch
+                {w.header.getInTouch}
               </span>
               <span className="font-heading font-medium text-brand-dark transition group-hover:text-brand-red">
-                Contact Us
+                {w.header.contactUs}
               </span>
             </Link>
           </nav>
@@ -152,7 +154,7 @@ export function SiteHeader() {
             <Link
               href="/caterers"
               className={`hidden md:flex ${headerIconActionClass}`}
-              aria-label="Search caterers"
+              aria-label={w.header.searchCaterers}
             >
               <MagnifyingGlass className="text-lg" aria-hidden />
             </Link>
@@ -165,8 +167,8 @@ export function SiteHeader() {
                 <Link
                   href="/login"
                   className={`hidden md:flex ${headerIconActionClass}`}
-                  aria-label="Log in"
-                  title="Log in"
+                  aria-label={w.header.logIn}
+                  title={w.header.logIn}
                 >
                   <SignIn className="text-lg" weight="bold" aria-hidden />
                 </Link>
@@ -174,7 +176,7 @@ export function SiteHeader() {
                   href="/register"
                   className="cursor-pointer rounded-md bg-brand-red px-4 py-2.5 text-sm font-semibold text-white shadow-lg shadow-red-500/30 transition-all duration-300 hover:-translate-y-1 hover:bg-red-700 hover:shadow-xl sm:px-5"
                 >
-                  Create an account
+                  {w.header.createAccount}
                 </Link>
               </>
             ) : null}
@@ -183,7 +185,7 @@ export function SiteHeader() {
               type="button"
               className="flex h-10 w-10 cursor-pointer items-center justify-center rounded-full border border-gray-200 text-brand-dark shadow-sm transition-all duration-300 hover:scale-105 hover:border-brand-red hover:bg-brand-red hover:text-white focus-visible:outline focus-visible:ring-2 focus-visible:ring-brand-red/35 focus-visible:ring-offset-2 md:hidden"
               aria-expanded={open}
-              aria-label={open ? "Close menu" : "Open menu"}
+              aria-label={open ? w.header.closeMenu : w.header.openMenu}
               onClick={() => setOpen((v) => !v)}
             >
               {open ? <X className="text-xl" /> : <List className="text-xl" />}
@@ -199,13 +201,13 @@ export function SiteHeader() {
                 className="rounded-lg px-4 py-3 text-sm font-semibold text-brand-dark hover:bg-gray-50"
                 onClick={() => setOpen(false)}
               >
-                Browse caterers
+                {w.header.browseCaterers}
               </Link>
               <p className="px-4 pt-2 text-[10px] font-bold uppercase tracking-widest text-brand-red">
-                Service categories
+                {w.header.serviceCategoriesMobile}
               </p>
               {categoriesQ.isPending ? (
-                <p className="px-4 py-2 text-sm text-gray-500">Loading…</p>
+                <p className="px-4 py-2 text-sm text-gray-500">{w.common.loading}</p>
               ) : (
                 categories.map((cat) => (
                   <HeaderCategoryLink
@@ -220,28 +222,28 @@ export function SiteHeader() {
                 className="mx-4 mb-2 rounded-lg py-2 text-center text-sm font-bold text-brand-red hover:text-red-700"
                 onClick={() => setOpen(false)}
               >
-                View all services →
+                {w.header.viewAllServicesMobile}
               </Link>
               <Link
                 href="/packages"
                 className="rounded-lg px-4 py-3 text-sm font-semibold text-brand-dark hover:bg-gray-50"
                 onClick={() => setOpen(false)}
               >
-                Packages
+                {w.header.packages}
               </Link>
               <Link
                 href="/blog"
                 className="rounded-lg px-4 py-3 text-sm font-semibold text-brand-dark hover:bg-gray-50"
                 onClick={() => setOpen(false)}
               >
-                Insights
+                {w.header.insights}
               </Link>
               <Link
                 href="/contact"
                 className="rounded-lg px-4 py-3 text-sm font-semibold text-brand-dark hover:bg-gray-50"
                 onClick={() => setOpen(false)}
               >
-                Contact
+                {w.header.contact}
               </Link>
               {ready && user ? (
                 <div className="mt-3 border-t border-gray-100 pt-3">
@@ -263,7 +265,7 @@ export function SiteHeader() {
                     onClick={() => setOpen(false)}
                   >
                     <UserCircle className="text-brand-red" size={22} weight="duotone" aria-hidden />
-                    Profile
+                    {w.header.profile}
                   </Link>
                   <button
                     type="button"
@@ -274,7 +276,7 @@ export function SiteHeader() {
                     }}
                   >
                     <SignOut className="text-gray-500" size={22} aria-hidden />
-                    Log out
+                    {w.header.logOut}
                   </button>
                 </div>
               ) : ready ? (
@@ -284,14 +286,14 @@ export function SiteHeader() {
                     className="rounded-lg px-4 py-3 text-sm font-semibold text-brand-dark hover:bg-gray-50"
                     onClick={() => setOpen(false)}
                   >
-                    Log in
+                    {w.header.logIn}
                   </Link>
                   <Link
                     href="/register"
                     className="rounded-lg bg-brand-red px-4 py-3 text-center text-sm font-bold text-white"
                     onClick={() => setOpen(false)}
                   >
-                    Create an account
+                    {w.header.createAccount}
                   </Link>
                 </>
               ) : null}

@@ -1,6 +1,7 @@
 import { Check } from "@phosphor-icons/react";
+import { useI18n } from "@/context/LocaleContext";
 import type { WizardStepIndex } from "./wizard-metadata";
-import { WIZARD_STEPS } from "./wizard-metadata";
+import { getWizardSteps } from "./wizard-metadata";
 
 export function OnboardingStyleStepper({
   step,
@@ -11,7 +12,9 @@ export function OnboardingStyleStepper({
   onSelectCompletedStep?: (target: WizardStepIndex) => void;
   navigationDisabled?: boolean;
 }) {
-  const n = WIZARD_STEPS.length;
+  const { ws, trans } = useI18n();
+  const wizardSteps = getWizardSteps(ws);
+  const n = wizardSteps.length;
   const pct = n <= 1 ? 0 : (step / (n - 1)) * 100;
   return (
     <div className="relative mb-10 sm:mb-12">
@@ -25,7 +28,7 @@ export function OnboardingStyleStepper({
         aria-hidden
       />
       <ol className="relative flex justify-between">
-        {WIZARD_STEPS.map((item, idx) => {
+        {wizardSteps.map((item, idx) => {
           const done = idx < step;
           const active = idx === step;
           const canGoTo = done && onSelectCompletedStep && !navigationDisabled;
@@ -62,7 +65,7 @@ export function OnboardingStyleStepper({
                   type="button"
                   onClick={() => onSelectCompletedStep(idx as WizardStepIndex)}
                   className="group flex max-w-[5.5rem] cursor-pointer flex-col items-center gap-2 rounded-lg p-1 -m-1 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand-red focus-visible:ring-offset-2"
-                  aria-label={`Go to ${item.onboardingShortLabel}`}
+                  aria-label={trans(ws.wizard.aria.goToStep, { label: item.onboardingShortLabel })}
                 >
                   {circle}
                   {label}

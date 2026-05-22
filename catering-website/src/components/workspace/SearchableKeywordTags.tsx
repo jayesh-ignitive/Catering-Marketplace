@@ -1,5 +1,6 @@
 "use client";
 
+import { useI18n } from "@/context/LocaleContext";
 import { CaretDown, MagnifyingGlass, Plus, X } from "@phosphor-icons/react";
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { createPortal } from "react-dom";
@@ -56,14 +57,18 @@ export function SearchableKeywordTags({
   onChange,
   fetchSuggestions,
   browseCatalog = [],
-  placeholder = "Search popular keywords or type your own…",
-  searchPlaceholder = "Add more keywords…",
+  placeholder,
+  searchPlaceholder,
   id,
   "aria-invalid": ariaInvalid,
   "aria-describedby": ariaDescribedBy,
   errored = false,
   className = "",
 }: SearchableKeywordTagsProps) {
+  const { ws, trans } = useI18n();
+  const resolvedPlaceholder = placeholder ?? ws.select.searchKeywords;
+  const resolvedSearchPlaceholder = searchPlaceholder ?? ws.select.addMoreKeywords;
+
   const listboxId = `${id ?? "kw-tags"}-listbox`;
   const rootRef = useRef<HTMLDivElement>(null);
   const anchorRef = useRef<HTMLDivElement>(null);
@@ -193,7 +198,7 @@ export function SearchableKeywordTags({
             <button
               type="button"
               className="shrink-0 rounded p-0.5 hover:bg-red-100 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand-red focus-visible:ring-offset-1"
-              aria-label={`Remove keyword ${kw}`}
+              aria-label={trans(ws.select.removeKeywordAria, { label: kw })}
               onMouseDown={(e) => e.preventDefault()}
               onClick={() => removeKeyword(kw)}
             >
@@ -214,7 +219,7 @@ export function SearchableKeywordTags({
           aria-autocomplete="list"
           autoComplete="off"
           disabled={!canAddMore}
-          placeholder={value.length ? searchPlaceholder : placeholder}
+          placeholder={value.length ? resolvedSearchPlaceholder : resolvedPlaceholder}
           value={query}
           maxLength={120}
           onChange={(e) => {

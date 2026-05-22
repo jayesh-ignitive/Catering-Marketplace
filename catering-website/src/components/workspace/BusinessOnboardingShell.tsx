@@ -1,5 +1,6 @@
 "use client";
 
+import { useI18n } from "@/context/LocaleContext";
 import Image from "next/image";
 import { BrandLogoLink } from "@/components/common/BrandLogoLink";
 
@@ -8,6 +9,9 @@ type Props = {
 };
 
 export function BusinessOnboardingShell({ children }: Props) {
+  const { ws } = useI18n();
+  const shell = ws.onboardingShell;
+
   return (
     <div className="flex h-[100dvh] overflow-hidden bg-[#f5f5f5] font-sans text-stone-800">
       {/* Left: branding (desktop) */}
@@ -30,12 +34,9 @@ export function BusinessOnboardingShell({ children }: Props) {
           <BrandLogoLink preset="onboardingHero" className="mb-10" />
 
           <h1 className="mb-5 max-w-lg font-black text-4xl leading-tight tracking-tight text-white xl:text-5xl">
-            Grow your catering business with us
+            {shell.title}
           </h1>
-          <p className="max-w-md text-lg leading-relaxed text-stone-300">
-            Complete your business profile, submit for review, and once approved show up in search and start
-            receiving quality leads from customers near you.
-          </p>
+          <p className="max-w-md text-lg leading-relaxed text-stone-300">{shell.subtitle}</p>
         </div>
 
         <div className="relative z-10 max-w-md rounded-2xl border border-white/20 bg-white/10 p-6 backdrop-blur-md">
@@ -64,15 +65,12 @@ export function BusinessOnboardingShell({ children }: Props) {
               />
             </div>
             <div className="text-sm font-semibold leading-snug">
-              <span className="text-[#ffc107]">1000+</span> caterers
+              <span className="text-[#ffc107]">{shell.statHighlight}</span> {shell.statLine}
               <br />
-              on the platform
+              {shell.statSuffix}
             </div>
           </div>
-          <p className="text-sm italic leading-relaxed text-stone-300">
-            &ldquo;Since joining, our wedding enquiries doubled. The workspace makes it easy to keep our listing
-            accurate.&rdquo;
-          </p>
+          <p className="text-sm italic leading-relaxed text-stone-300">&ldquo;{shell.testimonial}&rdquo;</p>
         </div>
       </aside>
 

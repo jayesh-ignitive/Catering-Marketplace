@@ -32,21 +32,9 @@ export class UpdateServiceCategoryDto {
   @IsOptional()
   @IsString()
   @MaxLength(120)
-  @Transform(({ value }: { value: unknown }) => trim(value))
-  name?: string;
-
-  @IsOptional()
-  @IsString()
-  @MaxLength(120)
   @Matches(/^[a-z0-9]+(?:-[a-z0-9]+)*$/)
   @Transform(({ value }: { value: unknown }) => trimLower(value))
   slug?: string;
-
-  @IsOptional()
-  @IsString()
-  @MaxLength(255)
-  @Transform(({ value }: { value: unknown }) => trim(value))
-  shortDescription?: string;
 
   @IsOptional()
   @IsString()

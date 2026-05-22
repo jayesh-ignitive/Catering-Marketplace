@@ -44,7 +44,20 @@ export function cateringImagePreviewUrl(upload: { url: string; key: string }): s
   return resolveCateringImageDisplayUrl(upload.key || url);
 }
 
-export type City = { id: string; name: string; slug: string };
+export type City = {
+  id: string;
+  name: string;
+  slug: string;
+  legacyCatalogId: string | null;
+  displayOrder: number;
+};
+
+export type MarketplaceCityFilter = {
+  /** English canonical name for API `city` filter param. */
+  city: string;
+  slug: string;
+  displayName: string;
+};
 export type ServiceCategory = {
   /** Stable filter id (`code`, e.g. `c1`). */
   id: string;
@@ -91,15 +104,20 @@ async function parseJson<T>(res: Response): Promise<T> {
 
 const fetchOpts: RequestInit = { cache: "no-store" };
 
-export async function fetchCities(): Promise<City[]> {
-  const res = await fetch(`${getCateringApiBase()}/api/catalog/cities`, fetchOpts);
+export async function fetchCities(locale: string = "en"): Promise<City[]> {
+  const res = await fetch(
+    `${getCateringApiBase()}/api/catalog/cities?locale=${encodeURIComponent(locale)}`,
+    fetchOpts,
+  );
   return parseJson<City[]>(res);
 }
 
-export async function fetchServiceCategories(): Promise<ServiceCategory[]> {
+export async function fetchServiceCategories(
+  locale: string = "en",
+): Promise<ServiceCategory[]> {
   const res = await fetch(
-    `${getCateringApiBase()}/api/catalog/service-categories`,
-    fetchOpts
+    `${getCateringApiBase()}/api/catalog/service-categories?locale=${encodeURIComponent(locale)}`,
+    fetchOpts,
   );
   return parseJson<ServiceCategory[]>(res);
 }
@@ -267,13 +285,23 @@ export type MarketplaceListResponse = {
   limit: number;
 };
 
-export async function fetchMarketplaceCities(): Promise<{ city: string }[]> {
-  const res = await fetch(`${getCateringApiBase()}/api/marketplace/caterers/cities`, fetchOpts);
-  return parseJson<{ city: string }[]>(res);
+export async function fetchMarketplaceCities(
+  locale: string = "en",
+): Promise<MarketplaceCityFilter[]> {
+  const res = await fetch(
+    `${getCateringApiBase()}/api/marketplace/caterers/cities?locale=${encodeURIComponent(locale)}`,
+    fetchOpts,
+  );
+  return parseJson<MarketplaceCityFilter[]>(res);
 }
 
-export async function fetchMarketplaceCitiesForWorkspace(): Promise<{ id: string; name: string }[]> {
-  const res = await fetch(`${getCateringApiBase()}/api/marketplace/cities`, fetchOpts);
+export async function fetchMarketplaceCitiesForWorkspace(
+  locale: string = "en",
+): Promise<{ id: string; name: string }[]> {
+  const res = await fetch(
+    `${getCateringApiBase()}/api/marketplace/cities?locale=${encodeURIComponent(locale)}`,
+    fetchOpts,
+  );
   return parseJson<{ id: string; name: string }[]>(res);
 }
 

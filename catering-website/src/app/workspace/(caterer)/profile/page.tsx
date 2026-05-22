@@ -3,6 +3,8 @@
 import { useQuery } from "@tanstack/react-query";
 import { Suspense } from "react";
 import { useAuth } from "@/context/AuthContext";
+import { useI18n } from "@/context/LocaleContext";
+import { I18nLoadingFallback } from "@/components/common/I18nLoadingFallback";
 import { WorkspaceBusinessWizard } from "@/components/workspace/caterer-profile/WorkspaceBusinessWizard";
 import {
   fetchMarketplaceCitiesForWorkspace,
@@ -14,13 +16,17 @@ import {
 
 function CatererProfileEditorContent() {
   const { token, user } = useAuth();
+  const { locale } = useI18n();
 
   const enabled = Boolean(token);
   const citiesQ = useQuery({
-    queryKey: ["marketplace", "workspace-cities"],
-    queryFn: fetchMarketplaceCitiesForWorkspace,
+    queryKey: ["marketplace", "workspace-cities", locale],
+    queryFn: () => fetchMarketplaceCitiesForWorkspace(locale),
   });
-  const categoriesQ = useQuery({ queryKey: ["catalog", "categories"], queryFn: fetchServiceCategories });
+  const categoriesQ = useQuery({
+    queryKey: ["catalog", "categories"],
+    queryFn: () => fetchServiceCategories(),
+  });
   const offeringsQ = useQuery({
     queryKey: ["marketplace", "service-offerings"],
     queryFn: fetchServiceOfferings,
@@ -52,11 +58,8 @@ function CatererProfileEditorContent() {
           layout="tabs"
         />
       ) : (
-        <div className="flex h-64 flex-col items-center justify-center rounded-xl border border-stone-200 bg-white shadow-sm">
-          <div className="h-10 w-10 animate-spin rounded-full border-4 border-stone-200 border-t-brand-red" />
-          <p className="mt-4 text-sm font-semibold uppercase tracking-widest text-stone-400">
-            Loading editor…
-          </p>
+        <div className="flex h-64 items-center justify-center rounded-xl border border-stone-200 bg-white shadow-sm">
+          <I18nLoadingFallback variant="editor" />
         </div>
       )}
     </div>
@@ -67,8 +70,8 @@ export default function CatererProfilePage() {
   return (
     <Suspense
       fallback={
-        <div className="flex h-64 items-center justify-center text-sm text-[var(--foreground-muted)]">
-          Loading…
+        <div className="flex h-64 items-center justify-center">
+          <I18nLoadingFallback variant="editor" />
         </div>
       }
     >

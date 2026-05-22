@@ -1,5 +1,6 @@
 "use client";
 
+import { useI18n } from "@/context/LocaleContext";
 import { CatererListingCard } from "@/components/caterers/CatererListingCard";
 import type { AuthUser } from "@/lib/auth-api";
 import {
@@ -25,6 +26,8 @@ export function WorkspaceListingPreview({
   user: AuthUser;
   profile: CatererWorkspaceProfile;
 }) {
+  const { ws, trans, locale } = useI18n();
+
   const [viewMode, setViewMode] = useState<ListingViewMode>("list");
 
   useEffect(() => {
@@ -37,14 +40,14 @@ export function WorkspaceListingPreview({
   }, []);
 
   const citiesQ = useQuery({
-    queryKey: ["catalog", "cities"],
-    queryFn: fetchCities,
+    queryKey: ["catalog", "cities", locale],
+    queryFn: () => fetchCities(locale),
     staleTime: 60_000,
   });
 
   const categoriesQ = useQuery({
-    queryKey: ["catalog", "service-categories"],
-    queryFn: fetchServiceCategories,
+    queryKey: ["catalog", "service-categories", locale],
+    queryFn: () => fetchServiceCategories(locale),
     staleTime: 60_000,
   });
 
@@ -60,7 +63,7 @@ export function WorkspaceListingPreview({
             .filter((n): n is string => Boolean(n))
         : [];
     return buildWorkspaceListingPreview(user, profile, cityName, categoryNames);
-  }, [user, profile, citiesQ.data, categoriesQ.data]);
+  }, [user, profile, citiesQ.data, categoriesQ.data, locale]);
 
   const isGrid = viewMode === "grid";
 
@@ -71,18 +74,16 @@ export function WorkspaceListingPreview({
       <div className="flex flex-col gap-3 border-b border-stone-100 px-6 py-4 sm:flex-row sm:items-center sm:justify-between">
         <div>
           <p className="text-xs font-bold uppercase tracking-wider text-[#8A92A6]">
-            Listing preview
+            {ws.listingPreview.title}
           </p>
-          <p className={`mt-1 ${workspaceHintTextClass}`}>
-            How your card appears in marketplace search — grid or list view.
-          </p>
+          <p className={`mt-1 ${workspaceHintTextClass}`}>{ws.listingPreview.hint}</p>
         </div>
         <div className="flex shrink-0 items-center gap-2">
           <button
             type="button"
             onClick={() => setView("list")}
             aria-pressed={!isGrid}
-            aria-label="List view"
+            aria-label={ws.listingPreview.listView}
             className={[
               "flex h-9 w-9 cursor-pointer items-center justify-center rounded-lg transition-all",
               !isGrid
@@ -96,7 +97,7 @@ export function WorkspaceListingPreview({
             type="button"
             onClick={() => setView("grid")}
             aria-pressed={isGrid}
-            aria-label="Grid view"
+            aria-label={ws.listingPreview.gridView}
             className={[
               "flex h-9 w-9 cursor-pointer items-center justify-center rounded-lg transition-all",
               isGrid

@@ -11,8 +11,9 @@ import { FormFieldError } from "@/components/common/FormFieldError";
 import { useAuth } from "@/context/AuthContext";
 import { AuthApiError } from "@/lib/auth-api";
 import { setPendingVerifyEmail } from "@/lib/pending-verify-email";
+import { useI18n } from "@/context/LocaleContext";
 import { postAuthPath } from "@/lib/post-auth-path";
-import { loginFormSchema, zodFieldErrors } from "@/lib/validation/auth-forms";
+import { createLoginFormSchema, zodFieldErrors } from "@/lib/validation/auth-forms";
 import { ArrowRight, Eye, EyeSlash } from "@phosphor-icons/react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
@@ -22,6 +23,7 @@ import { toast } from "react-toastify";
 type FieldErrors = Partial<Record<"email" | "password", string>>;
 
 export default function LoginPage() {
+  const { w } = useI18n();
   const { login, user, ready } = useAuth();
   const router = useRouter();
   const emailId = useId();
@@ -47,7 +49,7 @@ export default function LoginPage() {
 
   async function onSubmit(e: React.FormEvent) {
     e.preventDefault();
-    const parsed = loginFormSchema.safeParse({ email, password });
+    const parsed = createLoginFormSchema(w.auth.validation).safeParse({ email, password });
     if (!parsed.success) {
       setErrors(zodFieldErrors(parsed.error) as FieldErrors);
       return;
@@ -56,16 +58,16 @@ export default function LoginPage() {
     setSubmitting(true);
     try {
       const u = await login(parsed.data.email, parsed.data.password);
-      toast.success("Signed in");
+      toast.success(w.auth.login.signedIn);
       router.push(postAuthPath(u));
     } catch (err) {
       if (err instanceof AuthApiError && err.code === "EMAIL_NOT_VERIFIED") {
         setPendingVerifyEmail(parsed.data.email);
-        toast.info("Enter the verification code we sent you.");
+        toast.info(w.auth.login.verifyRedirect);
         router.replace("/verify-otp?from=login");
         return;
       }
-      toast.error(err instanceof Error ? err.message : "Sign-in failed");
+      toast.error(err instanceof Error ? err.message : w.auth.login.signInFailed);
     } finally {
       setSubmitting(false);
     }
@@ -79,7 +81,7 @@ export default function LoginPage() {
             className="h-10 w-10 animate-spin rounded-full border-2 border-brand-red border-t-transparent"
             aria-hidden
           />
-          <p className="font-heading text-sm font-semibold text-brand-dark">Preparing your kitchen…</p>
+          <p className="font-heading text-sm font-semibold text-brand-dark">{w.auth.preparingKitchen}</p>
         </div>
       </main>
     );
@@ -87,28 +89,28 @@ export default function LoginPage() {
 
   return (
     <PartnerOnboardingAuthShell
-      title="Log in to your account"
+      title={w.auth.login.title}
       subtitle={
         <p>
-          New here?{" "}
+          {w.auth.login.subtitlePrefix}{" "}
           <Link href="/register" className={obTextLink}>
-            Create an account
+            {w.auth.login.subtitleLink}
           </Link>{" "}
-          and list your business.
+          {w.auth.login.subtitleSuffix}
         </p>
       }
     >
       <form noValidate onSubmit={onSubmit} className="space-y-6">
         <div>
           <label htmlFor={emailId} className={obLabel}>
-            Work email *
+            {w.auth.login.workEmail}
           </label>
           <input
             id={emailId}
             name="email"
             type="email"
             autoComplete="email"
-            placeholder="hello@yourbusiness.com"
+            placeholder={w.auth.login.emailPlaceholder}
             value={email}
             onChange={(e) => {
               setEmail(e.target.value);
@@ -123,7 +125,7 @@ export default function LoginPage() {
 
         <div>
           <label htmlFor={passwordId} className={obLabel}>
-            Password *
+            {w.auth.login.password}
           </label>
           <div className="relative">
             <input
@@ -131,7 +133,7 @@ export default function LoginPage() {
               name="password"
               type={showPassword ? "text" : "password"}
               autoComplete="current-password"
-              placeholder="Enter your password"
+              placeholder={w.auth.login.passwordPlaceholder}
               value={password}
               onChange={(e) => {
                 setPassword(e.target.value);
@@ -144,7 +146,7 @@ export default function LoginPage() {
             <button
               type="button"
               className="absolute right-2 top-1/2 flex h-10 w-10 -translate-y-1/2 cursor-pointer items-center justify-center rounded-sm text-[#9CA3AF] transition-colors hover:bg-gray-100 hover:text-[#374151] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand-red focus-visible:ring-offset-1"
-              aria-label={showPassword ? "Hide password" : "Show password"}
+              aria-label={showPassword ? w.auth.login.hidePassword : w.auth.login.showPassword}
               onClick={() => setShowPassword((v) => !v)}
             >
               {showPassword ? (
@@ -171,7 +173,7 @@ export default function LoginPage() {
 
       <p className="mt-8 text-center text-sm text-[#6B7280]">
         <Link href="/verify-otp" className={obTextLink}>
-          Have a verification code?
+          {w.auth.login.haveVerificationCode}
         </Link>
       </p>
     </PartnerOnboardingAuthShell>

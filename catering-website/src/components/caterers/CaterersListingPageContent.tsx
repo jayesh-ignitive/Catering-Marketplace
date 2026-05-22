@@ -4,7 +4,6 @@ import {
   CaretLeft,
   CaretRight,
   Funnel,
-  MapPin,
   Rows,
   SquaresFour,
   X,
@@ -14,12 +13,13 @@ import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { ListingPriceRangeSlider } from "@/components/caterers/ListingPriceRangeSlider";
+import { trans } from "@/i18n";
+import { useI18n } from "@/context/LocaleContext";
 import { CatererListingCard } from "@/components/caterers/CatererListingCard";
 import { SearchableSelect } from "@/components/common/SearchableSelect";
 import { useDebouncedValue } from "@/hooks/useDebouncedValue";
-import { caterersListingPath } from "@/lib/caterers-url";
+import { caterersListingPath, slugifyCitySegment } from "@/lib/caterers-url";
 import {
-  filterByAreaQuery,
   filterByMinRating,
   isListingPriceRangeDefault,
   LISTING_PRICE_MAX,
@@ -38,13 +38,6 @@ import {
 
 const nf = new Intl.NumberFormat("en-IN");
 const LISTING_FILTER_DEBOUNCE_MS = 350;
-
-const SORT_OPTIONS: { value: ListingSortOption; label: string }[] = [
-  { value: "popularity", label: "Popularity" },
-  { value: "rating", label: "Rating (High to Low)" },
-  { value: "price-asc", label: "Price (Low to High)" },
-  { value: "price-desc", label: "Price (High to Low)" },
-];
 
 function ListingSkeleton({ viewMode }: { viewMode: ListingViewMode }) {
   const isGrid = viewMode === "grid";
@@ -91,6 +84,8 @@ export function CaterersListingPageContent({
   presetCityName = null,
   presetCategoryId = null,
 }: CaterersListingPageContentProps) {
+  const { w, trans, locale } = useI18n();
+
   const router = useRouter();
 
   const [viewMode, setViewMode] = useState<ListingViewMode>("list");
@@ -131,10 +126,13 @@ export function CaterersListingPageContent({
     setCategoryId(presetCategoryId ?? "");
   }, [presetCategoryId]);
 
-  const citiesQ = useQuery({ queryKey: ["marketplace", "cities"], queryFn: fetchMarketplaceCities });
+  const citiesQ = useQuery({
+    queryKey: ["marketplace", "cities", locale],
+    queryFn: () => fetchMarketplaceCities(locale),
+  });
   const categoriesQ = useQuery({
-    queryKey: ["catalog", "service-categories"],
-    queryFn: fetchServiceCategories,
+    queryKey: ["catalog", "service-categories", locale],
+    queryFn: () => fetchServiceCategories(locale),
   });
 
   const listParams = useMemo(() => {
@@ -169,14 +167,6 @@ export function CaterersListingPageContent({
   );
 
   const resetPage = useCallback(() => setPage(1), []);
-
-  const onAreaFilterChange = useCallback(
-    (value: string) => {
-      setAreaFilter(value);
-      resetPage();
-    },
-    [resetPage],
-  );
 
   const onCityChange = useCallback(
     (nextCity: string) => {
@@ -213,7 +203,6 @@ export function CaterersListingPageContent({
   );
 
   const resetAllFilters = useCallback(() => {
-    setAreaFilter("");
     setMinRating(null);
     setPriceMin(LISTING_PRICE_MIN);
     setPriceMax(LISTING_PRICE_MAX);
@@ -228,45 +217,45 @@ export function CaterersListingPageContent({
 
   const displayedItems = useMemo(() => {
     const raw = listQ.data?.items ?? [];
-    let items = filterByAreaQuery(raw, areaFilter);
-    items = filterByMinRating(items, minRating);
+    const items = filterByMinRating(raw, minRating);
     return sortMarketplaceItems(items, sort);
-  }, [listQ.data?.items, areaFilter, minRating, sort]);
+  }, [listQ.data?.items, minRating, sort]);
 
   const totalPages = listQ.data ? Math.max(1, Math.ceil(listQ.data.total / listQ.data.limit)) : 1;
 
   const cityRows = useMemo(() => {
     const raw = citiesQ.data ?? [];
-    if (presetCityName && !raw.some((r) => r.city === presetCityName)) {
-      return [{ city: presetCityName }, ...raw];
+    if (
+      presetCityName &&
+      !raw.some((r) => r.city === presetCityName || r.displayName === presetCityName)
+    ) {
+      return [
+        { city: presetCityName, slug: slugifyCitySegment(presetCityName), displayName: presetCityName },
+        ...raw,
+      ];
     }
     return raw;
   }, [citiesQ.data, presetCityName]);
 
   const citySelectOptions = useMemo(
     () => [
-      { value: "", label: "All cities" },
-      ...cityRows.map((c) => ({ value: c.city, label: c.city })),
+      { value: "", label: w.caterers.listing.allCities },
+      ...cityRows.map((c) => ({ value: c.city, label: c.displayName })),
     ],
-    [cityRows],
-  );
-
-  const sortSelectOptions = useMemo(
-    () => SORT_OPTIONS.map((o) => ({ value: o.value, label: o.label })),
-    [],
+    [cityRows, w.caterers.listing.allCities],
   );
 
   const activeCategory = (categoriesQ.data ?? []).find((c) => c.id === categoryId);
   const pageTitle = city
-    ? `Top Rated Caterers in ${city}`
+    ? trans(w.caterers.listing.titleInCity, { city })
     : activeCategory
-      ? `${activeCategory.name} Caterers`
-      : "Find Best Caterers";
+      ? trans(w.caterers.listing.titleCategory, { category: activeCategory.name })
+      : w.caterers.listing.titleDefault;
   const breadcrumbTail = city
-    ? `Caterers in ${city}`
+    ? trans(w.caterers.listing.breadcrumbInCity, { city })
     : activeCategory
       ? activeCategory.name
-      : "All caterers";
+      : w.caterers.listing.breadcrumbAll;
 
   const isGrid = viewMode === "grid";
 
@@ -274,29 +263,28 @@ export function CaterersListingPageContent({
     let n = 0;
     if (city) n += 1;
     if (categoryId) n += 1;
-    if (areaFilter.trim()) n += 1;
     if (minRating != null) n += 1;
     if (!isListingPriceRangeDefault(priceMin, priceMax)) n += 1;
     return n;
-  }, [areaFilter, categoryId, city, minRating, priceMax, priceMin]);
+  }, [categoryId, city, minRating, priceMax, priceMin]);
 
   const filtersPanel = (
     <div className="overflow-hidden rounded-2xl border border-gray-100 bg-white shadow-sm lg:sticky lg:top-24">
       <div className="flex items-center justify-between border-b border-gray-100 bg-gray-50/50 p-4 sm:p-5">
-        <h3 className="font-heading font-bold text-brand-dark">Filters</h3>
+        <h3 className="font-heading font-bold text-brand-dark">{w.caterers.listing.filters}</h3>
         <div className="flex items-center gap-3">
           <button
             type="button"
             onClick={resetAllFilters}
             className="cursor-pointer text-xs font-bold text-brand-red hover:underline"
           >
-            Reset All
+            {w.caterers.listing.resetAll}
           </button>
           <button
             type="button"
             onClick={() => setMobileFiltersOpen(false)}
             className="flex h-8 w-8 cursor-pointer items-center justify-center rounded-lg text-gray-500 hover:bg-gray-100 lg:hidden"
-            aria-label="Close filters"
+            aria-label={w.caterers.listing.closeFilters}
           >
             <X className="text-lg" aria-hidden />
           </button>
@@ -305,34 +293,23 @@ export function CaterersListingPageContent({
 
       <div className="max-h-[min(70vh,520px)] space-y-6 overflow-y-auto p-4 sm:max-h-none sm:space-y-8 sm:p-5">
         <div>
-          <h4 className="mb-3 text-sm font-bold uppercase tracking-wider text-brand-dark">Location</h4>
-          <div className="relative">
-            <MapPin
-              className="pointer-events-none absolute left-3 top-1/2 -translate-y-1/2 text-gray-400"
-              aria-hidden
-            />
-            <input
-              type="text"
-              value={areaFilter}
-              onChange={(e) => onAreaFilterChange(e.target.value)}
-              placeholder="Search area…"
-              className="w-full rounded-lg border border-gray-200 bg-gray-50 py-2.5 pl-9 pr-4 text-sm transition focus:border-brand-red focus:outline-none"
-            />
-          </div>
-          <div className="mt-3">
-            <SearchableSelect
-              instanceId="listing-city"
-              ariaLabel="City"
-              placeholder="All cities"
-              options={citySelectOptions}
-              value={city}
-              onChange={onCityChange}
-            />
-          </div>
+          <h4 className="mb-3 text-sm font-bold uppercase tracking-wider text-brand-dark">
+            {w.caterers.listing.cityAria}
+          </h4>
+          <SearchableSelect
+            instanceId="listing-city"
+            ariaLabel={w.caterers.listing.cityAria}
+            placeholder={w.caterers.listing.allCities}
+            options={citySelectOptions}
+            value={city}
+            onChange={onCityChange}
+          />
         </div>
 
         <div>
-          <h4 className="mb-3 text-sm font-bold uppercase tracking-wider text-brand-dark">Service Category</h4>
+          <h4 className="mb-3 text-sm font-bold uppercase tracking-wider text-brand-dark">
+            {w.caterers.listing.serviceCategory}
+          </h4>
           <div className="max-h-48 space-y-2 overflow-y-auto sm:max-h-none">
             {(categoriesQ.data ?? []).map((cat) => (
               <label key={cat.id} className="group flex cursor-pointer items-center gap-3">
@@ -351,16 +328,20 @@ export function CaterersListingPageContent({
         </div>
 
         <div>
-          <h4 className="mb-3 text-sm font-bold uppercase tracking-wider text-brand-dark">Price (Per Plate)</h4>
+          <h4 className="mb-3 text-sm font-bold uppercase tracking-wider text-brand-dark">
+            {w.caterers.listing.pricePerPlate}
+          </h4>
           <ListingPriceRangeSlider min={priceMin} max={priceMax} onChange={onPriceRangeChange} />
         </div>
 
         <div>
-          <h4 className="mb-3 text-sm font-bold uppercase tracking-wider text-brand-dark">Customer Rating</h4>
+          <h4 className="mb-3 text-sm font-bold uppercase tracking-wider text-brand-dark">
+            {w.caterers.listing.customerRating}
+          </h4>
           <div className="space-y-2">
             {[
-              { value: 4.5, label: "4.5 & Up" },
-              { value: 4.0, label: "4.0 & Up" },
+              { value: 4.5, label: w.caterers.listing.rating45Up },
+              { value: 4.0, label: w.caterers.listing.rating40Up },
             ].map((opt) => (
               <label key={opt.value} className="flex cursor-pointer items-center gap-3">
                 <input
@@ -390,7 +371,7 @@ export function CaterersListingPageContent({
       <div ref={listingTopRef} className="mb-6 scroll-mt-28 sm:mb-8">
         <nav className="mb-2 flex flex-wrap items-center gap-x-2 gap-y-1 text-xs font-medium text-gray-500">
           <Link href="/" className="transition hover:text-brand-red">
-            Home
+            {w.caterers.listing.breadcrumbHome}
           </Link>
           <CaretRight className="text-gray-300" aria-hidden />
           <span className="break-words">{breadcrumbTail}</span>
@@ -398,10 +379,11 @@ export function CaterersListingPageContent({
         <h1 className="font-heading text-2xl font-bold leading-tight text-brand-dark sm:text-3xl">{pageTitle}</h1>
         <p className="mt-1 text-sm text-gray-500 sm:text-base">
           {listQ.isPending
-            ? "Loading caterers…"
-            : `Showing ${nf.format(listQ.data?.total ?? displayedItems.length)} caterer${
-                (listQ.data?.total ?? 0) === 1 ? "" : "s"
-              } found for your search`}
+            ? w.caterers.listing.loading
+            : trans(w.caterers.listing.resultsShowing, {
+                count: nf.format(listQ.data?.total ?? displayedItems.length),
+                plural: (listQ.data?.total ?? 0) === 1 ? "" : "s",
+              })}
         </p>
       </div>
 
@@ -418,7 +400,7 @@ export function CaterersListingPageContent({
               className="max-h-[92vh] w-full cursor-default overflow-hidden rounded-t-2xl sm:mx-auto sm:max-w-md sm:rounded-2xl"
               role="dialog"
               aria-modal="true"
-              aria-label="Filters"
+              aria-label={w.caterers.listing.filters}
               onClick={(e) => e.stopPropagation()}
             >
               {filtersPanel}
@@ -427,14 +409,14 @@ export function CaterersListingPageContent({
         ) : null}
 
         <div className="min-w-0 flex-1">
-          <div className="mb-4 flex flex-col gap-3 rounded-xl border border-gray-100 bg-white p-3 shadow-sm sm:mb-6 sm:flex-row sm:items-center sm:justify-between sm:gap-4 sm:p-4">
+          <div className="mb-4 flex flex-col gap-3 rounded-xl border border-gray-100 bg-white p-3 shadow-sm sm:mb-6 sm:flex-row sm:items-center sm:justify-end sm:gap-4 sm:p-4">
             <button
               type="button"
               onClick={() => setMobileFiltersOpen(true)}
               className="flex w-full cursor-pointer items-center justify-center gap-2 rounded-lg border border-gray-200 bg-gray-50 px-4 py-2.5 text-sm font-bold text-brand-dark transition hover:border-brand-red/30 lg:hidden"
             >
               <Funnel className="text-brand-red" weight="fill" aria-hidden />
-              Filters
+              {w.caterers.listing.filters}
               {activeFilterCount > 0 ? (
                 <span className="rounded-full bg-brand-red px-2 py-0.5 text-[10px] font-bold text-white">
                   {activeFilterCount}
@@ -442,24 +424,12 @@ export function CaterersListingPageContent({
               ) : null}
             </button>
 
-            <div className="flex w-full flex-col gap-2 sm:flex-1 sm:flex-row sm:items-center sm:gap-4 md:w-auto md:flex-none">
-              <span className="shrink-0 text-sm text-gray-500">Sort by</span>
-              <SearchableSelect
-                instanceId="listing-sort"
-                ariaLabel="Sort caterers"
-                options={sortSelectOptions}
-                value={sort}
-                onChange={(v) => setSort(v as ListingSortOption)}
-                isSearchable={false}
-                className="w-full min-w-0 sm:min-w-[200px] md:min-w-[220px]"
-              />
-            </div>
-            <div className="flex shrink-0 items-center justify-end gap-2 sm:justify-start">
+            <div className="flex shrink-0 items-center justify-end gap-2">
               <button
                 type="button"
                 onClick={() => setView("list")}
                 aria-pressed={!isGrid}
-                aria-label="List view"
+                aria-label={w.caterers.listing.viewList}
                 className={[
                   "flex h-9 w-9 cursor-pointer items-center justify-center rounded-lg transition-all",
                   !isGrid ? "bg-brand-red text-white" : "bg-gray-50 text-gray-400 hover:text-brand-red",
@@ -471,7 +441,7 @@ export function CaterersListingPageContent({
                 type="button"
                 onClick={() => setView("grid")}
                 aria-pressed={isGrid}
-                aria-label="Grid view"
+                aria-label={w.caterers.listing.viewGrid}
                 className={[
                   "flex h-9 w-9 cursor-pointer items-center justify-center rounded-lg transition-all",
                   isGrid ? "bg-brand-red text-white" : "bg-gray-50 text-gray-400 hover:text-brand-red",
@@ -486,23 +456,19 @@ export function CaterersListingPageContent({
             <ListingSkeleton viewMode={viewMode} />
           ) : listQ.isError ? (
             <div className="rounded-2xl border border-red-100 bg-red-50 px-4 py-10 text-center sm:px-8 sm:py-14">
-              <p className="font-heading text-lg font-bold text-red-900">Unable to load directory</p>
-              <p className="mx-auto mt-2 max-w-md text-sm text-red-800/80">
-                Start the API on port 4000 and ensure the database is migrated, then refresh.
-              </p>
+              <p className="font-heading text-lg font-bold text-red-900">{w.caterers.listing.loadErrorTitle}</p>
+              <p className="mx-auto mt-2 max-w-md text-sm text-red-800/80">{w.caterers.listing.loadErrorBody}</p>
             </div>
           ) : displayedItems.length === 0 ? (
             <div className="rounded-2xl border border-gray-100 bg-white px-4 py-12 text-center shadow-sm sm:px-8 sm:py-16">
-              <p className="font-heading text-xl font-bold text-brand-dark">No caterers match your filters</p>
-              <p className="mx-auto mt-2 max-w-md text-sm text-gray-500">
-                Try widening your search or reset filters to see more listings.
-              </p>
+              <p className="font-heading text-xl font-bold text-brand-dark">{w.caterers.listing.noResults}</p>
+              <p className="mx-auto mt-2 max-w-md text-sm text-gray-500">{w.caterers.listing.tryAdjusting}</p>
               <button
                 type="button"
                 onClick={resetAllFilters}
                 className="mt-6 cursor-pointer rounded-xl bg-brand-red px-6 py-3 text-sm font-bold text-white hover:bg-red-700"
               >
-                Reset filters
+                {w.caterers.listing.resetFilters}
               </button>
             </div>
           ) : (
@@ -520,13 +486,13 @@ export function CaterersListingPageContent({
               </div>
 
               {totalPages > 1 ? (
-                <nav className="flex justify-center pt-6 sm:pt-8" aria-label="Pagination">
+                <nav className="flex justify-center pt-6 sm:pt-8" aria-label={w.caterers.listing.pagination}>
                   <div className="flex items-center gap-1.5 sm:gap-2">
                     <button
                       type="button"
                       disabled={page <= 1}
                       onClick={() => setPage((p) => Math.max(1, p - 1))}
-                      aria-label="Previous page"
+                      aria-label={w.caterers.listing.previousPage}
                       className="flex h-9 w-9 cursor-pointer items-center justify-center rounded-xl border border-gray-200 text-gray-400 transition hover:bg-brand-red hover:text-white disabled:cursor-not-allowed disabled:opacity-35 sm:h-10 sm:w-10"
                     >
                       <CaretLeft aria-hidden />
@@ -554,7 +520,7 @@ export function CaterersListingPageContent({
                       type="button"
                       disabled={page >= totalPages}
                       onClick={() => setPage((p) => p + 1)}
-                      aria-label="Next page"
+                      aria-label={w.caterers.listing.nextPage}
                       className="flex h-9 w-9 cursor-pointer items-center justify-center rounded-xl border border-gray-200 text-gray-400 transition hover:bg-brand-red hover:text-white disabled:cursor-not-allowed disabled:opacity-35 sm:h-10 sm:w-10"
                     >
                       <CaretRight aria-hidden />

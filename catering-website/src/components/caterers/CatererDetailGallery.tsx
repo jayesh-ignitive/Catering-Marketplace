@@ -1,6 +1,8 @@
 "use client";
 
+import { useI18n } from "@/context/LocaleContext";
 import { RemoteContentImage } from "@/components/common/RemoteContentImage";
+import { trans } from "@/i18n";
 import { CaretLeft, CaretRight, X } from "@phosphor-icons/react";
 import { useEffect, useState } from "react";
 
@@ -11,6 +13,8 @@ export function CatererDetailGallery({
   images: string[];
   businessName: string;
 }) {
+  const { w, trans } = useI18n();
+
   const [openIndex, setOpenIndex] = useState<number | null>(null);
   const preview = images.slice(0, 3);
 
@@ -41,7 +45,7 @@ export function CatererDetailGallery({
       <div className="mb-6 flex items-end justify-between">
         <h2 className="flex items-center gap-3 font-heading text-2xl font-bold text-brand-dark">
           <span className="h-8 w-1.5 rounded-full bg-brand-yellow" aria-hidden />
-          Photo Gallery
+          {w.caterers.gallery.photoGallery}
         </h2>
         {images.length > 3 ? (
           <button
@@ -49,7 +53,7 @@ export function CatererDetailGallery({
             className="cursor-pointer text-sm font-bold text-brand-red hover:underline"
             onClick={() => setOpenIndex(0)}
           >
-            View All Photos
+            {w.caterers.gallery.viewAllPhotos}
           </button>
         ) : null}
       </div>
@@ -60,7 +64,7 @@ export function CatererDetailGallery({
             type="button"
             onClick={() => setOpenIndex(i)}
             className="relative h-48 cursor-pointer overflow-hidden rounded-2xl text-left outline-none focus-visible:ring-2 focus-visible:ring-brand-red"
-            aria-label={`Open gallery image ${i + 1}`}
+            aria-label={trans(w.caterers.gallery.openImageAria, { n: i + 1 })}
           >
             <RemoteContentImage
               src={url}
@@ -78,18 +82,18 @@ export function CatererDetailGallery({
           className="fixed inset-0 z-[100] flex items-center justify-center p-3 sm:p-6"
           role="dialog"
           aria-modal="true"
-          aria-label={`${businessName} gallery`}
+          aria-label={trans(w.caterers.gallery.galleryAria, { name: businessName })}
         >
           <button
             type="button"
             className="absolute inset-0 z-[60] cursor-pointer bg-black/92"
-            aria-label="Close gallery"
+            aria-label={w.caterers.gallery.closeGallery}
             onClick={() => setOpenIndex(null)}
           />
           <button
             type="button"
             className="absolute right-3 top-3 z-[110] flex h-12 w-12 cursor-pointer items-center justify-center rounded-full bg-white/10 text-white hover:bg-white/20"
-            aria-label="Close"
+            aria-label={w.caterers.gallery.close}
             onClick={() => setOpenIndex(null)}
           >
             <X className="text-2xl" aria-hidden />
@@ -110,7 +114,7 @@ export function CatererDetailGallery({
               <button
                 type="button"
                 className="absolute right-3 top-1/2 z-[110] flex h-12 w-12 -translate-y-1/2 cursor-pointer items-center justify-center rounded-full bg-white/15 text-white"
-                aria-label="Next"
+                aria-label={w.caterers.gallery.next}
                 onClick={(e) => {
                   e.stopPropagation();
                   setOpenIndex((i) => (i === null ? null : i < images.length - 1 ? i + 1 : 0));
@@ -123,7 +127,7 @@ export function CatererDetailGallery({
           <div className="relative z-[70]" onClick={(e) => e.stopPropagation()}>
             <RemoteContentImage
               src={images[openIndex]!}
-              alt={`${businessName} — photo ${openIndex + 1}`}
+              alt={trans(w.caterers.gallery.photoAlt, { name: businessName, n: openIndex + 1 })}
               width={1200}
               height={880}
               sizes="96vw"

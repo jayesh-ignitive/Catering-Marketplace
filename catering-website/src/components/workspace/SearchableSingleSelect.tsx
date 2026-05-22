@@ -1,5 +1,6 @@
 "use client";
 
+import { useI18n } from "@/context/LocaleContext";
 import { CaretDown, MagnifyingGlass } from "@phosphor-icons/react";
 import { useEffect, useMemo, useRef, useState } from "react";
 
@@ -24,15 +25,20 @@ export function SearchableSingleSelect({
   options,
   value,
   onChange,
-  placeholder = "Search to select…",
-  searchPlaceholder = "Type to filter cities…",
-  emptyMessage = "No matching options.",
+  placeholder,
+  searchPlaceholder,
+  emptyMessage,
   id,
   "aria-invalid": ariaInvalid,
   "aria-describedby": ariaDescribedBy,
   errored = false,
   className = "",
 }: SearchableSingleSelectProps) {
+  const { ws } = useI18n();
+  const resolvedPlaceholder = placeholder ?? ws.select.searchToSelect;
+  const resolvedSearchPlaceholder = searchPlaceholder ?? ws.select.filterCities;
+  const resolvedEmptyMessage = emptyMessage ?? ws.select.noMatchingOptions;
+
   const listboxId = `${id ?? "search-ss"}-listbox`;
   const rootRef = useRef<HTMLDivElement>(null);
   const inputRef = useRef<HTMLInputElement>(null);
@@ -128,7 +134,7 @@ export function SearchableSingleSelect({
             aria-describedby={ariaDescribedBy}
             aria-autocomplete="list"
             autoComplete="off"
-            placeholder={value ? searchPlaceholder : placeholder}
+            placeholder={value ? resolvedSearchPlaceholder : resolvedPlaceholder}
             value={query}
             onChange={(e) => {
               setQuery(e.target.value);
@@ -160,7 +166,7 @@ export function SearchableSingleSelect({
           className="absolute z-50 mt-1 max-h-60 w-full overflow-auto rounded-sm border border-[#E5E7EB] bg-white py-1 shadow-lg"
         >
           {filtered.length === 0 ? (
-            <li className="px-3 py-3 text-sm text-[#6B7280]">{emptyMessage}</li>
+            <li className="px-3 py-3 text-sm text-[#6B7280]">{resolvedEmptyMessage}</li>
           ) : (
             filtered.map((opt) => {
               const selected = opt.id === value;
