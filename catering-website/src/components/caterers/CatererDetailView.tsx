@@ -239,6 +239,33 @@ function InquiryForm({ businessName }: { businessName: string }) {
   );
 }
 
+/** Back + Get Quote overlaid on the top of the hero banner. */
+function DetailHeroToolbar() {
+  return (
+    <div className="absolute inset-x-0 top-0 z-20">
+      <div className="mx-auto flex max-w-7xl items-center justify-between gap-3 px-4 py-3 sm:px-6 sm:py-4">
+        <Link
+          href="/caterers"
+          className="flex min-w-0 items-center gap-1.5 rounded-lg bg-black/35 px-2.5 py-2 text-xs font-bold text-white backdrop-blur-sm transition hover:bg-black/50 sm:gap-2 sm:px-3 sm:py-2.5 sm:text-sm"
+        >
+          <ArrowLeft className="size-4 shrink-0 sm:size-5" aria-hidden />
+          <span className="truncate">Back to Listing</span>
+        </Link>
+        <a
+          href="#inquiry"
+          className="shrink-0 rounded-lg bg-brand-red px-3.5 py-2 text-xs font-bold text-white shadow-lg shadow-black/25 transition hover:bg-red-700 sm:rounded-md sm:px-5 sm:py-2.5 sm:text-sm"
+          onClick={(e) => {
+            e.preventDefault();
+            document.getElementById("inquiry")?.scrollIntoView({ behavior: "smooth" });
+          }}
+        >
+          Get Quote
+        </a>
+      </div>
+    </div>
+  );
+}
+
 function ProfileBody({ d, slug }: { d: MarketplaceDetail; slug: string }) {
   const [tab, setTab] = useState<DetailTab>("about");
   const badge = getCatererCardBadge(d);
@@ -273,108 +300,175 @@ function ProfileBody({ d, slug }: { d: MarketplaceDetail; slug: string }) {
     { id: "reviews", label: "Reviews" },
   ];
 
+  const profileActions = (
+    <div className="flex shrink-0 gap-1.5 sm:gap-2">
+      <button
+        type="button"
+        aria-label="Share profile"
+        className="flex size-9 cursor-pointer items-center justify-center rounded-lg border border-gray-200 text-gray-600 transition hover:bg-gray-50 sm:size-11 sm:rounded-xl"
+        onClick={() => {
+          const url = window.location.href;
+          if (navigator.share) {
+            void navigator.share({ title: d.businessName, url });
+          } else {
+            void navigator.clipboard.writeText(url);
+            toast.success("Link copied");
+          }
+        }}
+      >
+        <ShareNetwork className="text-lg sm:text-xl" aria-hidden />
+      </button>
+      <button
+        type="button"
+        aria-label="Save to favorites"
+        className="flex size-9 cursor-pointer items-center justify-center rounded-lg border border-gray-200 text-gray-600 transition hover:bg-gray-50 sm:size-11 sm:rounded-xl"
+        onClick={() => toast.info("Favorites coming soon")}
+      >
+        <Heart className="text-lg sm:text-xl" aria-hidden />
+      </button>
+    </div>
+  );
+
   return (
     <>
-      <section className="relative h-[220px] sm:h-[300px] md:h-[400px]">
-        {d.heroImageUrl ? (
-          <RemoteContentImage
-            src={d.heroImageUrl}
-            alt=""
-            fill
-            sizes="100vw"
-            priority
-            className="object-cover"
-          />
-        ) : (
-          <div className="h-full w-full bg-gradient-to-br from-brand-dark to-brand-red/50" aria-hidden />
-        )}
-        <div className="absolute inset-0 bg-gradient-to-t from-black/70 to-transparent" aria-hidden />
+      <section className="bg-gray-50">
+        <div className="relative h-36 sm:h-52 md:h-[400px]">
+          {d.heroImageUrl ? (
+            <RemoteContentImage
+              src={d.heroImageUrl}
+              alt=""
+              fill
+              sizes="100vw"
+              priority
+              className="object-cover"
+            />
+          ) : (
+            <div className="h-full w-full bg-gradient-to-br from-brand-dark to-brand-red/50" aria-hidden />
+          )}
+          <div className="absolute inset-0 bg-gradient-to-b from-black/55 via-black/15 to-black/50" aria-hidden />
+          <DetailHeroToolbar />
+        </div>
 
-        <div className="absolute -bottom-14 left-0 w-full px-4 sm:-bottom-20 sm:px-6 md:-bottom-24">
-          <div className="mx-auto flex max-w-7xl flex-col items-center gap-4 rounded-2xl border border-gray-100 bg-white p-4 shadow-2xl sm:gap-6 sm:p-6 md:flex-row md:gap-8 md:p-8">
-            <div className="relative -mt-12 h-24 w-24 shrink-0 overflow-hidden rounded-xl border-4 border-white bg-white shadow-xl sm:-mt-16 sm:h-32 sm:w-32 sm:rounded-2xl md:-mt-32 md:h-40 md:w-40">
-              {d.heroImageUrl ? (
-                <RemoteContentImage
-                  src={d.heroImageUrl}
-                  alt=""
-                  fill
-                  sizes="160px"
-                  className="object-cover"
-                />
-              ) : (
-                <div className="flex h-full items-center justify-center bg-brand-red/10 font-logo text-5xl text-brand-red/40">
-                  {d.businessName.slice(0, 1)}
+        <div className="relative z-10 mx-auto max-w-7xl px-4 sm:px-6">
+          <div className="-mt-10 rounded-2xl border border-gray-100 bg-white p-4 shadow-xl sm:-mt-14 sm:p-6 md:-mt-24 md:p-8">
+            {/* Mobile & tablet: avatar + title row */}
+            <div className="flex gap-3 sm:gap-4 md:hidden">
+              <div className="relative h-[4.5rem] w-[4.5rem] shrink-0 overflow-hidden rounded-xl border-[3px] border-white bg-white shadow-lg sm:h-28 sm:w-28 sm:rounded-2xl sm:border-4">
+                {d.heroImageUrl ? (
+                  <RemoteContentImage
+                    src={d.heroImageUrl}
+                    alt=""
+                    fill
+                    sizes="(max-width: 640px) 72px, 112px"
+                    className="object-cover"
+                  />
+                ) : (
+                  <div className="flex h-full items-center justify-center bg-brand-red/10 font-logo text-3xl text-brand-red/40 sm:text-5xl">
+                    {d.businessName.slice(0, 1)}
+                  </div>
+                )}
+              </div>
+              <div className="min-w-0 flex-1">
+                <div className="flex items-start justify-between gap-2">
+                  <div className="min-w-0">
+                    <h1 className="font-heading text-lg font-bold leading-snug text-brand-dark sm:text-2xl">
+                      {d.businessName}
+                    </h1>
+                    {badge?.kind === "verified" || badge?.kind === "top-rated" ? (
+                      <span className="mt-1.5 inline-flex items-center gap-1 rounded-full bg-brand-green/10 px-2.5 py-0.5 text-[10px] font-bold uppercase tracking-wider text-brand-green">
+                        <SealCheck weight="fill" className="size-3.5" aria-hidden />
+                        {badge.kind === "top-rated" ? "Top rated" : "Verified"}
+                      </span>
+                    ) : null}
+                  </div>
+                  {profileActions}
                 </div>
-              )}
+              </div>
             </div>
 
-            <div className="min-w-0 flex-1 text-center md:text-left">
-              <div className="mb-2 flex flex-col items-center gap-2 md:flex-row md:gap-3">
-                <h1 className="font-heading text-xl font-bold leading-tight text-brand-dark sm:text-2xl md:text-3xl">
-                  {d.businessName}
-                </h1>
-                {badge?.kind === "verified" || badge?.kind === "top-rated" ? (
-                  <span className="flex w-fit items-center gap-1 rounded-full bg-brand-green/10 px-3 py-1 text-[10px] font-bold uppercase tracking-wider text-brand-green">
-                    <SealCheck weight="fill" aria-hidden />
-                    {badge.kind === "top-rated" ? "Top rated" : "Verified"}
-                  </span>
-                ) : null}
+            {/* Desktop: horizontal profile card */}
+            <div className="hidden items-center gap-8 md:flex">
+              <div className="relative -mt-20 h-40 w-40 shrink-0 overflow-hidden rounded-2xl border-4 border-white bg-white shadow-xl">
+                {d.heroImageUrl ? (
+                  <RemoteContentImage
+                    src={d.heroImageUrl}
+                    alt=""
+                    fill
+                    sizes="160px"
+                    className="object-cover"
+                  />
+                ) : (
+                  <div className="flex h-full items-center justify-center bg-brand-red/10 font-logo text-5xl text-brand-red/40">
+                    {d.businessName.slice(0, 1)}
+                  </div>
+                )}
               </div>
-              {d.tagline ? (
-                <p className="mb-3 line-clamp-2 text-sm font-medium italic text-gray-500 sm:mb-4 sm:text-base">
-                  &ldquo;{d.tagline}&rdquo;
-                </p>
-              ) : null}
-
-              <div className="flex flex-col items-center gap-2 text-xs font-semibold text-gray-600 sm:flex-row sm:flex-wrap sm:justify-center sm:gap-4 sm:text-sm md:justify-start md:gap-6">
-                <span className="flex items-center gap-2">
-                  <Star className="text-base text-brand-yellow sm:text-lg" weight="fill" aria-hidden />
-                  {d.avgRating.toFixed(1)} ({nf.format(d.reviewCount)} Reviews)
-                </span>
-                <span className="flex max-w-full items-start gap-2 text-center sm:items-center md:text-left">
-                  <MapPin className="mt-0.5 shrink-0 text-base text-brand-red sm:mt-0 sm:text-lg" weight="fill" aria-hidden />
-                  <span className="line-clamp-2 sm:line-clamp-none">{locationDisplay(d)}</span>
-                </span>
-                {d.yearsInBusiness != null ? (
+              <div className="min-w-0 flex-1 text-left">
+                <div className="mb-2 flex flex-row flex-wrap items-center gap-3">
+                  <h1 className="font-heading text-3xl font-bold leading-tight text-brand-dark">
+                    {d.businessName}
+                  </h1>
+                  {badge?.kind === "verified" || badge?.kind === "top-rated" ? (
+                    <span className="flex w-fit items-center gap-1 rounded-full bg-brand-green/10 px-3 py-1 text-[10px] font-bold uppercase tracking-wider text-brand-green">
+                      <SealCheck weight="fill" aria-hidden />
+                      {badge.kind === "top-rated" ? "Top rated" : "Verified"}
+                    </span>
+                  ) : null}
+                </div>
+                {d.tagline ? (
+                  <p className="mb-4 text-base font-medium italic text-gray-500">
+                    &ldquo;{d.tagline}&rdquo;
+                  </p>
+                ) : null}
+                <div className="flex flex-wrap gap-6 text-sm font-semibold text-gray-600">
                   <span className="flex items-center gap-2">
-                    <Calendar className="text-lg text-blue-500" weight="fill" aria-hidden />
-                    {d.yearsInBusiness}+ Years Experience
+                    <Star className="text-lg text-brand-yellow" weight="fill" aria-hidden />
+                    {d.avgRating.toFixed(1)} ({nf.format(d.reviewCount)} Reviews)
                   </span>
-                ) : null}
+                  <span className="flex max-w-md items-center gap-2">
+                    <MapPin className="shrink-0 text-lg text-brand-red" weight="fill" aria-hidden />
+                    {locationDisplay(d)}
+                  </span>
+                  {d.yearsInBusiness != null ? (
+                    <span className="flex items-center gap-2">
+                      <Calendar className="text-lg text-blue-500" weight="fill" aria-hidden />
+                      {d.yearsInBusiness}+ Years Experience
+                    </span>
+                  ) : null}
+                </div>
               </div>
+              {profileActions}
             </div>
 
-            <div className="flex shrink-0 gap-2 sm:gap-3">
-              <button
-                type="button"
-                aria-label="Share profile"
-                className="flex h-10 w-10 cursor-pointer items-center justify-center rounded-xl border border-gray-200 text-gray-600 transition hover:bg-gray-50 sm:h-12 sm:w-12"
-                onClick={() => {
-                  const url = window.location.href;
-                  if (navigator.share) {
-                    void navigator.share({ title: d.businessName, url });
-                  } else {
-                    void navigator.clipboard.writeText(url);
-                    toast.success("Link copied");
-                  }
-                }}
-              >
-                <ShareNetwork className="text-xl" aria-hidden />
-              </button>
-              <button
-                type="button"
-                aria-label="Save to favorites"
-                className="flex h-10 w-10 cursor-pointer items-center justify-center rounded-xl border border-gray-200 text-gray-600 transition hover:bg-gray-50 sm:h-12 sm:w-12"
-                onClick={() => toast.info("Favorites coming soon")}
-              >
-                <Heart className="text-xl" aria-hidden />
-              </button>
-            </div>
+            {d.tagline ? (
+              <p className="mt-3 text-left text-sm font-medium italic leading-snug text-gray-500 md:hidden">
+                &ldquo;{d.tagline}&rdquo;
+              </p>
+            ) : null}
+
+            <ul className="mt-3 grid grid-cols-1 gap-2 border-t border-gray-100 pt-3 text-xs font-semibold text-gray-600 sm:mt-4 sm:grid-cols-2 sm:gap-3 sm:text-sm md:hidden">
+              <li className="flex min-w-0 items-center gap-2 rounded-lg bg-gray-50 px-3 py-2">
+                <Star className="size-4 shrink-0 text-brand-yellow sm:size-5" weight="fill" aria-hidden />
+                <span className="truncate">
+                  {d.avgRating.toFixed(1)} · {nf.format(d.reviewCount)} reviews
+                </span>
+              </li>
+              {d.yearsInBusiness != null ? (
+                <li className="flex min-w-0 items-center gap-2 rounded-lg bg-gray-50 px-3 py-2">
+                  <Calendar className="size-4 shrink-0 text-blue-500 sm:size-5" weight="fill" aria-hidden />
+                  <span className="truncate">{d.yearsInBusiness}+ years experience</span>
+                </li>
+              ) : null}
+              <li className="flex min-w-0 items-start gap-2 rounded-lg bg-gray-50 px-3 py-2 sm:col-span-2">
+                <MapPin className="mt-0.5 size-4 shrink-0 text-brand-red sm:size-5" weight="fill" aria-hidden />
+                <span className="line-clamp-2 leading-snug">{locationDisplay(d)}</span>
+              </li>
+            </ul>
           </div>
         </div>
       </section>
 
-      <main className="mx-auto max-w-7xl px-4 pb-16 pt-24 sm:px-6 sm:pb-20 sm:pt-32 md:pt-36">
+      <main className="mx-auto max-w-7xl px-4 pb-16 pt-6 sm:px-6 sm:pb-20 sm:pt-8 md:pt-10">
         <div className="flex flex-col gap-8 lg:flex-row lg:gap-12">
           <div className="order-2 flex-1 space-y-8 sm:space-y-12 lg:order-1">
             <div className="no-scrollbar -mx-4 flex overflow-x-auto border-b border-gray-100 px-4 sm:mx-0 sm:px-0">
@@ -567,8 +661,8 @@ export function CatererDetailView() {
   if (q.isPending) {
     return (
       <div className="min-h-screen bg-white">
-        <div className="h-[400px] animate-pulse bg-gray-200" />
-        <div className="mx-auto -mt-16 h-48 max-w-4xl animate-pulse rounded-2xl bg-gray-100 px-6" />
+        <div className="relative h-36 animate-pulse bg-gray-200 sm:h-52 md:h-[400px]" />
+        <div className="mx-auto -mt-10 h-36 max-w-7xl animate-pulse rounded-2xl bg-gray-100 px-4 sm:h-44" />
       </div>
     );
   }
@@ -590,27 +684,6 @@ export function CatererDetailView() {
 
   return (
     <div className="min-h-screen bg-white">
-      <div className="border-b border-gray-100 bg-white shadow-sm">
-        <div className="mx-auto flex max-w-7xl items-center justify-between gap-3 px-4 py-3 sm:px-6 sm:py-4">
-          <Link
-            href="/caterers"
-            className="flex min-w-0 items-center gap-1 text-xs font-bold text-gray-600 transition hover:text-brand-red sm:text-sm"
-          >
-            <ArrowLeft className="shrink-0" aria-hidden />
-            <span className="truncate">Back to Listing</span>
-          </Link>
-          <a
-            href="#inquiry"
-            className="shrink-0 rounded-md bg-brand-red px-4 py-2 text-xs font-semibold text-white shadow-lg shadow-red-500/30 transition hover:bg-red-700 sm:px-5 sm:py-2.5 sm:text-sm"
-            onClick={(e) => {
-              e.preventDefault();
-              document.getElementById("inquiry")?.scrollIntoView({ behavior: "smooth" });
-            }}
-          >
-            Get Quote
-          </a>
-        </div>
-      </div>
       <ProfileBody d={q.data} slug={slug} />
     </div>
   );
