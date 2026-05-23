@@ -240,7 +240,7 @@ export function SearchableKeywordTags({
         <button
           type="button"
           tabIndex={-1}
-          aria-label={open ? "Close suggestions" : "Open suggestions"}
+          aria-label={open ? ws.select.keywordsCloseSuggestions : ws.select.keywordsOpenSuggestions}
           className="shrink-0 rounded p-1 text-[#9CA3AF] hover:bg-gray-100 hover:text-[#374151] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand-red"
           onMouseDown={(e) => e.preventDefault()}
           onClick={() => {
@@ -253,7 +253,9 @@ export function SearchableKeywordTags({
       </div>
 
       {!canAddMore ? (
-        <p className="mt-1 text-xs text-[#6B7280]">Maximum {MAX_KEYWORDS} keywords reached. Remove one to add another.</p>
+        <p className="mt-1 text-xs text-[#6B7280]">
+          {trans(ws.select.keywordsMaxReached, { max: MAX_KEYWORDS })}
+        </p>
       ) : null}
 
       {open && canAddMore && typeof document !== "undefined"
@@ -268,16 +270,16 @@ export function SearchableKeywordTags({
             >
           {!qLower && browseCatalog.length > 0 ? (
             <li className="border-b border-[#F3F4F6] px-3 py-2 text-[11px] font-bold uppercase tracking-wide text-[#6B7280]">
-              Popular on marketplace
+              {ws.select.keywordsPopularHeading}
             </li>
           ) : null}
           {!qLower && browseCatalog.length === 0 ? (
             <li className="border-b border-[#F3F4F6] px-3 py-2 text-xs leading-snug text-[#6B7280]">
-              No keyword list yet (needs published listings). Type your own phrase below — press Enter or Add.
+              {ws.select.keywordsEmptyCatalog}
             </li>
           ) : null}
           {apiLoading && qLower.length > 0 ? (
-            <li className="px-3 py-2 text-sm text-[#6B7280]">Searching…</li>
+            <li className="px-3 py-2 text-sm text-[#6B7280]">{ws.select.keywordsSearching}</li>
           ) : null}
           {!apiLoading && qLower.length > 0 && displayRows.length === 0 && !showCreateRow ? (
             <li className="px-3 py-2 text-sm text-[#6B7280]">
@@ -310,7 +312,7 @@ export function SearchableKeywordTags({
                 onClick={() => addKeyword(queryTrim)}
               >
                 <Plus className="h-4 w-4 shrink-0" weight="bold" aria-hidden />
-                Add &quot;{queryTrim}&quot;
+                {trans(ws.select.keywordsAddQuoted, { phrase: queryTrim })}
               </button>
             </li>
           ) : null}

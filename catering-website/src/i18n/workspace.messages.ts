@@ -30,7 +30,7 @@ export const workspaceMessages = {
   },
 
   footer: {
-    tagline: "Bharat Catering · Caterer workspace for your listing, menu, orders, and insights.",
+    tagline: "Bharat Cater Hub · Caterer workspace for your listing, menu, orders, and insights.",
     privacy: "Privacy",
     terms: "Terms",
     publicSite: "Public site",
@@ -72,6 +72,16 @@ export const workspaceMessages = {
     removeKeywordAria: "Remove keyword {label}",
     uploading: "Uploading…",
     uploadingPercent: "Uploading {percent}%",
+    keywordsMaxReached:
+      "Maximum {max} keywords reached. Remove one to add another.",
+    keywordsPopularHeading: "Popular on marketplace",
+    keywordsEmptyCatalog:
+      "No keyword list yet (needs published listings). Type your own phrase below — press Enter or Add.",
+    keywordsSearching: "Searching…",
+    keywordsNoMatches: "No matches in our list — add your own phrase below.",
+    keywordsAddQuoted: 'Add "{phrase}"',
+    keywordsCloseSuggestions: "Close suggestions",
+    keywordsOpenSuggestions: "Open suggestions",
   },
 
   nav: {
@@ -110,7 +120,7 @@ export const workspaceMessages = {
       orders: "Track enquiries, bookings, and fulfilment in one place.",
       analytics: "Views, leads, and performance insights for your catering business.",
       onboarding: "Complete your profile before submitting for marketplace review.",
-      default: "Manage your catering business on Bharat Catering.",
+      default: "Manage your catering business on Bharat Cater Hub.",
     },
   },
 

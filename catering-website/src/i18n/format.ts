@@ -1,4 +1,29 @@
+import type { AppLocale } from "./locale";
+
 export type TransVars = Record<string, string | number | null | undefined>;
+
+const DATE_LOCALE: Record<AppLocale, string> = {
+  en: "en-IN",
+  hi: "hi-IN",
+  gu: "gu-IN",
+};
+
+/** Locale-aware date for blog cards, reviews, etc. (dynamic ISO strings only). */
+export function formatLocaleDate(
+  iso: string,
+  locale: AppLocale,
+  style: "short" | "long" = "short",
+): string {
+  try {
+    return new Date(iso).toLocaleDateString(DATE_LOCALE[locale], {
+      day: "numeric",
+      month: style === "long" ? "long" : "short",
+      year: "numeric",
+    });
+  } catch {
+    return iso;
+  }
+}
 
 function interpolate(template: string, vars: TransVars): string {
   return template.replace(/\{(\w+)\}/g, (_, key: string) => {

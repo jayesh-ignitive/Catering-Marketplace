@@ -7,6 +7,7 @@ import {
   obPrimaryBtn,
   obTextLink,
 } from "@/components/auth/PartnerOnboardingAuthShell";
+import { ExtensionSafeEmailInput } from "@/components/common/ExtensionSafeEmailInput";
 import { FormFieldError } from "@/components/common/FormFieldError";
 import { useAuth } from "@/context/AuthContext";
 import { AuthApiError } from "@/lib/auth-api";
@@ -105,11 +106,9 @@ export default function LoginPage() {
           <label htmlFor={emailId} className={obLabel}>
             {w.auth.login.workEmail}
           </label>
-          <input
+          <ExtensionSafeEmailInput
             id={emailId}
             name="email"
-            type="email"
-            autoComplete="email"
             placeholder={w.auth.login.emailPlaceholder}
             value={email}
             onChange={(e) => {

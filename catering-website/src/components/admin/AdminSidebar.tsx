@@ -91,8 +91,8 @@ export function AdminSidebar({
               {!compact ? (
                 <div className="logo-text relative flex min-w-0 flex-col pl-1 leading-none">
                   <span className="font-logo translate-y-0.5 text-3xl tracking-tight text-brand-dark">Bharat</span>
-                  <span className="-mt-1 w-fit rotate-[-2deg] rounded-sm bg-brand-red px-1 py-0.5 text-[8px] font-bold uppercase tracking-[0.3em] text-white shadow-sm">
-                    Catering
+                  <span className="-mt-1 w-fit rotate-[-2deg] rounded-sm bg-brand-red px-1 py-0.5 text-[7px] font-bold uppercase tracking-[0.12em] text-white shadow-sm">
+                    Cater Hub
                   </span>
                 </div>
               ) : null}

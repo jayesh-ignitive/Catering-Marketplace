@@ -1,7 +1,7 @@
 /**
  * UI message catalogs for multi-language support (no URL locale routes).
  */
-export { trans, formatMessage, type TransVars } from "./format";
+export { trans, formatMessage, formatLocaleDate, type TransVars } from "./format";
 export { websiteMessages, type WebsiteMessages } from "./website.messages";
 export { websiteMessagesHi } from "./website.messages.hi";
 export { websiteMessagesGu } from "./website.messages.gu";

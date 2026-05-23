@@ -1,14 +1,7 @@
 "use client";
 
-import {
-  CaretLeft,
-  CaretRight,
-  Funnel,
-  Rows,
-  SquaresFour,
-  X,
-} from "@phosphor-icons/react";
-import { useQuery } from "@tanstack/react-query";
+import { Funnel, Rows, SquaresFour, X } from "@phosphor-icons/react";
+import { useInfiniteQuery, useQuery } from "@tanstack/react-query";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
@@ -20,7 +13,6 @@ import { SearchableSelect } from "@/components/common/SearchableSelect";
 import { useDebouncedValue } from "@/hooks/useDebouncedValue";
 import { caterersListingPath, slugifyCitySegment } from "@/lib/caterers-url";
 import {
-  filterByMinRating,
   isListingPriceRangeDefault,
   LISTING_PRICE_MAX,
   LISTING_PRICE_MIN,
@@ -90,16 +82,15 @@ export function CaterersListingPageContent({
 
   const [viewMode, setViewMode] = useState<ListingViewMode>("list");
   const [sort, setSort] = useState<ListingSortOption>("popularity");
-  const [page, setPage] = useState(1);
   const limit = 12;
-  const listingTopRef = useRef<HTMLDivElement>(null);
-  const skipScrollOnPageMount = useRef(true);
+  const loadMoreRef = useRef<HTMLDivElement>(null);
+  /** Avoid chaining every page while the sentinel is in view before the user scrolls. */
+  const infiniteScrollArmedRef = useRef(false);
 
   const [city, setCity] = useState(presetCityName ?? "");
   const [categoryId, setCategoryId] = useState(presetCategoryId ?? "");
   const [priceMin, setPriceMin] = useState(LISTING_PRICE_MIN);
   const [priceMax, setPriceMax] = useState(LISTING_PRICE_MAX);
-  const [minRating, setMinRating] = useState<number | null>(null);
   const [areaFilter, setAreaFilter] = useState("");
   const [mobileFiltersOpen, setMobileFiltersOpen] = useState(false);
 
@@ -109,14 +100,6 @@ export function CaterersListingPageContent({
   useEffect(() => {
     setViewMode(readListingViewMode());
   }, []);
-
-  useEffect(() => {
-    if (skipScrollOnPageMount.current) {
-      skipScrollOnPageMount.current = false;
-      return;
-    }
-    listingTopRef.current?.scrollIntoView({ behavior: "smooth", block: "start" });
-  }, [page]);
 
   useEffect(() => {
     setCity(presetCityName ?? "");
@@ -135,22 +118,30 @@ export function CaterersListingPageContent({
     queryFn: () => fetchServiceCategories(locale),
   });
 
-  const listParams = useMemo(() => {
+  const listFilters = useMemo(() => {
     const priceFiltered = !isListingPriceRangeDefault(debouncedPriceMin, debouncedPriceMax);
     return {
       city: city || undefined,
       categoryId: categoryId || undefined,
       priceMin: priceFiltered ? debouncedPriceMin : undefined,
       priceMax: priceFiltered ? debouncedPriceMax : undefined,
-      page,
       limit,
     };
-  }, [city, categoryId, debouncedPriceMin, debouncedPriceMax, page, limit]);
+  }, [city, categoryId, debouncedPriceMin, debouncedPriceMax, limit]);
 
-  const listQ = useQuery({
-    queryKey: ["marketplace", "caterers", listParams],
-    queryFn: () => fetchMarketplaceCaterers(listParams),
+  const listQ = useInfiniteQuery({
+    queryKey: ["marketplace", "caterers", "infinite", listFilters],
+    queryFn: ({ pageParam }) =>
+      fetchMarketplaceCaterers({ ...listFilters, page: pageParam }),
+    initialPageParam: 1,
+    getNextPageParam: (lastPage) => {
+      const totalPages = Math.max(1, Math.ceil(lastPage.total / lastPage.limit));
+      const next = lastPage.page + 1;
+      return next <= totalPages ? next : undefined;
+    },
   });
+
+  const { hasNextPage, isFetchingNextPage, fetchNextPage } = listQ;
 
   const navigateCityCategory = useCallback(
     (nextCity: string, nextCategoryId: string) => {
@@ -166,47 +157,29 @@ export function CaterersListingPageContent({
     [categoriesQ.data, router]
   );
 
-  const resetPage = useCallback(() => setPage(1), []);
-
   const onCityChange = useCallback(
     (nextCity: string) => {
-      resetPage();
       navigateCityCategory(nextCity, categoryId);
     },
-    [categoryId, navigateCityCategory, resetPage],
+    [categoryId, navigateCityCategory],
   );
 
   const onCategoryChange = useCallback(
     (catId: string) => {
       const next = categoryId === catId ? "" : catId;
-      resetPage();
       navigateCityCategory(city, next);
     },
-    [categoryId, city, navigateCityCategory, resetPage],
+    [categoryId, city, navigateCityCategory],
   );
 
-  const onPriceRangeChange = useCallback(
-    (min: number, max: number) => {
-      setPriceMin(min);
-      setPriceMax(max);
-      resetPage();
-    },
-    [resetPage],
-  );
-
-  const onMinRatingChange = useCallback(
-    (value: number | null) => {
-      setMinRating((prev) => (prev === value ? null : value));
-      resetPage();
-    },
-    [resetPage],
-  );
+  const onPriceRangeChange = useCallback((min: number, max: number) => {
+    setPriceMin(min);
+    setPriceMax(max);
+  }, []);
 
   const resetAllFilters = useCallback(() => {
-    setMinRating(null);
     setPriceMin(LISTING_PRICE_MIN);
     setPriceMax(LISTING_PRICE_MAX);
-    setPage(1);
     router.push("/caterers");
   }, [router]);
 
@@ -215,13 +188,56 @@ export function CaterersListingPageContent({
     persistListingViewMode(mode);
   }, []);
 
-  const displayedItems = useMemo(() => {
-    const raw = listQ.data?.items ?? [];
-    const items = filterByMinRating(raw, minRating);
-    return sortMarketplaceItems(items, sort);
-  }, [listQ.data?.items, minRating, sort]);
+  const totalCount = listQ.data?.pages[0]?.total ?? 0;
 
-  const totalPages = listQ.data ? Math.max(1, Math.ceil(listQ.data.total / listQ.data.limit)) : 1;
+  const displayedItems = useMemo(() => {
+    const seen = new Set<string>();
+    const raw = (listQ.data?.pages ?? []).flatMap((p) => p.items).filter((row) => {
+      if (seen.has(row.tenantId)) return false;
+      seen.add(row.tenantId);
+      return true;
+    });
+    return sortMarketplaceItems(raw, sort);
+  }, [listQ.data?.pages, sort]);
+
+  const isInitialLoading = listQ.isPending && !listQ.data;
+
+  useEffect(() => {
+    infiniteScrollArmedRef.current = false;
+  }, [listFilters]);
+
+  useEffect(() => {
+    const arm = () => {
+      infiniteScrollArmedRef.current = true;
+    };
+    window.addEventListener("scroll", arm, { passive: true });
+    window.addEventListener("wheel", arm, { passive: true });
+    window.addEventListener("touchmove", arm, { passive: true });
+    return () => {
+      window.removeEventListener("scroll", arm);
+      window.removeEventListener("wheel", arm);
+      window.removeEventListener("touchmove", arm);
+    };
+  }, []);
+
+  useEffect(() => {
+    const el = loadMoreRef.current;
+    if (!el || !hasNextPage) return;
+
+    const observer = new IntersectionObserver(
+      (entries) => {
+        const entry = entries[0];
+        if (!entry?.isIntersecting || !infiniteScrollArmedRef.current || isFetchingNextPage) {
+          return;
+        }
+        void fetchNextPage();
+      },
+      { root: null, rootMargin: "160px 0px", threshold: 0 },
+    );
+
+    observer.observe(el);
+    return () => observer.disconnect();
+  }, [hasNextPage, isFetchingNextPage, fetchNextPage, displayedItems.length]);
 
   const cityRows = useMemo(() => {
     const raw = citiesQ.data ?? [];
@@ -259,17 +275,32 @@ export function CaterersListingPageContent({
 
   const isGrid = viewMode === "grid";
 
+  const sortOptions = useMemo(
+    () =>
+      [
+        { value: "popularity" as const, label: w.caterers.listing.sortPopularity },
+        { value: "rating" as const, label: w.caterers.listing.sortRating },
+        { value: "price-asc" as const, label: w.caterers.listing.sortPriceAsc },
+        { value: "price-desc" as const, label: w.caterers.listing.sortPriceDesc },
+      ],
+    [
+      w.caterers.listing.sortPopularity,
+      w.caterers.listing.sortPriceAsc,
+      w.caterers.listing.sortPriceDesc,
+      w.caterers.listing.sortRating,
+    ],
+  );
+
   const activeFilterCount = useMemo(() => {
     let n = 0;
     if (city) n += 1;
     if (categoryId) n += 1;
-    if (minRating != null) n += 1;
     if (!isListingPriceRangeDefault(priceMin, priceMax)) n += 1;
     return n;
-  }, [categoryId, city, minRating, priceMax, priceMin]);
+  }, [categoryId, city, priceMax, priceMin]);
 
   const filtersPanel = (
-    <div className="overflow-hidden rounded-2xl border border-gray-100 bg-white shadow-sm lg:sticky lg:top-24">
+    <div className="overflow-hidden rounded-2xl border border-gray-100 bg-white shadow-sm">
       <div className="flex items-center justify-between border-b border-gray-100 bg-gray-50/50 p-4 sm:p-5">
         <h3 className="font-heading font-bold text-brand-dark">{w.caterers.listing.filters}</h3>
         <div className="flex items-center gap-3">
@@ -291,7 +322,7 @@ export function CaterersListingPageContent({
         </div>
       </div>
 
-      <div className="max-h-[min(70vh,520px)] space-y-6 overflow-y-auto p-4 sm:max-h-none sm:space-y-8 sm:p-5">
+      <div className="max-h-[min(70vh,520px)] space-y-6 overflow-y-auto p-4 sm:space-y-8 sm:p-5 max-lg:overflow-y-auto lg:max-h-none lg:overflow-visible">
         <div>
           <h4 className="mb-3 text-sm font-bold uppercase tracking-wider text-brand-dark">
             {w.caterers.listing.cityAria}
@@ -310,7 +341,7 @@ export function CaterersListingPageContent({
           <h4 className="mb-3 text-sm font-bold uppercase tracking-wider text-brand-dark">
             {w.caterers.listing.serviceCategory}
           </h4>
-          <div className="max-h-48 space-y-2 overflow-y-auto sm:max-h-none">
+          <div className="max-h-48 space-y-2 overflow-y-auto lg:max-h-none lg:overflow-visible">
             {(categoriesQ.data ?? []).map((cat) => (
               <label key={cat.id} className="group flex cursor-pointer items-center gap-3">
                 <input
@@ -334,61 +365,40 @@ export function CaterersListingPageContent({
           <ListingPriceRangeSlider min={priceMin} max={priceMax} onChange={onPriceRangeChange} />
         </div>
 
-        <div>
-          <h4 className="mb-3 text-sm font-bold uppercase tracking-wider text-brand-dark">
-            {w.caterers.listing.customerRating}
-          </h4>
-          <div className="space-y-2">
-            {[
-              { value: 4.5, label: w.caterers.listing.rating45Up },
-              { value: 4.0, label: w.caterers.listing.rating40Up },
-            ].map((opt) => (
-              <label key={opt.value} className="flex cursor-pointer items-center gap-3">
-                <input
-                  type="radio"
-                  name="listing-rating"
-                  checked={minRating === opt.value}
-                  onChange={() => onMinRatingChange(opt.value)}
-                  className="h-4 w-4 border-gray-300 text-brand-red focus:ring-brand-red"
-                />
-                <span className="flex items-center gap-1 text-sm text-gray-600">
-                  {opt.label}
-                  <span className="text-brand-yellow" aria-hidden>
-                    ★
-                  </span>
-                </span>
-              </label>
-            ))}
-          </div>
-        </div>
       </div>
     </div>
   );
 
   return (
     <div className="bg-gray-50">
-    <main className="mx-auto min-h-screen max-w-7xl px-4 py-6 sm:px-6 sm:py-10">
-      <div ref={listingTopRef} className="mb-6 scroll-mt-28 sm:mb-8">
+    <main className="mx-auto max-w-7xl px-4 py-6 sm:px-6 sm:py-10">
+      <div className="mb-6 scroll-mt-28 sm:mb-8">
         <nav className="mb-2 flex flex-wrap items-center gap-x-2 gap-y-1 text-xs font-medium text-gray-500">
           <Link href="/" className="transition hover:text-brand-red">
             {w.caterers.listing.breadcrumbHome}
           </Link>
-          <CaretRight className="text-gray-300" aria-hidden />
+          <span className="text-gray-300" aria-hidden>
+            /
+          </span>
           <span className="break-words">{breadcrumbTail}</span>
         </nav>
         <h1 className="font-heading text-2xl font-bold leading-tight text-brand-dark sm:text-3xl">{pageTitle}</h1>
         <p className="mt-1 text-sm text-gray-500 sm:text-base">
-          {listQ.isPending
+          {isInitialLoading
             ? w.caterers.listing.loading
-            : trans(w.caterers.listing.resultsShowing, {
-                count: nf.format(listQ.data?.total ?? displayedItems.length),
-                plural: (listQ.data?.total ?? 0) === 1 ? "" : "s",
-              })}
+            : trans(
+                (totalCount || displayedItems.length) === 1
+                  ? w.caterers.listing.resultsShowingOne
+                  : w.caterers.listing.resultsShowingMany,
+                { count: nf.format(totalCount || displayedItems.length) },
+              )}
         </p>
       </div>
 
-      <div className="flex flex-col gap-6 lg:flex-row lg:gap-8">
-        <aside className="hidden w-full shrink-0 lg:block lg:w-72">{filtersPanel}</aside>
+      <div className="flex flex-col gap-6 lg:flex-row lg:items-start lg:gap-8">
+        <aside className="hidden w-full shrink-0 lg:block lg:w-72 lg:self-start">
+          {filtersPanel}
+        </aside>
 
         {mobileFiltersOpen ? (
           <div
@@ -409,7 +419,7 @@ export function CaterersListingPageContent({
         ) : null}
 
         <div className="min-w-0 flex-1">
-          <div className="mb-4 flex flex-col gap-3 rounded-xl border border-gray-100 bg-white p-3 shadow-sm sm:mb-6 sm:flex-row sm:items-center sm:justify-end sm:gap-4 sm:p-4">
+          <div className="mb-4 flex flex-col gap-3 rounded-xl border border-gray-100 bg-white p-3 shadow-sm sm:mb-6 sm:flex-row sm:items-center sm:justify-between sm:gap-4 sm:p-4">
             <button
               type="button"
               onClick={() => setMobileFiltersOpen(true)}
@@ -424,7 +434,26 @@ export function CaterersListingPageContent({
               ) : null}
             </button>
 
-            <div className="flex shrink-0 items-center justify-end gap-2">
+            <div className="flex flex-wrap items-center justify-end gap-3 sm:ml-auto">
+              <label className="flex min-w-0 items-center gap-2">
+                <span className="shrink-0 text-xs font-bold uppercase tracking-wider text-gray-500">
+                  {w.caterers.listing.sortBy}
+                </span>
+                <select
+                  value={sort}
+                  onChange={(e) => setSort(e.target.value as ListingSortOption)}
+                  aria-label={w.caterers.listing.sortAria}
+                  className="max-w-[min(100%,14rem)] cursor-pointer rounded-lg border border-gray-200 bg-gray-50 px-3 py-2 text-sm font-semibold text-brand-dark outline-none focus:border-brand-red"
+                >
+                  {sortOptions.map((opt) => (
+                    <option key={opt.value} value={opt.value}>
+                      {opt.label}
+                    </option>
+                  ))}
+                </select>
+              </label>
+
+            <div className="flex shrink-0 items-center gap-2">
               <button
                 type="button"
                 onClick={() => setView("list")}
@@ -450,9 +479,10 @@ export function CaterersListingPageContent({
                 <SquaresFour weight="fill" aria-hidden />
               </button>
             </div>
+            </div>
           </div>
 
-          {listQ.isPending ? (
+          {isInitialLoading ? (
             <ListingSkeleton viewMode={viewMode} />
           ) : listQ.isError ? (
             <div className="rounded-2xl border border-red-100 bg-red-50 px-4 py-10 text-center sm:px-8 sm:py-14">
@@ -485,48 +515,25 @@ export function CaterersListingPageContent({
                 ))}
               </div>
 
-              {totalPages > 1 ? (
-                <nav className="flex justify-center pt-6 sm:pt-8" aria-label={w.caterers.listing.pagination}>
-                  <div className="flex items-center gap-1.5 sm:gap-2">
-                    <button
-                      type="button"
-                      disabled={page <= 1}
-                      onClick={() => setPage((p) => Math.max(1, p - 1))}
-                      aria-label={w.caterers.listing.previousPage}
-                      className="flex h-9 w-9 cursor-pointer items-center justify-center rounded-xl border border-gray-200 text-gray-400 transition hover:bg-brand-red hover:text-white disabled:cursor-not-allowed disabled:opacity-35 sm:h-10 sm:w-10"
-                    >
-                      <CaretLeft aria-hidden />
-                    </button>
-                    {Array.from({ length: Math.min(totalPages, 5) }, (_, i) => {
-                      const p = i + 1;
-                      return (
-                        <button
-                          key={p}
-                          type="button"
-                          onClick={() => setPage(p)}
-                          aria-current={page === p ? "page" : undefined}
-                          className={[
-                            "flex h-9 w-9 cursor-pointer items-center justify-center rounded-xl border text-sm font-bold transition sm:h-10 sm:w-10",
-                            page === p
-                              ? "border-brand-red bg-brand-red text-white"
-                              : "border-gray-200 text-gray-600 hover:bg-brand-red hover:text-white",
-                          ].join(" ")}
-                        >
-                          {p}
-                        </button>
-                      );
-                    })}
-                    <button
-                      type="button"
-                      disabled={page >= totalPages}
-                      onClick={() => setPage((p) => p + 1)}
-                      aria-label={w.caterers.listing.nextPage}
-                      className="flex h-9 w-9 cursor-pointer items-center justify-center rounded-xl border border-gray-200 text-gray-400 transition hover:bg-brand-red hover:text-white disabled:cursor-not-allowed disabled:opacity-35 sm:h-10 sm:w-10"
-                    >
-                      <CaretRight aria-hidden />
-                    </button>
+              <div
+                ref={loadMoreRef}
+                className="min-h-px pt-6 sm:pt-8"
+                aria-hidden={!hasNextPage}
+                aria-label={hasNextPage ? w.caterers.listing.loadMoreSentinel : undefined}
+              >
+                {isFetchingNextPage ? (
+                  <div className="flex flex-col items-center gap-3 py-4">
+                    <div
+                      className="h-8 w-8 animate-spin rounded-full border-2 border-brand-red border-t-transparent"
+                      aria-hidden
+                    />
+                    <p className="text-sm font-semibold text-gray-500">{w.caterers.listing.loadingMore}</p>
                   </div>
-                </nav>
+                ) : null}
+              </div>
+
+              {!hasNextPage && displayedItems.length > 0 && totalCount > limit ? (
+                <p className="pt-2 text-center text-sm text-gray-500">{w.caterers.listing.endOfList}</p>
               ) : null}
             </>
           )}

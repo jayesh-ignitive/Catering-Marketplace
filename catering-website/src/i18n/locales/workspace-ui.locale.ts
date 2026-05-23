@@ -1,5 +1,10 @@
 /** Hand-tuned workspace UI (validation, loading, selects) — overrides auto catalog. */
 
+import {
+  WORKSPACE_WIZARD_GU_OVERRIDES,
+  WORKSPACE_WIZARD_HI_OVERRIDES,
+} from "./workspace-wizard.locale";
+
 const WORKSPACE_UI_HI: Record<string, string> = {
   "common.loading": "लोड हो रहा है…",
   "common.loadingWorkspace": "वर्कस्पेस लोड हो रहा है…",
@@ -18,6 +23,110 @@ const WORKSPACE_UI_HI: Record<string, string> = {
   "common.premium": "प्रीमियम",
   "common.saving": "सहेजा जा रहा है…",
   "common.saveChanges": "बदलाव सहेजें",
+  "common.previousStep": "पिछला चरण",
+  "common.nextStep": "अगला चरण",
+  "common.savingEllipsis": "सहेजा जा रहा है…",
+  "common.submittingEllipsis": "जमा हो रहा है…",
+  "common.required": "*",
+
+  "footer.tagline":
+    "Bharat Cater Hub · अपनी लिस्टिंग, मेनू, ऑर्डर और अंतर्दृष्टि के लिए कैटरर वर्कस्पेस।",
+  "footer.privacy": "गोपनीयता",
+  "footer.terms": "नियम",
+  "footer.publicSite": "सार्वजनिक साइट",
+
+  "sidebar.closeOverlay": "वर्कस्पेस मेनू ओवरले बंद करें",
+
+  "listingPreview.title": "लिस्टिंग पूर्वावलोकन",
+  "listingPreview.hint": "मार्केटप्लेस खोज में आपका कार्ड कैसा दिखता है — सूची या ग्रिड दृश्य।",
+  "listingPreview.listView": "सूची दृश्य",
+  "listingPreview.gridView": "ग्रिड दृश्य",
+
+  "nav.sections.overview": "अवलोकन",
+  "nav.sections.business": "व्यवसाय",
+  "nav.sections.operations": "संचालन",
+  "nav.items.dashboard": "डैशबोर्ड",
+  "nav.items.profile": "प्रोफ़ाइल",
+  "nav.items.menu": "मेनू",
+  "nav.items.orders": "ऑर्डर",
+  "nav.items.analytics": "विश्लेषण",
+
+  "header.toggleNav": "वर्कस्पेस नेविगेशन टॉगल करें",
+  "header.accountMenu": "खाता मेनू",
+  "header.roleCaterer": "कैटरर",
+  "header.signOut": "साइन आउट",
+  "header.titles.dashboard": "डैशबोर्ड",
+  "header.titles.profile": "प्रोफ़ाइल",
+  "header.titles.menu": "मेनू",
+  "header.titles.orders": "ऑर्डर",
+  "header.titles.analytics": "विश्लेषण",
+  "header.titles.setup": "सेटअप",
+  "header.titles.workspace": "वर्कस्पेस",
+  "header.subtitles.dashboard": "लिस्टिंग स्थिति, त्वरित कार्य और मार्केटप्लेस पूर्वावलोकन।",
+  "header.subtitles.profile": "सार्वजनिक लिस्टिंग के लिए व्यवसाय विवरण, सेवाएँ, कीवर्ड और गैलरी।",
+  "header.subtitles.menu": "पूछताछ और कार्यक्रमों के लिए श्रेणियाँ, व्यंजन और मूल्य।",
+  "header.subtitles.orders": "एक जगह पर पूछताछ, बुकिंग और पूर्ति ट्रैक करें।",
+  "header.subtitles.analytics": "आपके कैटरिंग व्यवसाय के लिए दृश्य, लीड और प्रदर्शन अंतर्दृष्टि।",
+  "header.subtitles.onboarding": "मार्केटप्लेस समीक्षा के लिए जमा करने से पहले प्रोफ़ाइल पूरी करें।",
+  "header.subtitles.default": "Bharat Cater Hub पर अपना कैटरिंग व्यवसाय प्रबंधित करें।",
+
+  "dashboard.welcome": "स्वागत है",
+  "dashboard.welcomeBack": "वापस स्वागत है, {name}",
+  "dashboard.subtitle": "{business} — एक जगह से प्रोफ़ाइल, मेनू, ऑर्डर और अंतर्दृष्टि प्रबंधित करें।",
+  "dashboard.yourBusiness": "आपका कैटरिंग व्यवसाय",
+  "dashboard.status.liveTitle": "मार्केटप्लेस पर लाइव",
+  "dashboard.status.liveMessage": "ग्राहक खोज में आपकी लिस्टिंग ढूँढ और सार्वजनिक प्रोफ़ाइल देख सकते हैं।",
+  "dashboard.status.pendingTitle": "एडमिन समीक्षा लंबित",
+  "dashboard.status.pendingMessage":
+    "आपकी प्रोफ़ाइल जमा हो गई है और सार्वजनिक होने से पहले अनुमोदन की प्रतीक्षा में है।",
+  "dashboard.status.rejectedTitle": "स्वीकृत नहीं",
+  "dashboard.status.rejectedMessage": "लिस्टिंग अपडेट करें और फिर समीक्षा के लिए जमा करें।",
+  "dashboard.status.readyTitle": "जमा करने के लिए तैयार",
+  "dashboard.status.readyMessage": "प्रोफ़ाइल पूरी है। लिस्टिंग में दिखने के लिए एडमिन समीक्षा हेतु जमा करें।",
+  "dashboard.status.inProgressTitle": "सेटअप जारी",
+  "dashboard.status.inProgressMessage": "संपादक में लिस्टिंग पूरी करें, फिर एडमिन समीक्षा के लिए जमा करें।",
+  "dashboard.submitForReview": "समीक्षा के लिए जमा करें",
+  "dashboard.submitting": "जमा हो रहा है…",
+  "dashboard.viewPublicProfile": "सार्वजनिक प्रोफ़ाइल देखें",
+  "dashboard.quickActions": "त्वरित कार्य",
+  "dashboard.quickActionsHint": "वर्कस्पेस मॉड्यूल पर जाएँ।",
+  "dashboard.actionProfile": "प्रोफ़ाइल",
+  "dashboard.actionProfileHint": "मार्केटप्लेस लिस्टिंग और गैलरी",
+  "dashboard.actionMenu": "मेनू",
+  "dashboard.actionMenuHint": "श्रेणियाँ और व्यंजन",
+  "dashboard.actionOrders": "ऑर्डर",
+  "dashboard.actionOrdersHint": "पूछताछ और बुकिंग",
+  "dashboard.actionAnalytics": "विश्लेषण",
+  "dashboard.actionAnalyticsHint": "दृश्य और प्रदर्शन",
+  "dashboard.actionBusinessDetails": "व्यवसाय विवरण",
+  "dashboard.actionBusinessDetailsHint": "स्थान, परिचय, टैगलाइन",
+  "dashboard.actionGallery": "बैनर और गैलरी",
+  "dashboard.actionGalleryHint": "लिस्टिंग फ़ोटो",
+  "dashboard.openProfileEditor": "प्रोफ़ाइल संपादक खोलें",
+  "dashboard.submitSuccess": "एडमिन समीक्षा के लिए जमा। लाइव होने पर सूचित करेंगे।",
+
+  "flashBanner.rejectedTitle": "लिस्टिंग स्वीकृत नहीं",
+  "flashBanner.rejectedBody":
+    "व्यवसाय जानकारी अपडेट करें और फिर समीक्षा के लिए जमा करें। प्रोफ़ाइल मार्केटप्लेस पर दिखाई नहीं देती।",
+  "flashBanner.pendingTitle": "एडमिन आपकी जानकारी की समीक्षा कर रहा है",
+  "flashBanner.pendingBodyPrefix": "{date} को जमा। ",
+  "flashBanner.pendingBody":
+    "अनुमोदन तक लिस्टिंग ग्राहकों से छिपी रहती है। प्रतीक्षा के दौरान प्रोफ़ाइल संपादित कर सकते हैं।",
+  "flashBanner.awaitingApproval": "अनुमोदन की प्रतीक्षा",
+  "flashBanner.updateListing": "लिस्टिंग अपडेट करें",
+
+  "modules.menu.title": "मेनू प्रबंधन",
+  "modules.menu.description":
+    "प्रीमियम पर श्रेणियाँ, व्यंजन, पैकेज और मूल्य एक जगह से व्यवस्थित करें।",
+  "modules.orders.title": "ऑर्डर",
+  "modules.orders.description": "प्रीमियम वर्कस्पेस में पूछताछ, कोट और पुष्टि कार्यक्रम ट्रैक करें।",
+  "modules.analytics.title": "विश्लेषण",
+  "modules.analytics.description": "प्रीमियम पर प्रोफ़ाइल दृश्य, लीड और लिस्टिंग प्रदर्शन देखें।",
+  "modules.premiumIncluded": "यह मॉड्यूल प्रीमियम वर्कस्पेस प्लान में शामिल है।",
+  "modules.contactForPremium": "प्रीमियम के लिए संपर्क",
+  "modules.email": "ईमेल {email}",
+
+  "toast.submitSuccess": "एडमिन समीक्षा के लिए जमा। लाइव होने पर सूचित करेंगे।",
 
   "onboarding.loadingWizard": "विज़ार्ड लोड हो रहा है…",
   "onboardingShell.title": "हमारे साथ अपना कैटरिंग व्यवसाय बढ़ाएँ",
@@ -38,6 +147,16 @@ const WORKSPACE_UI_HI: Record<string, string> = {
   "select.removeKeywordAria": "कीवर्ड हटाएँ {label}",
   "select.uploading": "अपलोड हो रहा है…",
   "select.uploadingPercent": "अपलोड {percent}%",
+  "select.keywordsMaxReached":
+    "अधिकतम {max} कीवर्ड हो चुके। दूसरा जोड़ने के लिए एक हटाएँ।",
+  "select.keywordsPopularHeading": "मार्केटप्लेस पर लोकप्रिय",
+  "select.keywordsEmptyCatalog":
+    "अभी कीवर्ड सूची नहीं। नीचे अपना वाक्य टाइप करें — Enter या जोड़ें दबाएँ।",
+  "select.keywordsSearching": "खोज हो रही है…",
+  "select.keywordsNoMatches": "सूची में मेल नहीं — नीचे अपना वाक्य जोड़ें।",
+  "select.keywordsAddQuoted": '"{phrase}" जोड़ें',
+  "select.keywordsCloseSuggestions": "सुझाव बंद करें",
+  "select.keywordsOpenSuggestions": "सुझाव खोलें",
 
   "wizard.validation.businessName": "अपना व्यवसाय नाम दर्ज करें (कम से कम 2 अक्षर)।",
   "wizard.validation.contactFullName": "संपर्क व्यक्ति का नाम दर्ज करें (कम से कम 2 अक्षर)।",
@@ -88,6 +207,110 @@ const WORKSPACE_UI_GU: Record<string, string> = {
   "common.premium": "પ્રીમિયમ",
   "common.saving": "સાચવાઈ રહ્યું છે…",
   "common.saveChanges": "ફેરફાર સાચવો",
+  "common.previousStep": "પાછલું પગલું",
+  "common.nextStep": "આગળનું પગલું",
+  "common.savingEllipsis": "સાચવાઈ રહ્યું છે…",
+  "common.submittingEllipsis": "સબમિટ થઈ રહ્યું છે…",
+  "common.required": "*",
+
+  "footer.tagline":
+    "Bharat Cater Hub · તમારી લિસ્ટિંગ, મેનૂ, ઓર્ડર અને ઇનસાઇટ્સ માટે કેટરર વર્કસ્પેસ.",
+  "footer.privacy": "ગોપનીયતા",
+  "footer.terms": "નિયમો",
+  "footer.publicSite": "જાહેર સાઇટ",
+
+  "sidebar.closeOverlay": "વર્કસ્પેસ મેનુ ઓવરલે બંધ કરો",
+
+  "listingPreview.title": "લિસ્ટિંગ પૂર્વાલોકન",
+  "listingPreview.hint": "માર્કેટપ્લેસ શોધમાં તમારું કાર્ડ કેવું દેખાય છે — સૂચિ અથવા ગ્રિડ દૃશ્ય.",
+  "listingPreview.listView": "સૂચિ દૃશ્ય",
+  "listingPreview.gridView": "ગ્રિડ દૃશ્ય",
+
+  "nav.sections.overview": "ઝલક",
+  "nav.sections.business": "વ્યવસાય",
+  "nav.sections.operations": "ઓપરેશન",
+  "nav.items.dashboard": "ડેશબોર્ડ",
+  "nav.items.profile": "પ્રોફાઇલ",
+  "nav.items.menu": "મેનૂ",
+  "nav.items.orders": "ઓર્ડર",
+  "nav.items.analytics": "એનાલિટિક્સ",
+
+  "header.toggleNav": "વર્કસ્પેસ નેવિગેશન ટૉગલ કરો",
+  "header.accountMenu": "એકાઉન્ટ મેનુ",
+  "header.roleCaterer": "કેટરર",
+  "header.signOut": "સાઇન આઉટ",
+  "header.titles.dashboard": "ડેશબોર્ડ",
+  "header.titles.profile": "પ્રોફાઇલ",
+  "header.titles.menu": "મેનૂ",
+  "header.titles.orders": "ઓર્ડર",
+  "header.titles.analytics": "એનાલિટિક્સ",
+  "header.titles.setup": "સેટઅપ",
+  "header.titles.workspace": "વર્કસ્પેસ",
+  "header.subtitles.dashboard": "લિસ્ટિંગ સ્થિતિ, ઝડપી ક્રિયાઓ અને માર્કેટપ્લેસ પૂર્વાલોકન.",
+  "header.subtitles.profile": "જાહેર લિસ્ટિંગ માટે વ્યવસાય વિગત, સેવાઓ, કીવર્ડ અને ગેલરી.",
+  "header.subtitles.menu": "પૂછપરછ અને ઇવેન્ટ માટે શ્રેણીઓ, વાનગીઓ અને કિંમત.",
+  "header.subtitles.orders": "એક જગ્યાએ પૂછપરછ, બુકિંગ અને પૂર્ણતા ટ્રૅક કરો.",
+  "header.subtitles.analytics": "તમારા કેટરિંગ વ્યવસાય માટે વ્યૂ, લીડ અને પરફોર્મન્સ ઇનસાઇટ્સ.",
+  "header.subtitles.onboarding": "માર્કેટપ્લેસ સમીક્ષા માટે સબમિટ કરતા પહેલાં પ્રોફાઇલ પૂર્ણ કરો.",
+  "header.subtitles.default": "Bharat Cater Hub પર તમારો કેટરિંગ વ્યવસાય મેનેજ કરો.",
+
+  "dashboard.welcome": "સ્વાગત છે",
+  "dashboard.welcomeBack": "પાછા સ્વાગત, {name}",
+  "dashboard.subtitle": "{business} — એક જગ્યાએથી પ્રોફાઇલ, મેનૂ, ઓર્ડર અને ઇનસાઇટ્સ મેનેજ કરો.",
+  "dashboard.yourBusiness": "તમારો કેટરિંગ વ્યવસાય",
+  "dashboard.status.liveTitle": "માર્કેટપ્લેસ પર લાઇવ",
+  "dashboard.status.liveMessage": "ગ્રાહકો શોધમાં તમારી લિસ્ટિંગ શોધી જાહેર પ્રોફાઇલ જોઈ શકે છે.",
+  "dashboard.status.pendingTitle": "એડમિન સમીક્ષા બાકી",
+  "dashboard.status.pendingMessage":
+    "તમારી પ્રોફાઇલ સબમિટ થઈ છે અને જાહેર થતા પહેલાં મંજૂરીની રાહ છે.",
+  "dashboard.status.rejectedTitle": "મંજૂર નથી",
+  "dashboard.status.rejectedMessage": "લિસ્ટિંગ અપડેટ કરો અને ફરી સમીક્ષા માટે સબમિટ કરો.",
+  "dashboard.status.readyTitle": "સબમિટ માટે તૈયાર",
+  "dashboard.status.readyMessage": "પ્રોફાઇલ પૂર્ણ છે. લિસ્ટિંગમાં દેખાવા એડમિન સમીક્ષા માટે સબમિટ કરો.",
+  "dashboard.status.inProgressTitle": "સેટઅપ ચાલુ",
+  "dashboard.status.inProgressMessage": "એડિટરમાં લિસ્ટિંગ પૂર્ણ કરો, પછી એડમિન સમીક્ષા માટે સબમિટ કરો.",
+  "dashboard.submitForReview": "સમીક્ષા માટે સબમિટ",
+  "dashboard.submitting": "સબમિટ થઈ રહ્યું છે…",
+  "dashboard.viewPublicProfile": "જાહેર પ્રોફાઇલ જુઓ",
+  "dashboard.quickActions": "ઝડપી ક્રિયાઓ",
+  "dashboard.quickActionsHint": "વર્કસ્પેસ મોડ્યુલ પર જાઓ.",
+  "dashboard.actionProfile": "પ્રોફાઇલ",
+  "dashboard.actionProfileHint": "માર્કેટપ્લેસ લિસ્ટિંગ અને ગેલરી",
+  "dashboard.actionMenu": "મેનૂ",
+  "dashboard.actionMenuHint": "શ્રેણીઓ અને વાનગીઓ",
+  "dashboard.actionOrders": "ઓર્ડર",
+  "dashboard.actionOrdersHint": "પૂછપરછ અને બુકિંગ",
+  "dashboard.actionAnalytics": "એનાલિટિક્સ",
+  "dashboard.actionAnalyticsHint": "વ્યૂ અને પરફોર્મન્સ",
+  "dashboard.actionBusinessDetails": "વ્યવસાય વિગત",
+  "dashboard.actionBusinessDetailsHint": "સ્થાન, વિશે, ટેગલાઇન",
+  "dashboard.actionGallery": "બેનર અને ગેલરી",
+  "dashboard.actionGalleryHint": "લિસ્ટિંગ ફોટા",
+  "dashboard.openProfileEditor": "પ્રોફાઇલ એડિટર ખોલો",
+  "dashboard.submitSuccess": "એડમિન સમીક્ષા માટે સબમિટ. લાઇવ થયા પછી સૂચનાપૂર્વક જણાવીશું.",
+
+  "flashBanner.rejectedTitle": "લિસ્ટિંગ મંજૂર નથી",
+  "flashBanner.rejectedBody":
+    "વ્યવસાય માહિતી અપડેટ કરો અને ફરી સમીક્ષા માટે સબમિટ કરો. પ્રોફાઇલ માર્કેટપ્લેસ પર દેખાતી નથી.",
+  "flashBanner.pendingTitle": "એડમિન તમારી માહિતીની સમીક્ષા કરે છે",
+  "flashBanner.pendingBodyPrefix": "{date} ના રોજ સબમિટ. ",
+  "flashBanner.pendingBody":
+    "મંજૂરી સુધી લિસ્ટિંગ ગ્રાહકોથી છુપી રહે છે. રાહ દરમિયાન પ્રોફાઇલ સંપાદિત કરી શકો.",
+  "flashBanner.awaitingApproval": "મંજૂરીની રાહ",
+  "flashBanner.updateListing": "લિસ્ટિંગ અપડેટ કરો",
+
+  "modules.menu.title": "મેનૂ મેનેજમેન્ટ",
+  "modules.menu.description":
+    "પ્રીમિયમ પર શ્રેણીઓ, વાનગીઓ, પેકેજ અને કિંમત એક જગ્યાએથી ગોઠવો.",
+  "modules.orders.title": "ઓર્ડર",
+  "modules.orders.description": "પ્રીમિયમ વર્કસ્પેસમાં પૂછપરછ, કોટ અને પુષ્ટિ ઇવેન્ટ ટ્રૅક કરો.",
+  "modules.analytics.title": "એનાલિટિક્સ",
+  "modules.analytics.description": "પ્રીમિયમ પર પ્રોફાઇલ વ્યૂ, લીડ અને લિસ્ટિંગ પરફોર્મન્સ જુઓ.",
+  "modules.premiumIncluded": "આ મોડ્યુલ પ્રીમિયમ વર્કસ્પેસ પ્લાનમાં શામેલ છે.",
+  "modules.contactForPremium": "પ્રીમિયમ માટે સંપર્ક",
+  "modules.email": "ઇમેઇલ {email}",
+
+  "toast.submitSuccess": "એડમિન સમીક્ષા માટે સબમિટ. લાઇવ થયા પછી સૂચનાપૂર્વક જણાવીશું.",
 
   "onboarding.loadingWizard": "વિઝાર્ડ લોડ થઈ રહ્યું છે…",
   "onboardingShell.title": "અમારી સાથે તમારો કેટરિંગ વ્યવસાય વધારો",
@@ -108,6 +331,16 @@ const WORKSPACE_UI_GU: Record<string, string> = {
   "select.removeKeywordAria": "કીવર્ડ દૂર કરો {label}",
   "select.uploading": "અપલોડ થઈ રહ્યું છે…",
   "select.uploadingPercent": "અપલોડ {percent}%",
+  "select.keywordsMaxReached":
+    "વધુમાં વધુ {max} કીવર્ડ થઈ ગયા. બીજું ઉમેરવા એક દૂર કરો.",
+  "select.keywordsPopularHeading": "માર્કેટપ્લેસ પર લોકપ્રિય",
+  "select.keywordsEmptyCatalog":
+    "હજી કીવર્ડ સૂચિ નથી. નીચે તમારો શબ્દસમૂહ ટાઇપ કરો — Enter અથવા ઉમેરો.",
+  "select.keywordsSearching": "શોધ થઈ રહી છે…",
+  "select.keywordsNoMatches": "સૂચિમાં મેળ નથી — નીચે તમારો શબ્દસમૂહ ઉમેરો.",
+  "select.keywordsAddQuoted": '"{phrase}" ઉમેરો',
+  "select.keywordsCloseSuggestions": "સૂચનાઓ બંધ કરો",
+  "select.keywordsOpenSuggestions": "સૂચનાઓ ખોલો",
 
   "wizard.validation.businessName": "તમારું વ્યવસાય નામ દાખલ કરો (ઓછામાં ઓછા 2 અક્ષરો).",
   "wizard.validation.contactFullName": "સંપર્ક વ્યક્તિનું નામ દાખલ કરો (ઓછામાં ઓછા 2 અક્ષરો).",
@@ -140,5 +373,12 @@ const WORKSPACE_UI_GU: Record<string, string> = {
   "wizard.gallery.uploadingBanner": "બેનર અપલોડ થઈ રહ્યું છે…",
 };
 
-export const WORKSPACE_UI_HI_OVERRIDES = WORKSPACE_UI_HI;
-export const WORKSPACE_UI_GU_OVERRIDES = WORKSPACE_UI_GU;
+export const WORKSPACE_UI_HI_OVERRIDES: Record<string, string> = {
+  ...WORKSPACE_WIZARD_HI_OVERRIDES,
+  ...WORKSPACE_UI_HI,
+};
+
+export const WORKSPACE_UI_GU_OVERRIDES: Record<string, string> = {
+  ...WORKSPACE_WIZARD_GU_OVERRIDES,
+  ...WORKSPACE_UI_GU,
+};

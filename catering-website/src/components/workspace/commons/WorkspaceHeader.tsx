@@ -114,15 +114,7 @@ export function WorkspaceHeader({ user, onToggleSidebar }: WorkspaceHeaderProps)
                 {ws.header.roleCaterer}
               </span>
             </div>
-            <Link
-              href="/workspace"
-              role="menuitem"
-              className="flex w-full cursor-pointer items-center gap-3 px-4 py-2.5 text-left text-sm font-semibold text-brand-text-dark transition hover:bg-brand-page"
-              onClick={() => setMenuOpen(false)}
-            >
-              <SquaresFour size={18} weight="bold" className="text-brand-text-muted" aria-hidden />
-              {ws.nav.items.dashboard}
-            </Link>
+            
             <Link
               href="/workspace/profile"
               role="menuitem"
@@ -132,33 +124,7 @@ export function WorkspaceHeader({ user, onToggleSidebar }: WorkspaceHeaderProps)
               <Storefront size={18} weight="bold" className="text-brand-text-muted" aria-hidden />
               {ws.nav.items.profile}
             </Link>
-            <Link
-              href="/workspace/menu"
-              role="menuitem"
-              className="flex w-full cursor-pointer items-center gap-3 px-4 py-2.5 text-left text-sm font-semibold text-brand-text-dark transition hover:bg-brand-page"
-              onClick={() => setMenuOpen(false)}
-            >
-              <ForkKnife size={18} weight="bold" className="text-brand-text-muted" aria-hidden />
-              {ws.nav.items.menu}
-            </Link>
-            <Link
-              href="/workspace/orders"
-              role="menuitem"
-              className="flex w-full cursor-pointer items-center gap-3 px-4 py-2.5 text-left text-sm font-semibold text-brand-text-dark transition hover:bg-brand-page"
-              onClick={() => setMenuOpen(false)}
-            >
-              <ShoppingCart size={18} weight="bold" className="text-brand-text-muted" aria-hidden />
-              {ws.nav.items.orders}
-            </Link>
-            <Link
-              href="/workspace/analytics"
-              role="menuitem"
-              className="flex w-full cursor-pointer items-center gap-3 px-4 py-2.5 text-left text-sm font-semibold text-brand-text-dark transition hover:bg-brand-page"
-              onClick={() => setMenuOpen(false)}
-            >
-              <ChartLineUp size={18} weight="bold" className="text-brand-text-muted" aria-hidden />
-              {ws.nav.items.analytics}
-            </Link>
+            
             <button
               type="button"
               role="menuitem"

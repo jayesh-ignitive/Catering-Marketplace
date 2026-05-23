@@ -8,6 +8,7 @@ import {
   obSecondaryOutlineBtn,
   obTextLink,
 } from "@/components/auth/PartnerOnboardingAuthShell";
+import { ExtensionSafeEmailInput } from "@/components/common/ExtensionSafeEmailInput";
 import { FormFieldError } from "@/components/common/FormFieldError";
 import { OtpInput } from "@/components/common/OtpInput";
 import { setStoredToken, verifyOtp, resendVerificationEmail } from "@/lib/auth-api";
@@ -116,7 +117,7 @@ function VerifyOtpForm() {
       {fromLogin ? (
         <div className="mb-6 rounded-lg border border-gray-200 bg-gray-50 px-4 py-3">
           <p className="text-sm font-semibold text-brand-dark">
-            Finish signing in — enter the code we sent to your inbox.
+            {w.auth.verifyOtp.fromLoginBanner}
           </p>
         </div>
       ) : null}
@@ -126,11 +127,9 @@ function VerifyOtpForm() {
           <label htmlFor="otp-email" className={obLabel}>
             {w.auth.verifyOtp.email}
           </label>
-          <input
+          <ExtensionSafeEmailInput
             id="otp-email"
             name="email"
-            type="email"
-            autoComplete="email"
             readOnly={emailReadOnly}
             value={email}
             onChange={(e) => {
@@ -138,7 +137,7 @@ function VerifyOtpForm() {
               setEmail(e.target.value);
               clearError("email");
             }}
-            placeholder="hello@yourbusiness.com"
+            placeholder={w.auth.verifyOtp.emailPlaceholder}
             aria-invalid={Boolean(errors.email)}
             aria-describedby={errors.email ? "otp-email-error" : undefined}
             className={`${obInputClass(Boolean(errors.email))} ${emailReadOnly ? "cursor-default bg-gray-50" : ""}`}

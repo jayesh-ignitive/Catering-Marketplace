@@ -91,12 +91,12 @@ export function buildPageMetadata({
 export const routeSeo = {
   blog: buildPageMetadata({
     title: "Insights",
-    description: "Catering guides, trends, and planning tips from Bharat Catering.",
+    description: "Catering guides, trends, and planning tips from Bharat Cater Hub.",
   }),
   caterers: buildPageMetadata({
     title: "Browse caterers",
     description:
-      "Discover Bharat Catering partners for weddings, corporates, and celebrations. Filter by city, service type, and budget.",
+      "Discover Bharat Cater Hub partners for weddings, corporates, and celebrations. Filter by city, service type, and budget.",
   }),
   verifyEmail: buildPageMetadata({
     title: "Verify email",
@@ -104,7 +104,7 @@ export const routeSeo = {
   }),
   login: buildPageMetadata({
     title: "Log in",
-    description: "Sign in to your Bharat Catering caterer account.",
+    description: "Sign in to your Bharat Cater Hub caterer account.",
   }),
   verifyOtp: buildPageMetadata({
     title: "Enter verification code",
@@ -113,11 +113,11 @@ export const routeSeo = {
   packages: buildPageMetadata({
     title: "Catering listing packages",
     description:
-      "Compare Bharat Catering directory plans for kitchens and catering brands - visibility, profile depth, and lead features.",
+      "Compare Bharat Cater Hub directory plans for kitchens and catering brands - visibility, profile depth, and lead features.",
   }),
   register: buildPageMetadata({
     title: "Register",
-    description: "Create your Bharat Catering caterer account and list your business.",
+    description: "Create your Bharat Cater Hub caterer account and list your business.",
   }),
   workspace: {
     title: { default: "Workspace", template: "%s · My business" },

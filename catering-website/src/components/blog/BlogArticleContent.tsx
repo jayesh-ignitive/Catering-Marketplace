@@ -6,25 +6,14 @@ import { useQuery } from "@tanstack/react-query";
 import Link from "next/link";
 import { useParams, useRouter } from "next/navigation";
 import { RemoteContentImage } from "@/components/common/RemoteContentImage";
+import { formatLocaleDate } from "@/i18n/format";
 import { BLOG_QUERY_KEY, BLOG_STALE_MS, fetchBlogPost } from "@/lib/blog";
 
 const FALLBACK_IMG =
   "https://images.unsplash.com/photo-1546069901-ba9599a7e63c?auto=format&fit=crop&w=1600&q=85";
 
-function formatPublished(iso: string) {
-  try {
-    return new Date(iso).toLocaleDateString("en-IN", {
-      day: "numeric",
-      month: "long",
-      year: "numeric",
-    });
-  } catch {
-    return iso;
-  }
-}
-
 export function BlogArticleContent() {
-  const { w, trans } = useI18n();
+  const { w, locale } = useI18n();
 
   const params = useParams();
   const router = useRouter();
@@ -117,7 +106,9 @@ export function BlogArticleContent() {
             </span>
             <span className="inline-flex items-center gap-1.5">
               <CalendarBlank className="text-brand-red" aria-hidden />
-              <time dateTime={post.publishedAt}>{formatPublished(post.publishedAt)}</time>
+              <time dateTime={post.publishedAt}>
+                {formatLocaleDate(post.publishedAt, locale, "long")}
+              </time>
             </span>
           </div>
 

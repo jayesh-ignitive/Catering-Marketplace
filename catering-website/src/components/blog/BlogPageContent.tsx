@@ -6,27 +6,15 @@ import { useQuery } from "@tanstack/react-query";
 import Link from "next/link";
 import { useMemo, useState } from "react";
 import { RemoteContentImage } from "@/components/common/RemoteContentImage";
-import { trans } from "@/i18n";
+import { formatLocaleDate } from "@/i18n/format";
 import { BLOG_QUERY_KEY, BLOG_STALE_MS, fetchBlogPosts, type BlogPostSummary } from "@/lib/blog";
 import { FaChevronLeft, FaChevronRight } from "react-icons/fa";
 
 const FALLBACK_IMG =
   "https://images.unsplash.com/photo-1546069901-ba9599a7e63c?auto=format&fit=crop&w=800&q=80";
 
-function formatPublished(iso: string) {
-  try {
-    return new Date(iso).toLocaleDateString("en-IN", {
-      day: "numeric",
-      month: "short",
-      year: "numeric",
-    });
-  } catch {
-    return iso;
-  }
-}
-
 function BlogCard({ post }: { post: BlogPostSummary }) {
-  const { w } = useI18n();
+  const { w, locale } = useI18n();
   const img = post.featuredImageUrl ?? FALLBACK_IMG;
   return (
     <article className="group flex flex-col overflow-hidden rounded-3xl border border-gray-100 bg-white shadow-sm transition hover:-translate-y-1 hover:border-brand-red/25 hover:shadow-xl">
@@ -47,7 +35,7 @@ function BlogCard({ post }: { post: BlogPostSummary }) {
         <div className="flex flex-1 flex-col p-6">
           <div className="mb-2 flex items-center gap-2 text-xs font-medium text-gray-400">
             <CalendarBlank className="text-brand-red" aria-hidden />
-            <time dateTime={post.publishedAt}>{formatPublished(post.publishedAt)}</time>
+            <time dateTime={post.publishedAt}>{formatLocaleDate(post.publishedAt, locale)}</time>
           </div>
           <h2 className="font-heading text-xl font-extrabold leading-snug text-brand-dark transition group-hover:text-brand-red">
             {post.title}
@@ -61,7 +49,7 @@ function BlogCard({ post }: { post: BlogPostSummary }) {
 }
 
 export function BlogPageContent() {
-  const { w, trans } = useI18n();
+  const { w, locale, trans } = useI18n();
 
   const [page, setPage] = useState(1);
   const limit = 9;

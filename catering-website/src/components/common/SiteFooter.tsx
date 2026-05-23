@@ -1,7 +1,8 @@
 "use client";
 
 import { BrandLogoLink } from "@/components/common/BrandLogoLink";
-import { Envelope, FacebookLogo, InstagramLogo, MapPin, Phone, TwitterLogo } from "@phosphor-icons/react";
+import { Envelope, FacebookLogo, InstagramLogo, MapPin, Phone } from "@phosphor-icons/react";
+import { XLogoIcon } from "@/components/common/XLogoIcon";
 import { useQuery } from "@tanstack/react-query";
 import Link from "next/link";
 import { fetchServiceCategories } from "@/lib/catering-api";
@@ -36,9 +37,9 @@ export function SiteFooter() {
               <a
                 href="#"
                 className="flex h-10 w-10 items-center justify-center rounded-full bg-white/10 text-white transition-all duration-300 hover:-translate-y-1 hover:bg-brand-red hover:shadow-[0_4px_15px_rgba(229,57,53,0.4)]"
-                aria-label={w.footer.twitter}
+                aria-label={w.footer.x}
               >
-                <TwitterLogo className="text-lg" weight="regular" />
+                <XLogoIcon className="h-[18px] w-[18px]" />
               </a>
               <a
                 href="#"

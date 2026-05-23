@@ -1,18 +1,128 @@
 import { Injectable, Logger } from '@nestjs/common';
 import { ConfigService } from '@nestjs/config';
+import {
+  buildOtpEmailHtml,
+  buildOtpEmailSubject,
+  buildOtpEmailText,
+  type CatererOtpEmailContext,
+} from './otp-email.template';
 
-export type CatererOtpEmailContext = {
-  fullName: string;
-  businessName: string;
-  subdomain: string | null;
-  otpPlain: string;
-};
+export type { CatererOtpEmailContext };
+
+const BREVO_SEND_URL = 'https://api.brevo.com/v3/smtp/email';
+
+type BrevoSendResponse = { messageId?: string };
 
 @Injectable()
 export class MailService {
   private readonly logger = new Logger(MailService.name);
 
   constructor(private readonly config: ConfigService) {}
+
+  private isMailDisabled(): boolean {
+    const disabled = this.config.get<string>('MAIL_ENABLED')?.trim().toLowerCase();
+    return disabled === 'false' || disabled === '0';
+  }
+
+  /** Brevo REST API key (xkeysib-…). Legacy: xkeysib- value in BREVO_SMTP_KEY. */
+  private getBrevoApiKey(): string | null {
+    const apiKey = this.config.get<string>('BREVO_API_KEY')?.trim();
+    if (apiKey) return apiKey;
+    const legacy = this.config.get<string>('BREVO_SMTP_KEY')?.trim();
+    if (legacy?.startsWith('xkeysib-')) return legacy;
+    return null;
+  }
+
+  private isBrevoEnabled(): boolean {
+    if (this.isMailDisabled()) return false;
+    return Boolean(this.getBrevoApiKey());
+  }
+
+  private mailFrom(): { name: string; email: string } | null {
+    const email = this.config.get<string>('MAIL_FROM')?.trim();
+    if (!email) return null;
+    const name =
+      this.config.get<string>('MAIL_FROM_NAME')?.trim() || 'Bharat Cater Hub';
+    return { name, email };
+  }
+
+  private async sendViaBrevoApi(options: {
+    to: string;
+    subject: string;
+    text: string;
+    html: string;
+  }): Promise<string | undefined> {
+    const apiKey = this.getBrevoApiKey();
+    const sender = this.mailFrom();
+    if (!apiKey || !sender) {
+      return undefined;
+    }
+
+    const res = await fetch(BREVO_SEND_URL, {
+      method: 'POST',
+      headers: {
+        accept: 'application/json',
+        'content-type': 'application/json',
+        'api-key': apiKey,
+      },
+      body: JSON.stringify({
+        sender: { name: sender.name, email: sender.email },
+        to: [{ email: options.to }],
+        subject: options.subject,
+        htmlContent: options.html,
+        textContent: options.text,
+      }),
+    });
+
+    const bodyText = await res.text();
+    let body: BrevoSendResponse & { message?: string; code?: string } = {};
+    if (bodyText) {
+      try {
+        body = JSON.parse(bodyText) as typeof body;
+      } catch {
+        body = { message: bodyText };
+      }
+    }
+
+    if (!res.ok) {
+      const detail = body.message ?? bodyText ?? res.statusText;
+      throw new Error(`Brevo API ${res.status}: ${detail}`);
+    }
+
+    return body.messageId;
+  }
+
+  private async sendMail(options: {
+    to: string;
+    subject: string;
+    text: string;
+    html: string;
+  }): Promise<boolean> {
+    const from = this.mailFrom();
+
+    if (!this.isBrevoEnabled() || !from) {
+      this.logger.log(`--- Email (not sent) → ${options.to} ---`);
+      this.logger.log(`Subject: ${options.subject}`);
+      this.logger.log(options.text);
+      if (!from) {
+        this.logger.warn('MAIL_FROM is missing — set a verified Brevo sender address');
+      } else if (!this.getBrevoApiKey()) {
+        this.logger.warn('BREVO_API_KEY is missing — set your Brevo REST API key (xkeysib-…)');
+      }
+      return false;
+    }
+
+    try {
+      const messageId = await this.sendViaBrevoApi(options);
+      this.logger.log(
+        `Email sent → ${options.to} (${messageId ?? 'ok'})`,
+      );
+      return true;
+    } catch (err) {
+      this.logger.error(`Email failed → ${options.to}`, err);
+      throw err;
+    }
+  }
 
   /**
    * Logs verification link for legacy token flow (if still issued).
@@ -26,7 +136,15 @@ export class MailService {
       .getOrThrow<string>('APP_PUBLIC_URL')
       .replace(/\/$/, '');
     const url = `${base}/verify-email?token=${encodeURIComponent(rawToken)}`;
-    this.logger.log(`Verification link for ${to} (${fullName}): ${url}`);
+    const html = `<p>Hi ${escapeHtml(fullName)},</p><p><a href="${escapeHtml(url)}">Verify your email</a></p>`;
+    const text = `Hi ${fullName},\n\nVerify your email: ${url}`;
+
+    await this.sendMail({
+      to,
+      subject: 'Verify your email',
+      text,
+      html,
+    });
   }
 
   private workspaceHost(subdomain: string | null): string | null {
@@ -35,69 +153,56 @@ export class MailService {
     return `${subdomain}.${parent}`;
   }
 
-  private buildOtpEmailHtml(ctx: CatererOtpEmailContext): string {
-    const workspace = this.workspaceHost(ctx.subdomain);
-    const appUrl =
-      this.config.get<string>('APP_PUBLIC_URL')?.replace(/\/$/, '') || '';
-    const safeName = escapeHtml(ctx.fullName);
-    const safeBusiness = escapeHtml(ctx.businessName);
-    const otp = escapeHtml(ctx.otpPlain);
-    const workspaceBlock = workspace
-      ? `<p style="margin:16px 0 0;font-size:14px;color:#444;">Your workspace will be available at <strong>${escapeHtml(workspace)}</strong> once DNS is configured.</p>`
-      : '';
-
-    return `<!DOCTYPE html>
-<html lang="en">
-<head><meta charset="utf-8"/><meta name="viewport" content="width=device-width,initial-scale=1"/></head>
-<body style="margin:0;padding:0;background:#f4f2ef;font-family:system-ui,-apple-system,Segoe UI,Roboto,sans-serif;">
-  <table role="presentation" width="100%" cellspacing="0" cellpadding="0" style="padding:24px 12px;">
-    <tr><td align="center">
-      <table role="presentation" width="100%" style="max-width:520px;background:#fff;border-radius:16px;padding:32px 28px;box-shadow:0 8px 30px rgba(0,0,0,.06);">
-        <tr><td>
-          <p style="margin:0;font-size:12px;font-weight:700;letter-spacing:.12em;text-transform:uppercase;color:#b45309;">Catering</p>
-          <h1 style="margin:12px 0 0;font-size:22px;line-height:1.25;color:#1c1917;">Verify your email</h1>
-          <p style="margin:16px 0 0;font-size:15px;line-height:1.55;color:#444;">Hi ${safeName},</p>
-          <p style="margin:12px 0 0;font-size:15px;line-height:1.55;color:#444;">Thanks for registering <strong>${safeBusiness}</strong> on our platform. Use this one-time code to verify your email address:</p>
-          <p style="margin:28px 0;font-size:36px;font-weight:800;letter-spacing:.35em;text-align:center;color:#1c1917;font-family:ui-monospace,monospace;">${otp}</p>
-          <p style="margin:0;font-size:13px;line-height:1.5;color:#78716c;">This code expires in 15 minutes. If you didn’t create an account, you can ignore this message.</p>
-          ${workspaceBlock}
-          ${
-            appUrl
-              ? `<p style="margin:24px 0 0;font-size:13px;"><a href="${escapeHtml(appUrl + '/verify-otp')}" style="color:#c2410c;">Open verification page</a></p>`
-              : ''
-          }
-        </td></tr>
-      </table>
-      <p style="margin:20px 0 0;font-size:11px;color:#a8a29e;">This is an automated message; replies are not monitored.</p>
-    </td></tr>
-  </table>
-</body>
-</html>`;
+  private siteName(): string {
+    return this.config.get<string>('SITE_NAME')?.trim() || 'Bharat Cater Hub';
   }
 
-  /** OTP email (HTML + plain text). Replace logger with SMTP/SES in production. */
+  private verifyOtpUrl(): string | null {
+    const base = this.publicAppUrl();
+    return base ? `${base}/verify-otp` : null;
+  }
+
+  private publicAppUrl(): string {
+    return this.config.get<string>('APP_PUBLIC_URL')?.replace(/\/$/, '') ?? '';
+  }
+
+  private emailBrandAsset(path: string): string {
+    const base = this.publicAppUrl();
+    return base ? `${base}${path}` : '';
+  }
+
+  private emailLogoImageUrl(): string {
+    const override = this.config.get<string>('EMAIL_LOGO_URL')?.trim();
+    if (override) return override;
+    return this.emailBrandAsset('/brand/bharat-cater-hub-logo-email.svg');
+  }
+
+  /** OTP email (HTML + plain text) via Brevo Transactional API when configured. */
   async sendCatererOtpEmail(
     to: string,
     ctx: CatererOtpEmailContext,
   ): Promise<void> {
-    const workspace = this.workspaceHost(ctx.subdomain);
-    const html = this.buildOtpEmailHtml(ctx);
-    const text = [
-      `Hi ${ctx.fullName},`,
-      ``,
-      `Your verification code for ${ctx.businessName} is: ${ctx.otpPlain}`,
-      `This code expires in 15 minutes.`,
-      workspace ? `Workspace: ${workspace}` : '',
-      '',
-    ]
-      .filter(Boolean)
-      .join('\n');
+    const homeUrl = this.publicAppUrl() || 'https://bharatcaterhub.com';
+    const templateInput = {
+      ...ctx,
+      siteName: this.siteName(),
+      verifyUrl: this.verifyOtpUrl(),
+      workspaceHost: this.workspaceHost(ctx.subdomain),
+      homeUrl,
+      chefHatUrl: this.emailBrandAsset('/brand/chef-hat-gold.svg'),
+      logoImageUrl: this.emailLogoImageUrl(),
+      brandPrimary:
+        this.config.get<string>('BRAND_PRIMARY')?.trim() || 'Bharat',
+      brandSecondary:
+        this.config.get<string>('BRAND_SECONDARY')?.trim() || 'Cater Hub',
+    };
 
-    this.logger.log(`--- OTP email → ${to} ---`);
-    this.logger.log(text);
-    this.logger.debug(
-      `HTML length ${html.length} chars (template ready for SMTP)`,
-    );
+    await this.sendMail({
+      to,
+      subject: buildOtpEmailSubject(ctx.otpPlain, templateInput.siteName),
+      text: buildOtpEmailText(templateInput),
+      html: buildOtpEmailHtml(templateInput),
+    });
   }
 }
 

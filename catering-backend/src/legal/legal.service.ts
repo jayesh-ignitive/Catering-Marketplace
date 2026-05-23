@@ -94,11 +94,11 @@ export class LegalService {
   }
 
   applyPlaceholders(html: string): string {
-    const siteName = this.config.get('SITE_NAME', 'Bharat Caterers');
-    const siteUrl = this.config.get('SITE_URL', 'https://bharatcaterers.com');
+    const siteName = this.config.get('SITE_NAME', 'Bharat Cater Hub');
+    const siteUrl = this.config.get('SITE_URL', 'https://bharatcaterhub.com');
     const contactEmail = this.config.get(
       'CONTACT_EMAIL',
-      'hello@bharatcaterers.in',
+      'hello@bharatcaterhub.com',
     );
     const phoneDisplay = this.config.get(
       'SUPPORT_PHONE_DISPLAY',

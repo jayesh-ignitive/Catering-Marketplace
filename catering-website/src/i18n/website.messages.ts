@@ -12,8 +12,8 @@ export const websiteMessages = {
     redirecting: "Redirecting…",
     noCategories: "No categories available",
     brandPrimary: "Bharat",
-    brandSecondary: "Catering",
-    brandHomeAria: "Bharat Catering home",
+    brandSecondary: "Cater Hub",
+    brandHomeAria: "Bharat Cater Hub home",
     home: "Home",
     save: "Save",
     cancel: "Cancel",
@@ -74,7 +74,7 @@ export const websiteMessages = {
     contactUs: "Contact Us",
     getInTouch: "Get In Touch",
     facebook: "Facebook",
-    twitter: "Twitter",
+    x: "X",
     instagram: "Instagram",
     copyright: "© {year} {siteName}. All rights reserved.",
   },
@@ -85,9 +85,9 @@ export const websiteMessages = {
     heroTitleHighlight: "Near You",
     heroSubtitleJoin: "Join",
     heroSubtitleWithStatsAfterCount:
-      "hosts who used Bharat Catering to compare menus, cities, and caterer profiles—then book with confidence.",
+      "hosts who used Bharat Cater Hub to compare menus, cities, and caterer profiles—then book with confidence.",
     heroSubtitleDefault:
-      "Bharat Catering connects hosts with verified-style caterer listings, published menus, and quotes across India.",
+      "Bharat Cater Hub connects hosts with verified-style caterer listings, published menus, and quotes across India.",
     cityLabel: "City (optional)",
     cityPlaceholder: "City — optional",
     categoryLabel: "Service category (optional)",
@@ -102,7 +102,7 @@ export const websiteMessages = {
     categoriesApiError:
       "Categories could not be loaded. Check that the catalog API is running on port 4000.",
     howItWorksEyebrow: "How It Works",
-    howItWorksTitle: "So How Does Bharat Catering Process Work?",
+    howItWorksTitle: "So How Does Bharat Cater Hub Process Work?",
     stepSearchTitle: "Search Caterer",
     stepSearchBody:
       "Find the best caterers in your city based on your specific event requirements.",
@@ -117,7 +117,7 @@ export const websiteMessages = {
     packagesTitleHighlight: "packages",
     packagesTitleSuffix: "for your kitchen",
     packagesSubtitle:
-      "Grow on Bharat Catering with a profile guests can trust — from your first published listing to hands-on partner support for larger teams.",
+      "Grow on Bharat Cater Hub with a profile guests can trust — from your first published listing to hands-on partner support for larger teams.",
     planStarterName: "Listing starter",
     planStarterTag: "Get discovered",
     planStarterPrice: "Free",
@@ -149,13 +149,13 @@ export const websiteMessages = {
     planPartnerPerk2: "Support for multi-brand or multi-city rollouts",
     planPartnerPerk3: "Commercial terms tailored to your footprint",
     packagesFootnotePrefix: "Final fees for food and service stay between you and your clients. These packages are about your",
-    packagesFootnotePresence: "presence on Bharat Catering",
+    packagesFootnotePresence: "presence on Bharat Cater Hub",
     packagesFootnoteSuffix: "— not guest tickets.",
     packagesHireLink: "Looking to hire a caterer? Browse the directory.",
     packagesCompareLink: "Full yearly plans, feature table & how to choose",
     trustEyebrow: "Since 2024",
     trustTitle: "Why Businesses Trust",
-    trustTitleHighlight: "Bharat Catering",
+    trustTitleHighlight: "Bharat Cater Hub",
     trustSubtitle:
       "We connect you with the most reliable, hygienic, and highly-rated catering services across India. Quality food for quality moments.",
     getStarted: "Get Started",
@@ -183,8 +183,8 @@ export const websiteMessages = {
       breadcrumbAll: "All caterers",
       breadcrumbInCity: "Caterers in {city}",
       loading: "Loading caterers…",
-      resultsShowing:
-        "Showing {count} caterer{plural} found for your search",
+      resultsShowingOne: "Showing {count} caterer for your search",
+      resultsShowingMany: "Showing {count} caterers for your search",
       filters: "Filters",
       closeFilters: "Close filters",
       resetAll: "Reset All",
@@ -211,9 +211,9 @@ export const websiteMessages = {
       viewList: "List view",
       loadErrorTitle: "Unable to load directory",
       loadErrorBody: "Start the API on port 4000 and ensure the database is migrated, then refresh.",
-      previousPage: "Previous page",
-      nextPage: "Next page",
-      pagination: "Pagination",
+      loadingMore: "Loading more caterers…",
+      endOfList: "You have seen all matching caterers.",
+      loadMoreSentinel: "Load more caterers",
     },
     card: {
       locationOnRequest: "Location on request",
@@ -271,7 +271,7 @@ export const websiteMessages = {
       reviewPosted: "Thanks — your review was posted.",
       aboutTitle: "About the Caterer",
       aboutPlaceholder:
-        "{name} is a catering partner on Bharat Catering. Complete your profile in the workspace to add a full story here.",
+        "{name} is a catering partner on Bharat Cater Hub. Complete your profile in the workspace to add a full story here.",
       ourSpecialties: "Our Specialties",
       menuPricingHeading: "Menu & pricing",
       menuPricingTitle: "Menu & Pricing",
@@ -308,7 +308,7 @@ export const websiteMessages = {
     shellStatLine2: "Caterers",
     shellStatLine3: "Already Joined",
     shellTestimonial:
-      "Since joining Bharat Caterers, our wedding booking rate has increased by 300%. The platform is incredibly easy to use.",
+      "Since joining Bharat Cater Hub, our wedding booking rate has increased by 300%. The platform is incredibly easy to use.",
     preparingKitchen: "Preparing your kitchen…",
     settingTable: "Setting the table…",
     login: {
@@ -465,13 +465,13 @@ export const websiteMessages = {
     eyebrow: "For caterers & brands",
     title: "Catering listing packages",
     heroSubtitle:
-      "On a busy marketplace, a basic profile is rarely enough. These plans stack visibility, trust signals, and enquiry features so serious hosts can find you faster on Bharat Catering.",
+      "On a busy marketplace, a basic profile is rarely enough. These plans stack visibility, trust signals, and enquiry features so serious hosts can find you faster on Bharat Cater Hub.",
     valueTitle: "Which tier is usually the best value?",
     valueBody:
       "Our three-step ladder (Essential / Growth / Premier) follows a familiar pattern: entry covers “be findable,” Growth adds homepage or social exposure and stronger enquiry treatment, Premier adds SEO-friendly backlinks and PR-style placement. For most regional kitchens, Growth tends to be the sweet spot between cost and lead quality; choose Premier when you are scaling multi-city or competing for high-ticket weddings and corporate RFPs. Final mix should match your margin and enquiry volume — we are happy to advise.",
     discoverTitle: "Discover our listing plans",
     discoverSubtitle:
-      "Pick the depth of exposure that matches how aggressively you want to grow on Bharat Catering. Annual fees below are indicative — confirm current rates and inclusions with our team before purchase.",
+      "Pick the depth of exposure that matches how aggressively you want to grow on Bharat Cater Hub. Annual fees below are indicative — confirm current rates and inclusions with our team before purchase.",
     comparisonTitle: "At-a-glance comparison",
     comparisonHint: "Exact quotas can change — use this table to brief our sales team.",
     featureColumn: "Feature",
@@ -505,7 +505,7 @@ export const websiteMessages = {
     readMore: "Read more",
     readArticle: "Read article →",
     viewAll: "View all articles",
-    brandLabel: "Bharat Catering Blog",
+    brandLabel: "Bharat Cater Hub Blog",
     heroTitle: "Guides, trends &",
     heroTitleHighlight: "menu ideas",
     heroSubtitle:

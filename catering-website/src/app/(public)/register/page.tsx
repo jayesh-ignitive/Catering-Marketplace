@@ -7,6 +7,7 @@ import {
   obPrimaryBtn,
   obTextLink,
 } from "@/components/auth/PartnerOnboardingAuthShell";
+import { ExtensionSafeEmailInput } from "@/components/common/ExtensionSafeEmailInput";
 import { FormFieldError } from "@/components/common/FormFieldError";
 import { useAuth } from "@/context/AuthContext";
 import {
@@ -229,7 +230,7 @@ export default function RegisterPage() {
                 type="tel"
                 inputMode="numeric"
                 autoComplete="tel-national"
-                placeholder="00000 00000"
+                placeholder={w.auth.register.phonePlaceholder}
                 maxLength={14}
                 value={phoneNumber}
                 onChange={(e) => onPhoneNationalChange(e.target.value)}
@@ -246,11 +247,9 @@ export default function RegisterPage() {
           <label htmlFor="reg-email" className={obLabel}>
             {w.auth.register.email}
           </label>
-          <input
+          <ExtensionSafeEmailInput
             id="reg-email"
             name="email"
-            type="email"
-            autoComplete="email"
             placeholder={w.auth.register.emailPlaceholder}
             value={email}
             onChange={(e) => {

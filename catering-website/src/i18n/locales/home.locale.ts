@@ -85,10 +85,10 @@ export const HOME_HI_OVERRIDES: Record<string, string> = {
     "कॉर्पोरेट इवेंट के लिए कैटरर ढूँढना आसान था। भोजन और सेवा की गुणवत्ता उत्कृष्ट थी। अत्यधिक अनुशंसित प्लेटफ़ॉर्म!",
   "home.testimonialAuthor": "Anthom Bu Spar",
   "home.testimonialRole": "कॉर्पोरेट मैनेजर",
-  "home.insightsTitle": "नवीनतम अंतर्दृष्टि",
-  "home.viewAllArticles": "सभी लेख देखें",
+  "home.insightsTitle": "Latest Insights",
+  "home.viewAllArticles": "सभी articles देखें",
   "home.blogApiUnavailable":
-    "ब्लॉग API उपलब्ध होने पर अंतर्दृष्टि यहाँ दिखेगी (catering-backend में npm run migration:run चलाएँ)।",
+    "Insights यहाँ दिखेंगी जब blog API ready हो (catering-backend में npm run migration:run चलाएँ)।",
 };
 
 export const HOME_GU_OVERRIDES: Record<string, string> = {

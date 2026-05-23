@@ -79,12 +79,12 @@ export function BrandLogoLink({
         <span
           className={
             preset === "siteHeader"
-              ? "relative z-10 -mt-1 -rotate-2 rounded-sm bg-brand-red px-2 py-0.5 text-[9px] font-bold uppercase tracking-[0.3em] text-white shadow-sm"
+              ? "relative z-10 -mt-1 -rotate-2 rounded-sm bg-brand-red px-2 py-0.5 text-[8px] font-bold uppercase tracking-[0.12em] text-white shadow-sm"
               : preset === "siteFooter"
-                ? "relative z-10 -mt-1 -rotate-2 w-fit rounded-sm bg-brand-red px-2 py-0.5 text-[9px] font-bold uppercase tracking-[0.3em] text-white shadow-sm"
+                ? "relative z-10 -mt-1 -rotate-2 w-fit rounded-sm bg-brand-red px-2 py-0.5 text-[8px] font-bold uppercase tracking-[0.12em] text-white shadow-sm"
               : preset === "onboardingHero"
-                ? "relative z-10 -mt-1 -rotate-2 w-fit rounded-sm bg-brand-red px-2 py-0.5 text-[9px] font-bold uppercase tracking-[0.3em] text-white shadow-md"
-                : "relative z-10 -mt-0.5 -rotate-2 w-fit rounded-sm bg-brand-red px-1.5 py-px text-[7px] font-bold uppercase tracking-[0.25em] text-white shadow-sm"
+                ? "relative z-10 -mt-1 -rotate-2 w-fit rounded-sm bg-brand-red px-2 py-0.5 text-[8px] font-bold uppercase tracking-[0.12em] text-white shadow-md"
+                : "relative z-10 -mt-0.5 -rotate-2 w-fit rounded-sm bg-brand-red px-1.5 py-px text-[6px] font-bold uppercase tracking-[0.1em] text-white shadow-sm"
           }
         >
           {w.common.brandSecondary}
@@ -115,8 +115,8 @@ export function BrandLogoLink({
             <span
               className={
                 preset === "workspaceSidebar"
-                  ? "relative z-10 -mt-1 w-fit -rotate-2 rounded-sm bg-brand-red px-1.5 py-0.5 text-[8px] font-bold uppercase tracking-[0.3em] text-white shadow-sm"
-                  : "relative z-10 -mt-0.5 w-fit -rotate-2 rounded-sm bg-brand-red px-1.5 py-px text-[7px] font-bold uppercase tracking-[0.28em] text-white shadow-sm"
+                  ? "relative z-10 -mt-1 w-fit -rotate-2 rounded-sm bg-brand-red px-1.5 py-0.5 text-[7px] font-bold uppercase tracking-[0.12em] text-white shadow-sm"
+                  : "relative z-10 -mt-0.5 w-fit -rotate-2 rounded-sm bg-brand-red px-1.5 py-px text-[6px] font-bold uppercase tracking-[0.1em] text-white shadow-sm"
               }
             >
               {w.common.brandSecondary}

@@ -1,11 +1,20 @@
 "use client";
 
+import { useEffect, useState, type ReactNode } from "react";
 import { useI18n } from "@/context/LocaleContext";
 import {
   LISTING_PRICE_MAX,
   LISTING_PRICE_MIN,
   LISTING_PRICE_STEP,
 } from "@/lib/caterer-listing-utils";
+
+/** Discourage password managers from injecting autofill UI into range inputs (hydration mismatch). */
+const RANGE_INPUT_ATTRS = {
+  autoComplete: "off",
+  "data-lpignore": "true",
+  "data-1p-ignore": "true",
+  "data-form-type": "other",
+} as const;
 
 const inr = new Intl.NumberFormat("en-IN", {
   style: "currency",
@@ -19,8 +28,35 @@ type ListingPriceRangeSliderProps = {
   onChange: (min: number, max: number) => void;
 };
 
+function PriceRangeTrack({
+  fillLeft,
+  fillRight,
+  children,
+}: {
+  fillLeft: number;
+  fillRight: number;
+  children?: ReactNode;
+}) {
+  return (
+    <div className="relative mx-1 h-8">
+      <div className="absolute top-1/2 right-0 left-0 h-2 -translate-y-1/2 rounded-full bg-gray-200" />
+      <div
+        className="absolute top-1/2 h-2 -translate-y-1/2 rounded-full bg-brand-red"
+        style={{ left: `${fillLeft}%`, right: `${fillRight}%` }}
+        aria-hidden
+      />
+      {children}
+    </div>
+  );
+}
+
 export function ListingPriceRangeSlider({ min, max, onChange }: ListingPriceRangeSliderProps) {
-  const { w, trans } = useI18n();
+  const { w } = useI18n();
+  const [inputsReady, setInputsReady] = useState(false);
+
+  useEffect(() => {
+    setInputsReady(true);
+  }, []);
 
   const floor = LISTING_PRICE_MIN;
   const ceiling = LISTING_PRICE_MAX;
@@ -49,34 +85,36 @@ export function ListingPriceRangeSlider({ min, max, onChange }: ListingPriceRang
         <span className="text-gray-400">{w.caterers.listing.perPlate}</span>
         <span>{inr.format(max)}</span>
       </div>
-      <div className="relative mx-1 h-8">
-        <div className="absolute top-1/2 right-0 left-0 h-2 -translate-y-1/2 rounded-full bg-gray-200" />
-        <div
-          className="absolute top-1/2 h-2 -translate-y-1/2 rounded-full bg-brand-red"
-          style={{ left: `${fillLeft}%`, right: `${fillRight}%` }}
-          aria-hidden
-        />
-        <input
-          type="range"
-          min={floor}
-          max={ceiling}
-          step={LISTING_PRICE_STEP}
-          value={min}
-          onChange={(e) => clampPair(Number(e.target.value), max)}
-          aria-label={w.caterers.listing.minPriceAria}
-          className="listing-price-range-input absolute inset-0 z-[2] w-full cursor-pointer appearance-none bg-transparent"
-        />
-        <input
-          type="range"
-          min={floor}
-          max={ceiling}
-          step={LISTING_PRICE_STEP}
-          value={max}
-          onChange={(e) => clampPair(min, Number(e.target.value))}
-          aria-label={w.caterers.listing.maxPriceAria}
-          className="listing-price-range-input absolute inset-0 z-[3] w-full cursor-pointer appearance-none bg-transparent"
-        />
-      </div>
+      <PriceRangeTrack fillLeft={fillLeft} fillRight={fillRight}>
+        {inputsReady ? (
+          <>
+            <input
+              type="range"
+              name="listing-price-min"
+              min={floor}
+              max={ceiling}
+              step={LISTING_PRICE_STEP}
+              value={min}
+              onChange={(e) => clampPair(Number(e.target.value), max)}
+              aria-label={w.caterers.listing.minPriceAria}
+              className="listing-price-range-input absolute inset-0 z-[2] w-full cursor-pointer appearance-none bg-transparent"
+              {...RANGE_INPUT_ATTRS}
+            />
+            <input
+              type="range"
+              name="listing-price-max"
+              min={floor}
+              max={ceiling}
+              step={LISTING_PRICE_STEP}
+              value={max}
+              onChange={(e) => clampPair(min, Number(e.target.value))}
+              aria-label={w.caterers.listing.maxPriceAria}
+              className="listing-price-range-input absolute inset-0 z-[3] w-full cursor-pointer appearance-none bg-transparent"
+              {...RANGE_INPUT_ATTRS}
+            />
+          </>
+        ) : null}
+      </PriceRangeTrack>
     </div>
   );
 }
