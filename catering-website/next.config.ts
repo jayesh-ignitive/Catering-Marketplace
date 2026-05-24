@@ -78,8 +78,10 @@ function cateringApiImagePatterns(): RemotePattern[] {
     }
   }
 
-  /** Common production CDN hosts for this project (R2 custom domains). */
-  for (const host of ["cdn.caterersspace.com", "images.caterersspace.com"]) {
+  /** Common R2 custom domains (legacy + Bharat Cater Hub). */
+  for (const host of [
+    "cdn.bharatcaterhub.com",
+  ]) {
     pushHost(patterns, host);
   }
 
