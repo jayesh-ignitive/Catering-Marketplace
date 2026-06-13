@@ -81,6 +81,7 @@ function cateringApiImagePatterns(): RemotePattern[] {
   /** Common R2 custom domains (legacy + Bharat Cater Hub). */
   for (const host of [
     "cdn.bharatcaterhub.com",
+    "cdn.caterersspace.com",
   ]) {
     pushHost(patterns, host);
   }
@@ -92,6 +93,9 @@ const nextConfig: NextConfig = {
   images: {
     remotePatterns: cateringApiImagePatterns(),
     formats: ["image/avif", "image/webp"],
+    minimumCacheTTL: 60 * 60 * 24 * 30,
+    deviceSizes: [640, 750, 828, 1080, 1200, 1400, 1920],
+    imageSizes: [16, 32, 48, 64, 96, 128, 256, 384],
   },
   async redirects() {
     return [

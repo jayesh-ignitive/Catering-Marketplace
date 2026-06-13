@@ -65,7 +65,14 @@ export type AdminCatererReviewDetail = {
   completion: WorkspaceCompletionStatus;
   business: {
     cityName: string | null;
+    addressLine1: string | null;
+    addressLine2: string | null;
     streetAddress: string | null;
+    pincode: string | null;
+    state: string | null;
+    country: string | null;
+    latitude: number | null;
+    longitude: number | null;
     tagline: string | null;
     about: string | null;
     yearsInBusiness: number | null;
@@ -255,8 +262,15 @@ export class AdminCaterersService {
       reviewedAt: listing.reviewedAt ? listing.reviewedAt.toISOString() : null,
       completion: workspace.completion,
       business: {
-        cityName: listing.cityRef?.name ?? null,
+        cityName: workspace.cityName ?? listing.cityRef?.name ?? null,
+        addressLine1: workspace.addressLine1,
+        addressLine2: workspace.addressLine2,
         streetAddress: workspace.streetAddress,
+        pincode: workspace.pincode,
+        state: workspace.state,
+        country: workspace.country,
+        latitude: workspace.latitude,
+        longitude: workspace.longitude,
         tagline: workspace.tagline,
         about: workspace.about,
         yearsInBusiness: workspace.yearsInBusiness,

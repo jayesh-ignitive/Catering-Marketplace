@@ -1,6 +1,7 @@
 "use client";
 
 import { I18nLoadingFallback } from "@/components/common/I18nLoadingFallback";
+import { hasSubmittedWorkspaceProfile } from "@/components/workspace/caterer-profile/utils";
 import { BusinessOnboardingShell } from "@/components/workspace/BusinessOnboardingShell";
 import { useAuth } from "@/context/AuthContext";
 import { fetchWorkspaceCatererProfile } from "@/lib/catering-api";
@@ -29,6 +30,13 @@ export default function WorkspaceOnboardingLayout({ children }: { children: Reac
     }
   }, [ready, user, router]);
 
+  useEffect(() => {
+    if (!profileQ.isSuccess || !profileQ.data) return;
+    if (hasSubmittedWorkspaceProfile(profileQ.data)) {
+      router.replace("/workspace");
+    }
+  }, [profileQ.isSuccess, profileQ.data, router]);
+
   if (!ready || !user) {
     return (
       <div className="flex min-h-screen items-center justify-center bg-[#f8f9fa]">
@@ -49,6 +57,14 @@ export default function WorkspaceOnboardingLayout({ children }: { children: Reac
     return (
       <div className="flex min-h-screen items-center justify-center bg-[#f8f9fa]">
         <I18nLoadingFallback variant="workspace" />
+      </div>
+    );
+  }
+
+  if (profileQ.data && hasSubmittedWorkspaceProfile(profileQ.data)) {
+    return (
+      <div className="flex min-h-screen items-center justify-center bg-[#f8f9fa]">
+        <I18nLoadingFallback variant="redirect" />
       </div>
     );
   }

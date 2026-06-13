@@ -20,6 +20,7 @@ import { ListCatererReviewsQueryDto } from './dto/list-caterer-reviews-query.dto
 import { ListMarketplaceQueryDto } from './dto/list-marketplace-query.dto';
 import { UpsertCatererWorkspaceProfileDto } from './dto/upsert-caterer-workspace-profile.dto';
 import { WorkspaceProfileStep0Dto } from './dto/workspace-profile-step-0.dto';
+import { WorkspaceProfileAddressDto } from './dto/workspace-profile-address.dto';
 import { WorkspaceProfileStep1Dto } from './dto/workspace-profile-step-1.dto';
 import { WorkspaceProfileStep2Dto } from './dto/workspace-profile-step-2.dto';
 import { MarketplaceService } from './marketplace.service';
@@ -106,6 +107,24 @@ export class MarketplaceController {
       );
     }
     return this.marketplace.patchWorkspaceProfileStep0ForUser(
+      req.user.id,
+      body,
+    );
+  }
+
+  /** Map pin + parsed address — saved when user selects or moves location on the map. */
+  @Patch('caterer/profile/address')
+  @UseGuards(JwtAuthGuard)
+  patchWorkspaceProfileAddress(
+    @Req() req: Request & { user: User },
+    @Body() body: WorkspaceProfileAddressDto,
+  ) {
+    if (req.user.role !== UserRole.CATERER) {
+      throw new ForbiddenException(
+        'Workspace profile is only available for caterer accounts',
+      );
+    }
+    return this.marketplace.patchWorkspaceProfileAddressForUser(
       req.user.id,
       body,
     );

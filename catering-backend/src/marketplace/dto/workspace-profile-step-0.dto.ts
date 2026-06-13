@@ -2,13 +2,16 @@ import { Type } from 'class-transformer';
 import {
   IsIn,
   IsInt,
+  IsNumber,
   IsOptional,
   IsString,
+  Matches,
   Max,
   MaxLength,
   Min,
   MinLength,
   Validate,
+  ValidateIf,
 } from 'class-validator';
 import { HeroUrlOrDataImageConstraint } from './workspace-profile-hero-url.validator';
 
@@ -19,13 +22,59 @@ const PRICE_BANDS = ['budget', 'mid', 'premium', 'custom'] as const;
 
 /** Wizard step 0 — business & operational basics (no categories/services/gallery). */
 export class WorkspaceProfileStep0Dto {
+  @IsOptional()
   @IsString()
-  cityId!: string;
+  cityId?: string;
+
+  @IsOptional()
+  @IsString()
+  @MaxLength(120)
+  cityName?: string;
+
+  @IsOptional()
+  @IsString()
+  @MaxLength(200)
+  addressLine1?: string;
+
+  @IsOptional()
+  @IsString()
+  @MaxLength(200)
+  addressLine2?: string;
 
   @IsOptional()
   @IsString()
   @MaxLength(300)
   streetAddress?: string;
+
+  @IsOptional()
+  @IsString()
+  @ValidateIf((_o, v) => v != null && v !== '')
+  @Matches(/^\d{6}$/, { message: 'pincode must be a 6-digit number' })
+  pincode?: string;
+
+  @IsOptional()
+  @IsString()
+  @MaxLength(120)
+  state?: string;
+
+  @IsOptional()
+  @IsString()
+  @MaxLength(120)
+  country?: string;
+
+  @IsOptional()
+  @Type(() => Number)
+  @IsNumber()
+  @Min(-90)
+  @Max(90)
+  latitude?: number;
+
+  @IsOptional()
+  @Type(() => Number)
+  @IsNumber()
+  @Min(-180)
+  @Max(180)
+  longitude?: number;
 
   @IsOptional()
   @IsString()

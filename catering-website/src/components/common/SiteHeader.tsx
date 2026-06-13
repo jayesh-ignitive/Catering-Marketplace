@@ -5,8 +5,10 @@ import { useQuery } from "@tanstack/react-query";
 import Link from "next/link";
 import { useAuth } from "@/context/AuthContext";
 import { BrandLogoLink } from "@/components/common/BrandLogoLink";
+import { LanguageSwitcher } from "@/components/common/LanguageSwitcher";
 import { profileHref, UserAccountMenu } from "@/components/common/UserAccountMenu";
-import { fetchServiceCategories, type ServiceCategory } from "@/lib/catering-api";
+import type { ServiceCategory } from "@/lib/catering-api";
+import { serviceCategoriesQueryOptions } from "@/lib/catalog-queries";
 import { caterersListingPath } from "@/lib/caterers-url";
 import { publicSiteConfig } from "@/lib/site-config";
 import {
@@ -60,14 +62,17 @@ function HeaderCategoryLink({
   );
 }
 
-export function SiteHeader() {
+export function SiteHeader({
+  prefetchedCategories,
+}: {
+  prefetchedCategories?: ServiceCategory[];
+}) {
   const { w, trans, locale } = useI18n();
   const [open, setOpen] = useState(false);
   const { user, ready, logout } = useAuth();
-  const categoriesQ = useQuery({
-    queryKey: ["catalog", "service-categories", locale],
-    queryFn: () => fetchServiceCategories(locale),
-  });
+  const categoriesQ = useQuery(
+    serviceCategoriesQueryOptions(locale, prefetchedCategories),
+  );
   const categories = categoriesQ.data ?? [];
 
   return (
@@ -97,7 +102,7 @@ export function SiteHeader() {
               </div>
               <div className="invisible absolute left-0 top-full z-50 mt-4 max-h-[min(24rem,70vh)] w-72 translate-y-2 overflow-hidden overflow-y-auto rounded-lg border border-gray-100 bg-white opacity-0 shadow-2xl transition-all duration-300 group-hover:visible group-hover:translate-y-0 group-hover:opacity-100">
                 <div className="p-2">
-                  {categoriesQ.isPending ? (
+                  {categoriesQ.isPending && categories.length === 0 ? (
                     <p className="px-4 py-3 text-sm text-gray-500">{w.common.loadingCategories}</p>
                   ) : categories.length === 0 ? (
                     <p className="px-4 py-3 text-sm text-gray-500">{w.common.noCategories}</p>
@@ -150,7 +155,7 @@ export function SiteHeader() {
             </Link>
           </nav>
 
-          <div className="flex items-center gap-2 sm:gap-4">
+          <div className="flex items-center gap-2 sm:gap-3">
             <Link
               href="/caterers"
               className={`hidden md:flex ${headerIconActionClass}`}
@@ -181,6 +186,8 @@ export function SiteHeader() {
               </>
             ) : null}
 
+            {ready ? <LanguageSwitcher variant="header" className="shrink-0" /> : null}
+
             <button
               type="button"
               className="flex h-10 w-10 cursor-pointer items-center justify-center rounded-full border border-gray-200 text-brand-dark shadow-sm transition-all duration-300 hover:scale-105 hover:border-brand-red hover:bg-brand-red hover:text-white focus-visible:outline focus-visible:ring-2 focus-visible:ring-brand-red/35 focus-visible:ring-offset-2 md:hidden"
@@ -206,7 +213,7 @@ export function SiteHeader() {
               <p className="px-4 pt-2 text-[10px] font-bold uppercase tracking-widest text-brand-red">
                 {w.header.serviceCategoriesMobile}
               </p>
-              {categoriesQ.isPending ? (
+              {categoriesQ.isPending && categories.length === 0 ? (
                 <p className="px-4 py-2 text-sm text-gray-500">{w.common.loading}</p>
               ) : (
                 categories.map((cat) => (

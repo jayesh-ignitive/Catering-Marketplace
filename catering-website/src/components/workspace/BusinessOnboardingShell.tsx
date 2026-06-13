@@ -3,6 +3,7 @@
 import { useI18n } from "@/context/LocaleContext";
 import Image from "next/image";
 import { BrandLogoLink } from "@/components/common/BrandLogoLink";
+import { AUTH_IMAGES } from "@/lib/static-assets";
 
 type Props = {
   children: React.ReactNode;
@@ -19,7 +20,7 @@ export function BusinessOnboardingShell({ children }: Props) {
         <div className="pointer-events-none absolute inset-0 z-0">
           <div className="relative h-full w-full">
             <Image
-              src="https://images.unsplash.com/photo-1555244162-803834f70033?auto=format&fit=crop&w=1200&q=80"
+              src={AUTH_IMAGES.panelBg}
               alt=""
               fill
               className="object-cover opacity-30"
@@ -43,21 +44,21 @@ export function BusinessOnboardingShell({ children }: Props) {
           <div className="mb-4 flex items-center gap-4">
             <div className="flex -space-x-3">
               <Image
-                src="https://images.unsplash.com/photo-1534528741775-53994a69daeb?auto=format&fit=crop&w=100&q=80"
+                src={AUTH_IMAGES.avatar1}
                 alt=""
                 width={40}
                 height={40}
                 className="h-10 w-10 rounded-full border-2 border-[#1c1c1c] object-cover"
               />
               <Image
-                src="https://images.unsplash.com/photo-1506794778202-cad84cf45f1d?auto=format&fit=crop&w=100&q=80"
+                src={AUTH_IMAGES.avatar2}
                 alt=""
                 width={40}
                 height={40}
                 className="h-10 w-10 rounded-full border-2 border-[#1c1c1c] object-cover"
               />
               <Image
-                src="https://images.unsplash.com/photo-1494790108377-be9c29b29330?auto=format&fit=crop&w=100&q=80"
+                src={AUTH_IMAGES.avatar3}
                 alt=""
                 width={40}
                 height={40}

@@ -1,14 +1,23 @@
-import type { CatererWorkspaceProfile } from "@/lib/catering-api";
-import type { PatchWorkspaceProfileStep0Body } from "@/lib/catering-api";
+import type {
+  CatererWorkspaceProfile,
+  PatchWorkspaceProfileStep0Body,
+} from "@/lib/catering-api";
 import type { WorkspaceMessages } from "@/i18n/workspace.messages";
 import type { WizardStepIndex } from "./wizard-metadata";
 
+/** True once the caterer has submitted for marketplace review (any status after draft). */
+export function hasSubmittedWorkspaceProfile(profile: CatererWorkspaceProfile): boolean {
+  if (profile.submittedForReviewAt) return true;
+  return profile.approvalStatus !== "draft";
+}
+
 export function firstIncompleteStep(profile: CatererWorkspaceProfile): WizardStepIndex {
   const missing = new Set(profile.completion.missingFields);
-  if (missing.has("city") || missing.has("about")) return 0;
+  if (missing.has("city") || missing.has("address") || missing.has("about")) return 0;
   if (missing.has("category") || missing.has("services") || missing.has("keywords")) return 1;
   if (missing.has("gallery") || missing.has("banner")) return 2;
-  return 3;
+  if (!hasSubmittedWorkspaceProfile(profile)) return 3;
+  return 2;
 }
 
 export function fieldClassErrored(base: string, errored: boolean) {
@@ -68,6 +77,39 @@ export function parseStreetParts(raw: string | null | undefined): { line: string
     return { line, pin };
   }
   return { line: raw.trim(), pin: "" };
+}
+
+function normalizePlaceName(value: string): string {
+  return value
+    .trim()
+    .toLowerCase()
+    .replace(/\./g, "")
+    .replace(/\s+/g, " ");
+}
+
+/** Match Google locality / district to a catalog city option. */
+export function matchCatalogCityId(
+  cities: { id: string; name: string }[],
+  locality: string,
+  district = ""
+): string | null {
+  const candidates = [locality, district].map(normalizePlaceName).filter(Boolean);
+  if (candidates.length === 0 || cities.length === 0) return null;
+
+  for (const candidate of candidates) {
+    const exact = cities.find((city) => normalizePlaceName(city.name) === candidate);
+    if (exact) return exact.id;
+  }
+
+  for (const candidate of candidates) {
+    const partial = cities.find((city) => {
+      const name = normalizePlaceName(city.name);
+      return name.includes(candidate) || candidate.includes(name);
+    });
+    if (partial) return partial.id;
+  }
+
+  return null;
 }
 
 export function getGuestCapacityPresets(ws: WorkspaceMessages) {

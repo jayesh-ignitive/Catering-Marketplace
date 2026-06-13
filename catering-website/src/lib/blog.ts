@@ -58,6 +58,22 @@ export async function fetchBlogPosts(params?: {
   return parseJson<BlogListResponse>(res);
 }
 
+/** Server Components — Next.js Data Cache with short revalidate. */
+export async function fetchBlogPostsCached(params?: {
+  page?: number;
+  limit?: number;
+}): Promise<BlogListResponse> {
+  const sp = new URLSearchParams();
+  if (params?.page != null) sp.set("page", String(params.page));
+  if (params?.limit != null) sp.set("limit", String(params.limit));
+  const q = sp.toString();
+  const res = await fetch(
+    `${getCateringApiBase()}/api/catalog/blog${q ? `?${q}` : ""}`,
+    { next: { revalidate: 300, tags: ["catalog-blog"] } },
+  );
+  return parseJson<BlogListResponse>(res);
+}
+
 export async function fetchBlogPost(slug: string): Promise<BlogPostDetail> {
   const res = await fetch(
     `${getCateringApiBase()}/api/catalog/blog/${encodeURIComponent(slug)}`,

@@ -47,7 +47,7 @@ function CatererProfileEditorContent() {
     <div className="w-full min-w-0 max-w-none">
       {enabled && profile && citiesQ.data && categoriesQ.data && offeringsQ.data ? (
         <WorkspaceBusinessWizard
-          key={`${profile.cityId ?? "none"}-${profile.published}`}
+          key={`${profile.cityId ?? "none"}-${profile.latitude ?? ""}-${profile.longitude ?? ""}-${profile.published}`}
           token={token!}
           profile={profile}
           cities={citiesQ.data}

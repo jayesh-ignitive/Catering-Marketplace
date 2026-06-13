@@ -1,27 +1,22 @@
 import type { Metadata } from "next";
-import { Great_Vibes, Inter, Outfit } from "next/font/google";
-import { ToastContainer } from "react-toastify";
+import { Inter, Outfit } from "next/font/google";
+import { LazyToast } from "@/components/LazyToast";
 import { seoConfig } from "@/lib/seo";
 import { AppProviders } from "./providers";
 import "./globals.css";
-import "react-toastify/dist/ReactToastify.css";
 
 const inter = Inter({
   variable: "--font-inter",
   subsets: ["latin"],
-  weight: ["400", "500", "600", "700", "800"],
+  weight: ["400", "500", "600", "700"],
+  display: "swap",
 });
 
 const outfit = Outfit({
   variable: "--font-outfit",
   subsets: ["latin"],
   weight: ["400", "600", "800"],
-});
-
-const greatVibes = Great_Vibes({
-  variable: "--font-great-vibes",
-  subsets: ["latin"],
-  weight: "400",
+  display: "swap",
 });
 
 export const metadata: Metadata = {
@@ -57,14 +52,15 @@ export default function RootLayout({
   children: React.ReactNode;
 }>) {
   return (
-    <html
-      lang="en"
-      className={`${inter.variable} ${outfit.variable} ${greatVibes.variable} h-full antialiased`}
-    >
+    <html lang="en" className={`${inter.variable} ${outfit.variable} h-full antialiased`}>
+      <head>
+        <link rel="preconnect" href="https://cdn.caterersspace.com" crossOrigin="anonymous" />
+        <link rel="preconnect" href="https://cdn.bharatcaterhub.com" crossOrigin="anonymous" />
+      </head>
       <body className="flex min-h-screen flex-col bg-white font-sans text-gray-800">
         <AppProviders>
           {children}
-          <ToastContainer position="top-right" theme="colored" hideProgressBar closeOnClick />
+          <LazyToast />
         </AppProviders>
       </body>
     </html>

@@ -25,11 +25,25 @@ import {
   formatMarketplaceCapacityRange,
   formatMarketplacePriceFromInr,
   postCatererReview,
+  postContact,
   type MarketplaceDetail,
 } from "@/lib/catering-api";
+import { serviceCategoriesQueryOptions } from "@/lib/catalog-queries";
+import {
+  buildCatererInquiryMessage,
+  createCatererInquiryFormSchema,
+  createCatererReviewFormSchema,
+  formatFullPhone,
+} from "@/lib/validation/caterer-forms";
+import { zodFieldErrors } from "@/lib/validation/auth-forms";
 import { RemoteContentImage } from "@/components/common/RemoteContentImage";
+import {
+  DEFAULT_SIGNUP_COUNTRY_ISO2,
+  PhoneCountryInput,
+  dialCodeFromOption,
+  findCountryByIso2,
+} from "@/components/common/PhoneCountryInput";
 import { getCatererCardBadge } from "@/lib/caterer-listing-utils";
-import { publicSiteConfig } from "@/lib/site-config";
 import { CatererDetailGallery } from "@/components/caterers/CatererDetailGallery";
 import { trans } from "@/i18n";
 
@@ -46,41 +60,133 @@ function locationDisplay(d: MarketplaceDetail, msg: WebsiteMessages["caterers"][
   return [d.city, d.state, d.country].filter(Boolean).join(", ") || msg.locationOnRequest;
 }
 
+function fieldInputClass(hasError: boolean, compact = false): string {
+  return [
+    compact
+      ? "mt-2 w-full rounded-xl border bg-white px-3 py-2.5 text-sm outline-none focus:border-brand-red"
+      : "w-full rounded-xl border bg-gray-50 px-4 py-3 outline-none focus:border-brand-red",
+    hasError ? "border-red-300" : compact ? "border-gray-100" : "border-gray-100",
+  ].join(" ");
+}
+
+function FieldError({ message }: { message?: string }) {
+  if (!message) return null;
+  return (
+    <p className="mt-1 text-xs font-medium text-brand-red" role="alert">
+      {message}
+    </p>
+  );
+}
+
 function WriteReviewForm({ slug }: { slug: string }) {
   const { w, trans } = useI18n();
   const msg = w.caterers.detail;
   const qc = useQueryClient();
   const [authorName, setAuthorName] = useState("");
+  const [authorEmail, setAuthorEmail] = useState("");
+  const [authorCountryIso, setAuthorCountryIso] = useState(DEFAULT_SIGNUP_COUNTRY_ISO2);
+  const [authorPhoneNumber, setAuthorPhoneNumber] = useState("");
   const [rating, setRating] = useState(5);
   const [title, setTitle] = useState("");
   const [comment, setComment] = useState("");
+  const [errors, setErrors] = useState<Record<string, string>>({});
+
+  const reviewSchema = useMemo(
+    () =>
+      createCatererReviewFormSchema({
+        ...w.contact.validation,
+        ...w.auth.validation,
+        ...msg.validation,
+      }),
+    [w.contact.validation, w.auth.validation, msg.validation]
+  );
+
+  const clearError = (key: string) => {
+    setErrors((prev) => {
+      if (!prev[key]) return prev;
+      const next = { ...prev };
+      delete next[key];
+      return next;
+    });
+  };
+
+  const authorPhoneCountryCode = dialCodeFromOption(
+    findCountryByIso2(authorCountryIso) ?? findCountryByIso2(DEFAULT_SIGNUP_COUNTRY_ISO2)!
+  );
+
+  const clearPhoneErrors = () => {
+    setErrors((prev) => {
+      if (!prev.authorPhoneCountryCode && !prev.authorPhoneNumber) return prev;
+      const next = { ...prev };
+      delete next.authorPhoneCountryCode;
+      delete next.authorPhoneNumber;
+      return next;
+    });
+  };
 
   const m = useMutation({
-    mutationFn: () =>
+    mutationFn: (values: {
+      authorName: string;
+      authorEmail: string;
+      authorPhone: string;
+      rating: number;
+      title?: string;
+      comment: string;
+    }) =>
       postCatererReview(slug, {
-        authorName: authorName.trim(),
-        rating,
-        title: title.trim() || undefined,
-        comment: comment.trim(),
+        authorName: values.authorName,
+        authorEmail: values.authorEmail,
+        authorPhone: values.authorPhone,
+        rating: values.rating,
+        title: values.title || undefined,
+        comment: values.comment,
       }),
     onSuccess: () => {
       toast.success(msg.reviewPosted);
       setAuthorName("");
+      setAuthorEmail("");
+      setAuthorCountryIso(DEFAULT_SIGNUP_COUNTRY_ISO2);
+      setAuthorPhoneNumber("");
       setTitle("");
       setComment("");
       setRating(5);
+      setErrors({});
       void qc.invalidateQueries({ queryKey: ["marketplace", "caterer", slug] });
     },
     onError: (err: Error) => toast.error(err.message),
   });
 
+  const onSubmit = (e: React.FormEvent) => {
+    e.preventDefault();
+    const parsed = reviewSchema.safeParse({
+      authorName,
+      authorEmail,
+      authorPhoneCountryCode,
+      authorPhoneNumber,
+      rating,
+      title,
+      comment,
+    });
+    if (!parsed.success) {
+      setErrors(zodFieldErrors(parsed.error));
+      return;
+    }
+    setErrors({});
+    m.mutate({
+      authorName: parsed.data.authorName,
+      authorEmail: parsed.data.authorEmail,
+      authorPhone: formatFullPhone(parsed.data.authorPhoneCountryCode, parsed.data.authorPhoneNumber),
+      rating: parsed.data.rating,
+      title: parsed.data.title || undefined,
+      comment: parsed.data.comment,
+    });
+  };
+
   return (
     <form
+      noValidate
       className="mt-8 rounded-2xl border border-gray-100 bg-gray-50/80 p-6"
-      onSubmit={(e) => {
-        e.preventDefault();
-        m.mutate();
-      }}
+      onSubmit={onSubmit}
     >
       <h3 className="font-heading text-base font-bold text-brand-dark">{msg.writeReview}</h3>
       <p className="mt-1 text-xs text-gray-500">{msg.writeReviewHint}</p>
@@ -88,20 +194,69 @@ function WriteReviewForm({ slug }: { slug: string }) {
         <label className="block text-xs font-bold uppercase tracking-wider text-gray-500">
           {msg.yourName}
           <input
-            required
             maxLength={120}
             value={authorName}
-            onChange={(e) => setAuthorName(e.target.value)}
-            className="mt-2 w-full rounded-xl border border-gray-100 bg-white px-3 py-2.5 text-sm outline-none focus:border-brand-red"
+            onChange={(e) => {
+              setAuthorName(e.target.value);
+              clearError("authorName");
+            }}
+            aria-invalid={Boolean(errors.authorName)}
+            className={fieldInputClass(Boolean(errors.authorName), true)}
             placeholder={msg.yourNamePlaceholder}
           />
+          <FieldError message={errors.authorName} />
         </label>
+        <label className="block text-xs font-bold uppercase tracking-wider text-gray-500">
+          {msg.yourEmail}
+          <input
+            type="email"
+            maxLength={255}
+            value={authorEmail}
+            onChange={(e) => {
+              setAuthorEmail(e.target.value);
+              clearError("authorEmail");
+            }}
+            aria-invalid={Boolean(errors.authorEmail)}
+            className={fieldInputClass(Boolean(errors.authorEmail), true)}
+            placeholder={msg.yourEmailPlaceholder}
+          />
+          <FieldError message={errors.authorEmail} />
+        </label>
+        <div className="block text-xs font-bold uppercase tracking-wider text-gray-500 sm:col-span-2">
+          {msg.phone}
+          <div className="mt-2 sm:max-w-sm">
+            <PhoneCountryInput
+              idPrefix="review-phone"
+              countryIso={authorCountryIso}
+              onCountryIsoChange={(iso) => {
+                setAuthorCountryIso(iso);
+                clearPhoneErrors();
+              }}
+              phoneNumber={authorPhoneNumber}
+              onPhoneNumberChange={(digits) => {
+                setAuthorPhoneNumber(digits);
+                clearPhoneErrors();
+              }}
+              countryCodeAria={trans(msg.countryCodeAria, {
+                country: findCountryByIso2(authorCountryIso)?.name ?? "India",
+              })}
+              phonePlaceholder={msg.phonePlaceholder}
+              hasError={Boolean(errors.authorPhoneCountryCode || errors.authorPhoneNumber)}
+              variant="white"
+            />
+            <FieldError message={errors.authorPhoneCountryCode || errors.authorPhoneNumber} />
+          </div>
+        </div>
         <label className="block text-xs font-bold uppercase tracking-wider text-gray-500">
           {msg.rating}
           <select
             value={rating}
-            onChange={(e) => setRating(Number(e.target.value))}
-            className="mt-2 w-full rounded-xl border border-gray-100 bg-white px-3 py-2.5 text-sm outline-none focus:border-brand-red"
+            onChange={(e) => {
+              setRating(Number(e.target.value));
+              clearError("rating");
+            }}
+            aria-invalid={Boolean(errors.rating)}
+            className={fieldInputClass(Boolean(errors.rating), true)}
           >
             {[5, 4, 3, 2, 1].map((n) => (
               <option key={n} value={n}>
@@ -109,6 +264,7 @@ function WriteReviewForm({ slug }: { slug: string }) {
               </option>
             ))}
           </select>
+          <FieldError message={errors.rating} />
         </label>
       </div>
       <label className="mt-4 block text-xs font-bold uppercase tracking-wider text-gray-500">
@@ -116,26 +272,34 @@ function WriteReviewForm({ slug }: { slug: string }) {
         <input
           maxLength={200}
           value={title}
-          onChange={(e) => setTitle(e.target.value)}
-          className="mt-2 w-full rounded-xl border border-gray-100 bg-white px-3 py-2.5 text-sm outline-none focus:border-brand-red"
+          onChange={(e) => {
+            setTitle(e.target.value);
+            clearError("title");
+          }}
+          aria-invalid={Boolean(errors.title)}
+          className={fieldInputClass(Boolean(errors.title), true)}
         />
+        <FieldError message={errors.title} />
       </label>
       <label className="mt-4 block text-xs font-bold uppercase tracking-wider text-gray-500">
         {msg.yourReview}
         <textarea
-          required
-          minLength={10}
           maxLength={2000}
           rows={4}
           value={comment}
-          onChange={(e) => setComment(e.target.value)}
-          className="mt-2 w-full resize-y rounded-xl border border-gray-100 bg-white px-3 py-2.5 text-sm outline-none focus:border-brand-red"
+          onChange={(e) => {
+            setComment(e.target.value);
+            clearError("comment");
+          }}
+          aria-invalid={Boolean(errors.comment)}
+          className={`${fieldInputClass(Boolean(errors.comment), true)} resize-y`}
         />
+        <FieldError message={errors.comment} />
       </label>
       <button
         type="submit"
         disabled={m.isPending}
-        className="mt-5 cursor-pointer rounded-2xl bg-brand-red px-6 py-3 text-sm font-bold text-white hover:bg-red-700 disabled:opacity-60"
+        className="mt-5 cursor-pointer rounded-2xl bg-brand-red px-6 py-3 text-sm font-bold text-white hover:bg-red-700 disabled:cursor-not-allowed disabled:opacity-60"
       >
         {m.isPending ? msg.posting : msg.postReview}
       </button>
@@ -144,19 +308,108 @@ function WriteReviewForm({ slug }: { slug: string }) {
 }
 
 function InquiryForm({ businessName }: { businessName: string }) {
-  const { w } = useI18n();
+  const { w, trans, locale } = useI18n();
   const msg = w.caterers.detail;
+  const [name, setName] = useState("");
+  const [email, setEmail] = useState("");
+  const [countryIso, setCountryIso] = useState(DEFAULT_SIGNUP_COUNTRY_ISO2);
+  const [phoneNumber, setPhoneNumber] = useState("");
   const [eventDate, setEventDate] = useState("");
   const [guests, setGuests] = useState("");
-  const [eventType, setEventType] = useState<string>(msg.eventWedding);
+  const [categoryId, setCategoryId] = useState("");
+  const [errors, setErrors] = useState<Record<string, string>>({});
+
+  const categoriesQ = useQuery(serviceCategoriesQueryOptions(locale));
+  const categories = categoriesQ.data ?? [];
+
+  const phoneCountryCode = dialCodeFromOption(
+    findCountryByIso2(countryIso) ?? findCountryByIso2(DEFAULT_SIGNUP_COUNTRY_ISO2)!
+  );
+
+  const inquirySchema = useMemo(
+    () =>
+      createCatererInquiryFormSchema({
+        ...w.contact.validation,
+        ...w.auth.validation,
+        ...msg.validation,
+      }),
+    [w.contact.validation, w.auth.validation, msg.validation]
+  );
+
+  const clearError = (key: string) => {
+    setErrors((prev) => {
+      if (!prev[key]) return prev;
+      const next = { ...prev };
+      delete next[key];
+      return next;
+    });
+  };
+
+  const clearPhoneErrors = () => {
+    setErrors((prev) => {
+      if (!prev.phoneCountryCode && !prev.phoneNumber) return prev;
+      const next = { ...prev };
+      delete next.phoneCountryCode;
+      delete next.phoneNumber;
+      return next;
+    });
+  };
+
+  const m = useMutation({
+    mutationFn: (values: {
+      name: string;
+      email: string;
+      phone: string;
+      message: string;
+    }) =>
+      postContact({
+        name: values.name,
+        email: values.email,
+        phone: values.phone,
+        subject: `Availability: ${businessName}`.slice(0, 200),
+        message: values.message,
+      }),
+    onSuccess: () => {
+      toast.success(msg.inquirySent);
+      setName("");
+      setEmail("");
+      setCountryIso(DEFAULT_SIGNUP_COUNTRY_ISO2);
+      setPhoneNumber("");
+      setEventDate("");
+      setGuests("");
+      setCategoryId("");
+      setErrors({});
+    },
+    onError: (err: Error) => toast.error(err.message || msg.inquirySomethingWrong),
+  });
 
   const onSubmit = (e: React.FormEvent) => {
     e.preventDefault();
-    const subject = encodeURIComponent(`Availability: ${businessName}`);
-    const body = encodeURIComponent(
-      `Event date: ${eventDate || "—"}\nGuests: ${guests || "—"}\nEvent type: ${eventType}`
-    );
-    window.location.href = `mailto:${publicSiteConfig.contactEmail}?subject=${subject}&body=${body}`;
+    const parsed = inquirySchema.safeParse({
+      name,
+      email,
+      phoneCountryCode,
+      phoneNumber,
+      eventDate,
+      guests,
+      categoryId,
+    });
+    if (!parsed.success) {
+      setErrors(zodFieldErrors(parsed.error));
+      return;
+    }
+    const categoryName = categories.find((c) => c.uuid === parsed.data.categoryId)?.name ?? "";
+    setErrors({});
+    m.mutate({
+      name: parsed.data.name,
+      email: parsed.data.email,
+      phone: formatFullPhone(parsed.data.phoneCountryCode, parsed.data.phoneNumber),
+      message: buildCatererInquiryMessage(businessName, {
+        eventDate: parsed.data.eventDate,
+        guests: parsed.data.guests,
+        categoryName,
+      }),
+    });
   };
 
   return (
@@ -166,7 +419,67 @@ function InquiryForm({ businessName }: { businessName: string }) {
           <h3 className="font-heading text-lg font-bold sm:text-xl">{msg.checkAvailability}</h3>
           <p className="text-xs font-semibold uppercase tracking-widest text-gray-400">{msg.freeQuoteToday}</p>
         </div>
-        <form id="inquiry" className="space-y-4 p-5 sm:space-y-5 sm:p-8" onSubmit={onSubmit}>
+        <form id="inquiry" noValidate className="space-y-4 p-5 sm:space-y-5 sm:p-8" onSubmit={onSubmit}>
+          <label className="block">
+            <span className="mb-2 block text-xs font-bold uppercase tracking-wider text-gray-500">
+              {msg.yourName}
+            </span>
+            <input
+              maxLength={120}
+              value={name}
+              onChange={(e) => {
+                setName(e.target.value);
+                clearError("name");
+              }}
+              aria-invalid={Boolean(errors.name)}
+              className={fieldInputClass(Boolean(errors.name))}
+              placeholder={msg.yourNamePlaceholder}
+            />
+            <FieldError message={errors.name} />
+          </label>
+          <label className="block">
+            <span className="mb-2 block text-xs font-bold uppercase tracking-wider text-gray-500">
+              {msg.yourEmail}
+            </span>
+            <input
+              type="email"
+              maxLength={255}
+              value={email}
+              onChange={(e) => {
+                setEmail(e.target.value);
+                clearError("email");
+              }}
+              aria-invalid={Boolean(errors.email)}
+              className={fieldInputClass(Boolean(errors.email))}
+              placeholder={msg.yourEmailPlaceholder}
+            />
+            <FieldError message={errors.email} />
+          </label>
+          <div className="block">
+            <span className="mb-2 block text-xs font-bold uppercase tracking-wider text-gray-500">
+              {msg.phone}
+            </span>
+            <PhoneCountryInput
+              idPrefix="inquiry-phone"
+              countryIso={countryIso}
+              onCountryIsoChange={(iso) => {
+                setCountryIso(iso);
+                clearPhoneErrors();
+              }}
+              phoneNumber={phoneNumber}
+              onPhoneNumberChange={(digits) => {
+                setPhoneNumber(digits);
+                clearPhoneErrors();
+              }}
+              countryCodeAria={trans(msg.countryCodeAria, {
+                country: findCountryByIso2(countryIso)?.name ?? "India",
+              })}
+              phonePlaceholder={msg.phonePlaceholder}
+              hasError={Boolean(errors.phoneCountryCode || errors.phoneNumber)}
+              variant="gray"
+            />
+            <FieldError message={errors.phoneCountryCode || errors.phoneNumber} />
+          </div>
           <label className="block">
             <span className="mb-2 block text-xs font-bold uppercase tracking-wider text-gray-500">
               {msg.eventDate}
@@ -174,9 +487,14 @@ function InquiryForm({ businessName }: { businessName: string }) {
             <input
               type="date"
               value={eventDate}
-              onChange={(e) => setEventDate(e.target.value)}
-              className="w-full rounded-xl border border-gray-100 bg-gray-50 px-4 py-3 outline-none focus:border-brand-red"
+              onChange={(e) => {
+                setEventDate(e.target.value);
+                clearError("eventDate");
+              }}
+              aria-invalid={Boolean(errors.eventDate)}
+              className={fieldInputClass(Boolean(errors.eventDate))}
             />
+            <FieldError message={errors.eventDate} />
           </label>
           <label className="block">
             <span className="mb-2 block text-xs font-bold uppercase tracking-wider text-gray-500">
@@ -184,35 +502,53 @@ function InquiryForm({ businessName }: { businessName: string }) {
             </span>
             <select
               value={guests}
-              onChange={(e) => setGuests(e.target.value)}
-              className="w-full rounded-xl border border-gray-100 bg-gray-50 px-4 py-3 outline-none focus:border-brand-red"
+              onChange={(e) => {
+                setGuests(e.target.value);
+                clearError("guests");
+              }}
+              aria-invalid={Boolean(errors.guests)}
+              className={fieldInputClass(Boolean(errors.guests))}
             >
               <option value="">{msg.selectRange}</option>
               <option>{msg.guests150to300}</option>
               <option>{msg.guests300to500}</option>
               <option>{msg.guests500plus}</option>
             </select>
+            <FieldError message={errors.guests} />
           </label>
           <label className="block">
             <span className="mb-2 block text-xs font-bold uppercase tracking-wider text-gray-500">
-              {msg.eventType}
+              {msg.category}
             </span>
             <select
-              value={eventType}
-              onChange={(e) => setEventType(e.target.value)}
-              className="w-full rounded-xl border border-gray-100 bg-gray-50 px-4 py-3 outline-none focus:border-brand-red"
+              value={categoryId}
+              onChange={(e) => {
+                setCategoryId(e.target.value);
+                clearError("categoryId");
+              }}
+              disabled={categoriesQ.isPending && categories.length === 0}
+              aria-invalid={Boolean(errors.categoryId)}
+              className={fieldInputClass(Boolean(errors.categoryId))}
             >
-              <option>{msg.eventWedding}</option>
-              <option>{msg.eventCorporate}</option>
-              <option>{msg.eventBirthday}</option>
-              <option>{msg.eventOther}</option>
+              <option value="">
+                {categoriesQ.isPending && categories.length === 0
+                  ? msg.loadingCategories
+                  : msg.selectCategory}
+              </option>
+              {categories.map((cat) => (
+                <option key={cat.uuid} value={cat.uuid}>
+                  {cat.name}
+                </option>
+              ))}
             </select>
+            <FieldError message={errors.categoryId} />
           </label>
           <button
             type="submit"
-            className="w-full cursor-pointer rounded-2xl bg-brand-red py-3 text-base font-bold text-white shadow-xl shadow-red-500/30 transition hover:-translate-y-0.5 hover:bg-red-700 sm:py-4 sm:text-lg"
+            disabled={m.isPending}
+            className="w-full cursor-pointer rounded-2xl bg-brand-red py-3 text-base font-bold text-white shadow-xl shadow-red-500/30 transition hover:-translate-y-0.5 hover:bg-red-700 disabled:cursor-not-allowed disabled:opacity-60 sm:py-4 sm:text-lg"
           >
-            {msg.sendInquiry}
+            {m.isPending ? msg.inquirySending : msg.sendInquiry}
           </button>
           <p className="text-center text-[10px] text-gray-400">
             {msg.inquiryTermsPrefix}{" "}

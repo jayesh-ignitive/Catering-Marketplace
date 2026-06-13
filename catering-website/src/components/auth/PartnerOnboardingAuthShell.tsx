@@ -3,16 +3,7 @@
 import { BrandLogoLink } from "@/components/common/BrandLogoLink";
 import { useI18n } from "@/context/LocaleContext";
 import Image from "next/image";
-
-const PANEL_BG =
-  "https://images.unsplash.com/photo-1555244162-803834f70033?auto=format&fit=crop&w=1000&q=80";
-
-const AVA_1 =
-  "https://images.unsplash.com/photo-1534528741775-53994a69daeb?auto=format&fit=crop&w=100&q=80";
-const AVA_2 =
-  "https://images.unsplash.com/photo-1506794778202-cad84cf45f1d?auto=format&fit=crop&w=100&q=80";
-const AVA_3 =
-  "https://images.unsplash.com/photo-1494790108377-be9c29b29330?auto=format&fit=crop&w=100&q=80";
+import { AUTH_IMAGES } from "@/lib/static-assets";
 
 /** Match workspace `/workspace/onboarding` wizard controls (onboarding inputs). */
 export const obLabel = "mb-1.5 block text-sm font-medium text-[#374151]";
@@ -47,7 +38,7 @@ export function PartnerOnboardingAuthShell({ title, subtitle, children }: Partne
     <main className="flex min-h-full w-full flex-col bg-brand-gray font-sans text-gray-800 lg:flex-row lg:items-start">
       <div className="relative hidden flex-col justify-between overflow-hidden bg-brand-dark p-12 text-white lg:sticky lg:top-0 lg:flex lg:h-screen lg:w-5/12 lg:shrink-0 xl:w-1/2">
         <div className="absolute inset-0 z-0">
-          <Image src={PANEL_BG} alt="" fill className="object-cover opacity-30" sizes="50vw" priority />
+          <Image src={AUTH_IMAGES.panelBg} alt="" fill className="object-cover opacity-30" sizes="50vw" priority />
           <div
             className="absolute inset-0 bg-gradient-to-t from-brand-dark via-brand-dark/80 to-transparent"
             aria-hidden
@@ -65,21 +56,21 @@ export function PartnerOnboardingAuthShell({ title, subtitle, children }: Partne
           <div className="mb-4 flex items-center gap-4">
             <div className="flex -space-x-3">
               <Image
-                src={AVA_1}
+                src={AUTH_IMAGES.avatar1}
                 alt=""
                 width={40}
                 height={40}
                 className="h-10 w-10 rounded-full border-2 border-brand-dark object-cover"
               />
               <Image
-                src={AVA_2}
+                src={AUTH_IMAGES.avatar2}
                 alt=""
                 width={40}
                 height={40}
                 className="h-10 w-10 rounded-full border-2 border-brand-dark object-cover"
               />
               <Image
-                src={AVA_3}
+                src={AUTH_IMAGES.avatar3}
                 alt=""
                 width={40}
                 height={40}

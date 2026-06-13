@@ -1,6 +1,7 @@
 "use client";
 
 import { useMutation, useQueryClient } from "@tanstack/react-query";
+import dynamic from "next/dynamic";
 import Link from "next/link";
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { toast } from "react-toastify";
@@ -12,6 +13,8 @@ import {
   fetchMarketplaceKeywordSuggestions,
   type MarketplaceKeywordRef,
   patchWorkspaceCatererProfileStep,
+  patchWorkspaceCatererProfileAddress,
+  type PatchWorkspaceProfileAddressBody,
   publishWorkspaceCatererProfile,
   type PatchWorkspaceProfileStep0Body,
   type PatchWorkspaceProfileStep1Body,
@@ -38,7 +41,7 @@ import {
   WORKSPACE_KEYWORD_LIMIT,
 } from "@/components/workspace/SearchableKeywordTags";
 import { SearchableMultiSelect } from "@/components/workspace/SearchableMultiSelect";
-import { SearchableSingleSelect } from "@/components/workspace/SearchableSingleSelect";
+import { buildWorkspaceAddressPersistBody } from "./address-persist";
 import {
   ABOUT_MIN_LEN,
   fieldRadius,
@@ -66,6 +69,7 @@ import {
   getExperiencePresets,
   getGuestCapacityPresets,
   getPricePerGuestPresets,
+  hasSubmittedWorkspaceProfile,
   inferExperiencePresetFromYears,
   inferGuestPresetFromNumbers,
   inferPricePresetFromProfile,
@@ -76,6 +80,7 @@ import {
   optionalPriceFromField,
   parsePriceBand,
   parseStreetParts,
+  matchCatalogCityId,
 } from "./utils";
 import { useI18n } from "@/context/LocaleContext";
 import type { ProfileEditorTabId, WizardStepIndex } from "./wizard-metadata";
@@ -84,6 +89,22 @@ import {
   PROFILE_TAB_ORDER,
   tabIdToStep,
 } from "./wizard-metadata";
+
+const WorkspaceAddressMapPicker = dynamic(
+  () =>
+    import("./WorkspaceAddressMapPicker").then((m) => ({
+      default: m.WorkspaceAddressMapPicker,
+    })),
+  {
+    ssr: false,
+    loading: () => (
+      <div
+        className="h-[280px] w-full animate-pulse rounded-lg bg-stone-100 ring-1 ring-stone-200/80 md:col-span-2"
+        aria-hidden
+      />
+    ),
+  }
+);
 
 export function WorkspaceBusinessWizard({
   token,
@@ -130,6 +151,9 @@ export function WorkspaceBusinessWizard({
   const isProfileTabs = layout === "tabs";
   /** Same services-step UX as onboarding (guest tiers, chips, etc.), including `/workspace/profile?tab=services` */
   const richServicesStepUi = uiVariant === "onboarding" || layout === "tabs";
+  const profileSubmitted = hasSubmittedWorkspaceProfile(profile);
+  const isOnboardingWizard = layout === "wizard" && uiVariant === "onboarding";
+  const maxOnboardingStep: WizardStepIndex = profileSubmitted ? 2 : 3;
   const fieldInput = inputClassName;
   const fieldTextarea = textareaClassName;
   const fieldMulti = multiSelectClassName;
@@ -137,11 +161,24 @@ export function WorkspaceBusinessWizard({
 
   const [step, setStep] = useState<WizardStepIndex>(firstIncompleteStep(profile));
 
+  useEffect(() => {
+    if (!isOnboardingWizard || !profileSubmitted) return;
+    router.replace("/workspace");
+  }, [isOnboardingWizard, profileSubmitted, router]);
+
+  useEffect(() => {
+    if (!isOnboardingWizard || !profileSubmitted) return;
+    if (step > maxOnboardingStep) {
+      setStep(maxOnboardingStep);
+    }
+  }, [isOnboardingWizard, profileSubmitted, step, maxOnboardingStep]);
+
   const displayStep: WizardStepIndex =
     layout === "tabs" ? (tabIdToStep(profileTab) as WizardStepIndex) : step;
   const [businessName, setBusinessName] = useState(accountUser?.businessName ?? "");
   const [contactFullName, setContactFullName] = useState(accountUser?.fullName ?? "");
   const [cityId, setCityId] = useState(profile.cityId ?? "");
+  const [cityName, setCityName] = useState(profile.cityName ?? "");
 
   /* eslint-disable react-hooks/set-state-in-effect -- mirror account name fields when AuthContext user updates (refreshUser) */
   useEffect(() => {
@@ -152,8 +189,15 @@ export function WorkspaceBusinessWizard({
   /* eslint-enable react-hooks/set-state-in-effect */
 
   const streetParts = parseStreetParts(profile.streetAddress);
-  const [streetLine, setStreetLine] = useState(streetParts.line);
-  const [pincode, setPincode] = useState(streetParts.pin);
+  const [addressLine1, setAddressLine1] = useState(
+    () => profile.addressLine1 ?? profile.streetAddress ?? streetParts.line ?? ""
+  );
+  const [addressLine2, setAddressLine2] = useState(profile.addressLine2 ?? "");
+  const [pincode, setPincode] = useState(profile.pincode ?? streetParts.pin);
+  const [addressState, setAddressState] = useState(profile.state ?? "");
+  const [addressCountry, setAddressCountry] = useState(profile.country ?? "");
+  const [latitude, setLatitude] = useState<number | null>(profile.latitude ?? null);
+  const [longitude, setLongitude] = useState<number | null>(profile.longitude ?? null);
   const [tagline, setTagline] = useState(profile.tagline ?? "");
   const [about, setAbout] = useState(profile.about ?? "");
   const [heroImageUrl, setHeroImageUrl] = useState(profile.heroImageUrl ?? "");
@@ -249,11 +293,25 @@ export function WorkspaceBusinessWizard({
             e.contactFullName = wv.contactFullName;
           }
         }
-        if (!cityId.trim()) {
-          e.cityId = wv.cityId;
+        if (!cityName.trim()) {
+          e.cityName = wv.cityName;
         }
-        if (uiVariant === "onboarding" && pincodeDigits.length !== 6) {
+        const needsAddressFields = uiVariant === "onboarding" || layout === "tabs";
+        if (needsAddressFields && !addressLine1.trim()) {
+          e.addressLine1 = wv.addressLine1;
+        }
+        if (needsAddressFields && pincodeDigits.length !== 6) {
           e.pincode = wv.pincode;
+        }
+        const needsMapLocation = needsAddressFields;
+        if (
+          needsMapLocation &&
+          (latitude == null ||
+            longitude == null ||
+            !Number.isFinite(latitude) ||
+            !Number.isFinite(longitude))
+        ) {
+          e.location = wv.location;
         }
         const aboutTrim = about.trim();
         if (!aboutTrim) {
@@ -434,12 +492,15 @@ export function WorkspaceBusinessWizard({
       capacityGuestMax,
       capacityGuestMin,
       categoryCodes,
-      cityId,
+      cityName,
+      addressLine1,
       contactFullName,
       galleryImageUrls,
       heroImageUrl,
       keywords,
       pincodeDigits,
+      latitude,
+      longitude,
       priceFrom,
       serviceOfferingIds,
       experiencePresetId,
@@ -469,14 +530,25 @@ export function WorkspaceBusinessWizard({
         return publishWorkspaceCatererProfile(accessToken);
       }
 
-      const streetCombined = [streetLine.trim(), pincode.trim()].filter(Boolean).join(", ").trim();
+      const line1Trimmed = addressLine1.trim();
+      const line2Trimmed = addressLine2.trim();
+      const pinTrimmed = pincode.replace(/\D/g, "").slice(0, 6);
 
       if (saveStep === 0) {
         const body: PatchWorkspaceProfileStep0Body = {
-          cityId: cityId.trim(),
           about: about.trim(),
         };
-        if (streetCombined) body.streetAddress = streetCombined;
+        if (cityId.trim()) body.cityId = cityId.trim();
+        if (cityName.trim()) body.cityName = cityName.trim();
+        if (line1Trimmed) body.addressLine1 = line1Trimmed;
+        if (line2Trimmed) body.addressLine2 = line2Trimmed;
+        if (pinTrimmed.length === 6) body.pincode = pinTrimmed;
+        if (addressState.trim()) body.state = addressState.trim();
+        if (addressCountry.trim()) body.country = addressCountry.trim();
+        if (latitude != null && longitude != null) {
+          body.latitude = latitude;
+          body.longitude = longitude;
+        }
         const tl = tagline.trim();
         if (tl) body.tagline = tl;
         if (heroImageUrl.trim()) body.heroImageUrl = heroImageUrl;
@@ -523,12 +595,112 @@ export function WorkspaceBusinessWizard({
         heroImageUrl,
       });
     },
-    onSuccess: async () => {
+    onSuccess: async (updated) => {
+      if (updated?.cityId) setCityId(updated.cityId);
       await refreshUser();
       void qc.invalidateQueries({ queryKey: ["workspace", "profile", token] });
+      void qc.invalidateQueries({ queryKey: ["marketplace", "workspace-cities"] });
+      if (layout === "tabs") {
+        toast.success(ws.common.saveSuccess);
+      }
     },
     onError: (err: Error) => toast.error(err.message),
   });
+
+  const addressSaveTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
+
+  const persistAddressM = useMutation({
+    mutationFn: async (body: PatchWorkspaceProfileAddressBody) => {
+      const accessToken = getStoredToken() ?? token;
+      if (!accessToken) {
+        throw new Error(wv.sessionExpired);
+      }
+      return patchWorkspaceCatererProfileAddress(accessToken, body);
+    },
+    onSuccess: (updated) => {
+      if (updated.cityId) setCityId(updated.cityId);
+      void qc.invalidateQueries({ queryKey: ["workspace", "profile", token] });
+      void qc.invalidateQueries({ queryKey: ["marketplace", "workspace-cities"] });
+    },
+    onError: (err: Error) => toast.error(err.message),
+  });
+
+  const scheduleAddressPersist = useCallback(
+    (body: PatchWorkspaceProfileAddressBody) => {
+      if (addressSaveTimerRef.current) {
+        clearTimeout(addressSaveTimerRef.current);
+      }
+      addressSaveTimerRef.current = setTimeout(() => {
+        persistAddressM.mutate(body);
+      }, 500);
+    },
+    [persistAddressM],
+  );
+
+  useEffect(
+    () => () => {
+      if (addressSaveTimerRef.current) {
+        clearTimeout(addressSaveTimerRef.current);
+      }
+    },
+    [],
+  );
+
+  const persistAddressFields = useCallback(
+    (
+      patch: Partial<{
+        latitude: number | null;
+        longitude: number | null;
+        addressLine1: string;
+        addressLine2: string;
+        cityName: string;
+        state: string;
+        country: string;
+        pincode: string;
+        cityId: string;
+      }> = {},
+      options?: { immediate?: boolean },
+    ) => {
+      const lat = patch.latitude ?? latitude;
+      const lng = patch.longitude ?? longitude;
+      if (lat == null || lng == null || !Number.isFinite(lat) || !Number.isFinite(lng)) {
+        return;
+      }
+      const body = buildWorkspaceAddressPersistBody({
+        latitude: lat,
+        longitude: lng,
+        addressLine1: patch.addressLine1 ?? addressLine1,
+        addressLine2: patch.addressLine2 ?? addressLine2,
+        cityName: patch.cityName ?? cityName,
+        state: patch.state ?? addressState,
+        country: patch.country ?? addressCountry,
+        pincode: patch.pincode ?? pincode,
+        cityId: patch.cityId ?? cityId,
+      });
+      if (options?.immediate) {
+        if (addressSaveTimerRef.current) {
+          clearTimeout(addressSaveTimerRef.current);
+          addressSaveTimerRef.current = null;
+        }
+        persistAddressM.mutate(body);
+        return;
+      }
+      scheduleAddressPersist(body);
+    },
+    [
+      latitude,
+      longitude,
+      addressLine1,
+      addressLine2,
+      cityName,
+      addressState,
+      addressCountry,
+      pincode,
+      cityId,
+      scheduleAddressPersist,
+      persistAddressM,
+    ],
+  );
 
   const handleBannerFileUpload = async (file: File) => {
     if (!file.type.startsWith("image/") || file.size === 0) {
@@ -632,7 +804,7 @@ export function WorkspaceBusinessWizard({
           ? ""
           : layout === "tabs"
             ? "w-full min-w-0"
-            : `mt-6 overflow-hidden ${fieldRadius} border border-gray-200 bg-white shadow-sm`
+            : `mt-6 overflow-visible ${fieldRadius} border border-gray-200 bg-white shadow-sm`
       }
     >
       {/* Stepper (full wizard only) */}
@@ -640,6 +812,7 @@ export function WorkspaceBusinessWizard({
         <nav aria-label={ws.wizard.aria.progress} className="mb-2">
           <OnboardingStyleStepper
             step={step}
+            showSubmitStep={!profileSubmitted}
             navigationDisabled={saveM.isPending}
             onSelectCompletedStep={(target) => {
               setFieldErrors({});
@@ -831,43 +1004,164 @@ export function WorkspaceBusinessWizard({
                 </>
               ) : null}
 
+              <div
+                className="relative z-[60] overflow-visible md:col-span-2"
+                {...(fieldErrors.addressLine1 || fieldErrors.location ? { "data-invalid-field": "" } : {})}
+              >
+                <WorkspaceAddressMapPicker
+                  latitude={latitude}
+                  longitude={longitude}
+                  addressLine1={addressLine1}
+                  addressLine2={addressLine2}
+                  pincode={pincode}
+                  resolvedCity={cityName}
+                  resolvedState={addressState}
+                  resolvedCountry={addressCountry}
+                  requestDeviceLocation={uiVariant === "onboarding" && latitude == null && longitude == null}
+                  required={uiVariant === "onboarding" || layout === "tabs"}
+                  labels={{
+                    addressLine1: ws.wizard.fields.addressLine1,
+                    addressLine1Hint: ws.wizard.fields.addressLine1Hint,
+                    searchPlaceholder: ws.wizard.placeholders.addressLine1Search,
+                    openMap: ws.wizard.fields.openMap,
+                    closeMap: ws.wizard.fields.closeMap,
+                    saveMapLocation: ws.wizard.fields.saveMapLocation,
+                    cancelMap: ws.wizard.fields.cancelMap,
+                    mapModalTitle: ws.wizard.fields.mapModalTitle,
+                    mapModalHint: ws.wizard.fields.mapModalHint,
+                    mapInteractHint: ws.wizard.fields.mapInteractHint,
+                    shareLocationTitle: ws.wizard.fields.shareLocationTitle,
+                    shareLocationHint: ws.wizard.fields.shareLocationHint,
+                    shareLocationButton: ws.wizard.fields.shareLocationButton,
+                    shareLocationRequesting: ws.wizard.fields.shareLocationRequesting,
+                    shareLocationDenied: ws.wizard.fields.shareLocationDenied,
+                    shareLocationUnavailable: ws.wizard.fields.shareLocationUnavailable,
+                    shareLocationDismiss: ws.wizard.fields.shareLocationDismiss,
+                    mapsNotConfigured: wv.mapsNotConfigured,
+                    mapsLoadError: wv.mapsLoadError,
+                    mapsApiEnableHint: wv.mapsApiEnableHint,
+                    mapsApiTargetBlocked: wv.mapsApiTargetBlocked,
+                    mapsRefererNotAllowed: wv.mapsRefererNotAllowed,
+                    mapsInvalidKey: wv.mapsInvalidKey,
+                    mapsApiNotActivated: wv.mapsApiNotActivated,
+                    mapsBilling: wv.mapsBilling,
+                  }}
+                  invalid={Boolean(fieldErrors.addressLine1 || fieldErrors.location)}
+                  onChange={(v) => {
+                    const matchedCityId = matchCatalogCityId(cities, v.city, v.district);
+                    const nextCityName = v.city.trim() || cityName;
+                    const nextState = v.state.trim() || addressState;
+                    const nextCountry = v.country.trim() || addressCountry;
+                    const coordsChanged =
+                      v.latitude !== latitude || v.longitude !== longitude;
+
+                    setLatitude(v.latitude);
+                    setLongitude(v.longitude);
+                    setAddressLine1(v.addressLine1);
+                    setAddressLine2(v.addressLine2);
+                    setPincode(v.pincode ?? pincode);
+                    setCityName(nextCityName);
+                    setAddressState(nextState);
+                    setAddressCountry(nextCountry);
+                    if (matchedCityId) {
+                      setCityId(matchedCityId);
+                    }
+
+                    clearFieldError("location");
+                    clearFieldError("pincode");
+                    clearFieldError("cityName");
+                    clearFieldError("addressLine1");
+
+                    persistAddressFields(
+                      {
+                        latitude: v.latitude,
+                        longitude: v.longitude,
+                        addressLine1: v.addressLine1,
+                        addressLine2: v.addressLine2,
+                        cityName: nextCityName,
+                        pincode: v.pincode ?? pincode,
+                        state: nextState,
+                        country: nextCountry,
+                        cityId: matchedCityId ?? "",
+                      },
+                      { immediate: coordsChanged },
+                    );
+                  }}
+                />
+                <FieldError id="ws-address-line-1-err" message={fieldErrors.addressLine1} />
+                <FieldError id="ws-location-err" message={fieldErrors.location} />
+              </div>
               <div className="md:col-span-2">
-                <InputLabel>
-                  {ws.wizard.fields.streetArea}{" "}
+                <InputLabel htmlFor="ws-address-line-2">
+                  {ws.wizard.fields.addressLine2}{" "}
                   <span className={`font-normal ${workspaceHintTextClass}`}>{ws.common.optional}</span>
                 </InputLabel>
                 <input
-                  value={streetLine}
-                  onChange={(e) => setStreetLine(e.target.value)}
-                  placeholder={ws.wizard.placeholders.street}
+                  id="ws-address-line-2"
+                  aria-describedby="ws-address-line-2-hint"
+                  value={addressLine2}
+                  onChange={(e) => {
+                    const next = e.target.value;
+                    setAddressLine2(next);
+                    clearFieldError("addressLine1");
+                    persistAddressFields({
+                      addressLine2: next,
+                      latitude,
+                      longitude,
+                    });
+                  }}
+                  placeholder={ws.wizard.placeholders.addressLine2}
                   className={fieldInput}
-                  autoComplete="street-address"
+                  autoComplete="address-line2"
                 />
+                <p id="ws-address-line-2-hint" className={`mt-1 ${workspaceHintTextClass}`}>
+                  {ws.wizard.fields.addressLine2Hint}
+                </p>
               </div>
-              <div {...(fieldErrors.cityId ? { "data-invalid-field": "" } : {})}>
-                <InputLabel>
+              <div {...(fieldErrors.cityName ? { "data-invalid-field": "" } : {})}>
+                <InputLabel htmlFor="ws-city-name">
                   {ws.wizard.fields.city} <span className="text-brand-red">{ws.common.required}</span>
                 </InputLabel>
-                <SearchableSingleSelect
-                  id="ws-city-search"
-                  options={cities.map((c) => ({ id: c.id, label: c.name }))}
-                  value={cityId}
-                  onChange={(nextId) => {
-                    setCityId(nextId);
-                    clearFieldError("cityId");
-                  }}
-                  placeholder={ws.wizard.placeholders.citySearch}
-                  searchPlaceholder={ws.wizard.placeholders.cityFilter}
-                  aria-invalid={Boolean(fieldErrors.cityId)}
-                  aria-describedby={fieldErrors.cityId ? "ws-city-err" : undefined}
-                  errored={Boolean(fieldErrors.cityId)}
+                <input
+                  id="ws-city-name"
+                  readOnly
+                  aria-readonly
+                  aria-invalid={Boolean(fieldErrors.cityName)}
+                  aria-describedby={fieldErrors.cityName ? "ws-city-name-err" : undefined}
+                  value={cityName}
+                  placeholder={ws.wizard.placeholders.cityFromMap}
+                  className={`${fieldClassErrored(fieldInput, Boolean(fieldErrors.cityName))} bg-[#fafafa] text-[#616161]`}
                 />
-                <FieldError id="ws-city-err" message={fieldErrors.cityId} />
+                <FieldError id="ws-city-name-err" message={fieldErrors.cityName} />
+              </div>
+              <div>
+                <InputLabel htmlFor="ws-state">{ws.wizard.fields.state}</InputLabel>
+                <input
+                  id="ws-state"
+                  readOnly
+                  aria-readonly
+                  value={addressState}
+                  placeholder={ws.wizard.placeholders.stateFromMap}
+                  className={`${fieldInput} bg-[#fafafa] text-[#616161]`}
+                />
+              </div>
+              <div>
+                <InputLabel htmlFor="ws-country">{ws.wizard.fields.country}</InputLabel>
+                <input
+                  id="ws-country"
+                  readOnly
+                  aria-readonly
+                  value={addressCountry}
+                  placeholder={ws.wizard.placeholders.countryFromMap}
+                  className={`${fieldInput} bg-[#fafafa] text-[#616161]`}
+                />
               </div>
               <div {...(fieldErrors.pincode ? { "data-invalid-field": "" } : {})}>
                 <InputLabel htmlFor="ws-pincode">
                   {ws.wizard.fields.pincode}{" "}
-                  {uiVariant === "onboarding" ? <span className="text-brand-red">{ws.common.required}</span> : null}
+                  {uiVariant === "onboarding" || layout === "tabs" ? (
+                    <span className="text-brand-red">{ws.common.required}</span>
+                  ) : null}
                 </InputLabel>
                 <input
                   id="ws-pincode"
@@ -881,8 +1175,10 @@ export function WorkspaceBusinessWizard({
                   }
                   value={pincode}
                   onChange={(e) => {
-                    setPincode(e.target.value.replace(/\D/g, "").slice(0, 6));
+                    const next = e.target.value.replace(/\D/g, "").slice(0, 6);
+                    setPincode(next);
                     clearFieldError("pincode");
+                    persistAddressFields({ pincode: next });
                   }}
                   placeholder={ws.wizard.placeholders.pincode}
                   className={fieldClassErrored(fieldInput, Boolean(fieldErrors.pincode))}
@@ -892,7 +1188,7 @@ export function WorkspaceBusinessWizard({
                 />
                 {fieldErrors.pincode ? (
                   <FieldError id="ws-pincode-err" message={fieldErrors.pincode} />
-                ) : uiVariant === "onboarding" ? (
+                ) : uiVariant === "onboarding" || layout === "tabs" ? (
                   <p id="ws-pincode-hint" className={`mt-1 ${workspaceHintTextClass}`}>
                     {ws.wizard.fields.pincodeHint}
                   </p>
@@ -1712,7 +2008,7 @@ export function WorkspaceBusinessWizard({
                 <div className="p-6 sm:p-8">
                   <ul className="grid gap-6 sm:grid-cols-2">
                     <li className="flex items-start gap-4">
-                      {cityId && about.trim() ? (
+                      {cityName && about.trim() ? (
                         <CheckCircle className="h-6 w-6 text-emerald-500 shrink-0 mt-0.5" weight="fill" />
                       ) : (
                         <XCircle className="mt-0.5 h-6 w-6 shrink-0 text-gray-300" weight="fill" />
@@ -1899,7 +2195,7 @@ export function WorkspaceBusinessWizard({
                       router.replace("/workspace");
                       return;
                     }
-                    setStep((s) => Math.min(3, s + 1) as WizardStepIndex);
+                    setStep((s) => Math.min(maxOnboardingStep, s + 1) as WizardStepIndex);
                   },
                 });
               }}

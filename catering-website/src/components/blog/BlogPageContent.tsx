@@ -10,12 +10,11 @@ import { formatLocaleDate } from "@/i18n/format";
 import { BLOG_QUERY_KEY, BLOG_STALE_MS, fetchBlogPosts, type BlogPostSummary } from "@/lib/blog";
 import { FaChevronLeft, FaChevronRight } from "react-icons/fa";
 
-const FALLBACK_IMG =
-  "https://images.unsplash.com/photo-1546069901-ba9599a7e63c?auto=format&fit=crop&w=800&q=80";
+import { BLOG_IMAGES } from "@/lib/static-assets";
 
 function BlogCard({ post }: { post: BlogPostSummary }) {
   const { w, locale } = useI18n();
-  const img = post.featuredImageUrl ?? FALLBACK_IMG;
+  const img = post.featuredImageUrl ?? BLOG_IMAGES.fallbackMd;
   return (
     <article className="group flex flex-col overflow-hidden rounded-3xl border border-gray-100 bg-white shadow-sm transition hover:-translate-y-1 hover:border-brand-red/25 hover:shadow-xl">
       <Link href={`/blog/${encodeURIComponent(post.slug)}`} className="flex flex-1 flex-col">

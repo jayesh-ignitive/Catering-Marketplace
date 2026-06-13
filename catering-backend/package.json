@@ -24,6 +24,8 @@
     "import:ingredients-xlsx": "node scripts/import-ingredients-xlsx.mjs",
     "migrate:images-r2": "node scripts/migrate-images-to-r2.cjs",
     "migrate:images-r2:dry": "node scripts/migrate-images-to-r2.cjs --dry-run",
+    "upload:home-assets": "node scripts/upload-home-assets.cjs",
+    "upload:static-assets": "node scripts/upload-static-assets.cjs",
     "stats:images": "node scripts/image-total-size.cjs",
     "ai-smoke": "node scripts/ai-smoke-check.mjs",
     "mail:test": "node scripts/test-brevo-email.cjs",

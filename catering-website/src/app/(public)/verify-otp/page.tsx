@@ -23,10 +23,12 @@ import { Suspense, useCallback, useEffect, useRef, useState } from "react";
 import { toast } from "react-toastify";
 import { z } from "zod";
 
+const DEV_OTP_CODE = process.env.NEXT_PUBLIC_DEV_OTP_CODE?.trim() || "";
+
 type FieldErrors = Partial<Record<"email" | "code", string>>;
 
 function VerifyOtpForm() {
-  const { w } = useI18n();
+  const { w, trans } = useI18n();
   const v = w.auth.validation;
   const emailOnlySchema = z.string().trim().min(1, v.enterEmail).email(v.validEmail);
   const params = useSearchParams();
@@ -118,6 +120,14 @@ function VerifyOtpForm() {
         <div className="mb-6 rounded-lg border border-gray-200 bg-gray-50 px-4 py-3">
           <p className="text-sm font-semibold text-brand-dark">
             {w.auth.verifyOtp.fromLoginBanner}
+          </p>
+        </div>
+      ) : null}
+
+      {DEV_OTP_CODE ? (
+        <div className="mb-6 rounded-lg border border-amber-200 bg-amber-50 px-4 py-3">
+          <p className="text-sm font-medium text-amber-950">
+            {trans(w.auth.verifyOtp.devHint, { code: DEV_OTP_CODE })}
           </p>
         </div>
       ) : null}

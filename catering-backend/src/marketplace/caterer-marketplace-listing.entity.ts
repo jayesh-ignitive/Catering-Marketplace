@@ -43,6 +43,42 @@ export class CatererMarketplaceListing {
   })
   streetAddress!: string | null;
 
+  @Column({
+    name: 'address_line_1',
+    type: 'varchar',
+    length: 200,
+    nullable: true,
+  })
+  addressLine1!: string | null;
+
+  @Column({
+    name: 'address_line_2',
+    type: 'varchar',
+    length: 200,
+    nullable: true,
+  })
+  addressLine2!: string | null;
+
+  @Column({ name: 'city_name', type: 'varchar', length: 120, nullable: true })
+  cityName!: string | null;
+
+  @Column({ type: 'char', length: 6, nullable: true })
+  pincode!: string | null;
+
+  @Column({ type: 'varchar', length: 120, nullable: true })
+  state!: string | null;
+
+  @Column({ type: 'varchar', length: 120, nullable: true })
+  country!: string | null;
+
+  @Column({
+    name: 'formatted_address',
+    type: 'varchar',
+    length: 500,
+    nullable: true,
+  })
+  formattedAddress!: string | null;
+
   @Column({ type: 'decimal', precision: 10, scale: 7, nullable: true })
   latitude!: string | null;
 

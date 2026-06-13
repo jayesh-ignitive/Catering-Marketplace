@@ -3,17 +3,10 @@
 import { useI18n } from "@/context/LocaleContext";
 import {
   ArrowRight,
-  BowlFood,
-  Buildings,
-  Cake,
   Check,
-  Coffee,
   Confetti,
-  Hamburger,
   Handshake,
   MagnifyingGlass,
-  Martini,
-  Plant,
   Quotes,
   Scroll,
   Sparkle,
@@ -27,17 +20,24 @@ import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { useMemo, useState } from "react";
 import { HomeHeroBackground } from "@/components/home/HomeHeroBackground";
+import { serviceCategoriesQueryOptions } from "@/lib/catalog-queries";
 import {
   fetchBlogPosts,
   fetchCities,
-  fetchServiceCategories,
   fetchTrustStats,
+  type City,
+  type ServiceCategory,
+  type TrustStats,
 } from "@/lib/catering-api";
+import type { BlogListResponse } from "@/lib/blog";
+import { HOME_IMAGES } from "@/lib/home-assets";
+import type { PublicHomeHeroSlide } from "@/lib/home-banners";
 import {
   fetchHomeHeroSlides,
   HOME_BANNERS_QUERY_KEY,
   HOME_BANNERS_STALE_MS,
 } from "@/lib/home-banners";
+import { DEFAULT_LOCALE } from "@/i18n/locale";
 import { caterersListingPath } from "@/lib/caterers-url";
 import {
   getCategoryIconHoverClasses,
@@ -46,15 +46,19 @@ import {
 } from "@/lib/service-category-icons";
 
 
-const IMG = {
-  hero: "https://images.unsplash.com/photo-1555939594-58d7cb561ad1?auto=format&fit=crop&w=1920&q=80",
-  stats: "https://images.unsplash.com/photo-1556910103-1c02745aae4d?auto=format&fit=crop&w=1920&q=80",
-  testimonial:
-    "https://images.unsplash.com/photo-1565299624946-b28f40a0ae38?auto=format&fit=crop&w=1200&q=80",
-  blog: "https://images.unsplash.com/photo-1546069901-ba9599a7e63c?auto=format&fit=crop&w=400&q=80",
+export type HomeInitialData = {
+  cities: City[];
+  categories: ServiceCategory[];
+  stats: TrustStats | null;
+  blog: BlogListResponse | null;
+  heroSlides: PublicHomeHeroSlide[];
 };
 
-export default function Home() {
+type HomeProps = {
+  initialData?: HomeInitialData;
+};
+
+export default function Home({ initialData }: HomeProps) {
   const { w, locale } = useI18n();
   const h = w.home;
   const nf = useMemo(
@@ -69,21 +73,27 @@ export default function Home() {
   const citiesQ = useQuery({
     queryKey: ["catalog", "cities", locale],
     queryFn: () => fetchCities(locale),
+    initialData: locale === DEFAULT_LOCALE ? initialData?.cities : undefined,
   });
-  const categoriesQ = useQuery({
-    queryKey: ["catalog", "service-categories", locale],
-    queryFn: () => fetchServiceCategories(locale),
+  const categoriesQ = useQuery(
+    serviceCategoriesQueryOptions(locale, initialData?.categories),
+  );
+
+  const statsQ = useQuery({
+    queryKey: ["catalog", "stats"],
+    queryFn: fetchTrustStats,
+    initialData: initialData?.stats ?? undefined,
   });
-  
-  const statsQ = useQuery({ queryKey: ["catalog", "stats"], queryFn: fetchTrustStats });
   const blogQ = useQuery({
     queryKey: ["catalog", "blog", "home-preview"],
     queryFn: () => fetchBlogPosts({ page: 1, limit: 2 }),
+    initialData: initialData?.blog ?? undefined,
   });
   const heroSlidesQ = useQuery({
     queryKey: HOME_BANNERS_QUERY_KEY,
     queryFn: fetchHomeHeroSlides,
     staleTime: HOME_BANNERS_STALE_MS,
+    initialData: initialData?.heroSlides,
   });
 
   const heroSlides = heroSlidesQ.data ?? [];
@@ -114,7 +124,7 @@ export default function Home() {
         {/* Hero */}
         <section className="relative flex h-[min(600px,90vh)] items-center justify-center">
           <div className="absolute inset-0 z-0">
-            <HomeHeroBackground slides={heroSlides} fallbackSrc={IMG.hero} />
+            <HomeHeroBackground slides={heroSlides} fallbackSrc={HOME_IMAGES.hero} />
             <div className="absolute inset-0 bg-gradient-to-r from-black/80 to-black/40" aria-hidden />
           </div>
 
@@ -493,7 +503,14 @@ export default function Home() {
         {/* Stats */}
         <section className="relative flex items-center bg-brand-dark py-24" id="trust">
           <div className="absolute inset-0 z-0">
-            <Image src={IMG.stats} alt="" fill className="object-cover opacity-20" sizes="100vw" />
+            <Image
+              src={HOME_IMAGES.stats}
+              alt=""
+              fill
+              className="object-cover opacity-20"
+              sizes="100vw"
+              quality={60}
+            />
             <div className="absolute inset-0 bg-brand-dark/80" aria-hidden />
           </div>
 
@@ -570,11 +587,12 @@ export default function Home() {
               <div className="group relative overflow-hidden rounded-2xl shadow-lg">
                 <div className="relative h-[400px] w-full">
                   <Image
-                    src={IMG.testimonial}
+                    src={HOME_IMAGES.testimonial}
                     alt=""
                     fill
                     className="object-cover transition duration-700 group-hover:scale-105"
                     sizes="(max-width: 1024px) 100vw, 50vw"
+                    quality={65}
                   />
                 </div>
                 <div className="absolute inset-0 bg-gradient-to-t from-black/90 via-black/40 to-transparent" />
@@ -623,7 +641,7 @@ export default function Home() {
                     >
                       <div className="relative h-32 w-32 shrink-0 overflow-hidden rounded-xl">
                         <Image
-                          src={post.featuredImageUrl ?? IMG.blog}
+                          src={post.featuredImageUrl ?? HOME_IMAGES.blog}
                           alt=""
                           fill
                           className={`object-cover transition-transform duration-500 group-hover:scale-110 ${idx === 1 ? "grayscale group-hover:grayscale-0" : ""}`}

@@ -24,6 +24,12 @@ export class CatererReview {
   @Column({ name: 'author_name', type: 'varchar', length: 120 })
   authorName!: string;
 
+  @Column({ name: 'author_email', type: 'varchar', length: 255, nullable: true })
+  authorEmail!: string | null;
+
+  @Column({ name: 'author_phone', type: 'varchar', length: 32, nullable: true })
+  authorPhone!: string | null;
+
   @Column({ type: 'tinyint', unsigned: true })
   rating!: number;
 

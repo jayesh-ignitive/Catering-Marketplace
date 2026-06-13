@@ -2,6 +2,7 @@
 
 import { AdminBreadcrumb } from "@/components/admin/AdminBreadcrumb";
 import { useAuth } from "@/context/AuthContext";
+import dynamic from "next/dynamic";
 import {
   type AdminCatererReviewDetail,
   type CatererMarketplaceApprovalStatus,
@@ -13,6 +14,19 @@ import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { toast } from "react-toastify";
+
+const AdminAddressMapPreview = dynamic(
+  () =>
+    import("@/components/admin/AdminAddressMapPreview").then((m) => ({
+      default: m.AdminAddressMapPreview,
+    })),
+  {
+    ssr: false,
+    loading: () => (
+      <p className="text-sm text-brand-text-muted">Loading map preview…</p>
+    ),
+  }
+);
 
 function DlRow({ label, children }: { label: string; children: React.ReactNode }) {
   return (
@@ -78,6 +92,8 @@ function missingFieldLabel(field: string): string {
   switch (field) {
     case "city":
       return "City";
+    case "address":
+      return "Address line 1";
     case "about":
       return "About";
     case "category":
@@ -308,7 +324,11 @@ export function AdminCatererReviewDetailView({ tenantId }: { tenantId: string })
         <h2 className="text-sm font-bold text-brand-text-dark">Business information</h2>
         <dl className="mt-3">
           <DlRow label="City">{d.business.cityName ?? "—"}</DlRow>
-          <DlRow label="Address">{d.business.streetAddress ?? "—"}</DlRow>
+          <DlRow label="Address line 1">{d.business.addressLine1 ?? "—"}</DlRow>
+          <DlRow label="Address line 2">{d.business.addressLine2 ?? "—"}</DlRow>
+          <DlRow label="Pincode">{d.business.pincode ?? "—"}</DlRow>
+          <DlRow label="State">{d.business.state ?? "—"}</DlRow>
+          <DlRow label="Country">{d.business.country ?? "—"}</DlRow>
           <DlRow label="Tagline">{d.business.tagline ?? "—"}</DlRow>
           <DlRow label="About">
             {d.business.about ? (
@@ -328,6 +348,16 @@ export function AdminCatererReviewDetailView({ tenantId }: { tenantId: string })
           <DlRow label="Price band">{formatPriceBand(d.business.priceBand)}</DlRow>
           <DlRow label="Price from (per guest)">{formatInr(d.business.priceFrom)}</DlRow>
         </dl>
+
+        <div className="mt-6 border-t border-gray-100 pt-5">
+          <h3 className="text-[11px] font-bold uppercase tracking-[0.05em] text-brand-text-muted">
+            Map location
+          </h3>
+          <AdminAddressMapPreview
+            latitude={d.business.latitude ?? null}
+            longitude={d.business.longitude ?? null}
+          />
+        </div>
       </div>
 
       <div className="mt-6 grid gap-6 lg:grid-cols-2">

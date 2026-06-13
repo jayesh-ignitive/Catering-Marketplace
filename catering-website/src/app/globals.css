@@ -254,3 +254,112 @@ a[href][aria-disabled="true"],
 .listing-price-range-input::-moz-range-track {
   background: transparent;
 }
+
+/* Google Places API (New) — workspace address line 1 + optional map */
+.ws-address-line1-row {
+  isolation: isolate;
+  width: 100%;
+  max-width: 100%;
+  overflow: visible;
+}
+
+.ws-address-search-shell input[type="search"]::-webkit-search-cancel-button,
+.ws-address-search-shell input[type="search"]::-webkit-search-decoration {
+  display: none;
+}
+
+.ws-address-search-shell input[type="search"] {
+  appearance: none;
+}
+
+.ws-address-line1-row[aria-invalid="true"] .ws-address-autocomplete-host gmp-place-autocomplete {
+  --gmp-mat-color-primary: var(--color-brand-red, #e53935);
+}
+
+.ws-address-autocomplete-host {
+  position: relative;
+  overflow: visible;
+}
+
+.ws-address-autocomplete-host gmp-place-autocomplete {
+  display: block;
+  width: 100%;
+  min-height: 2.75rem;
+  color-scheme: light;
+  --gmp-mat-color-surface: #ffffff;
+  --gmp-mat-color-on-surface: #424242;
+  --gmp-mat-color-on-surface-variant: #757575;
+  --gmp-mat-color-outline-decorative: transparent;
+  --gmp-mat-color-primary: #616161;
+  --gmp-mat-font-family: var(--font-sans, ui-sans-serif, system-ui, sans-serif);
+  --gmp-mat-font-body-large: 400 0.875rem/1.35rem var(--gmp-mat-font-family);
+  --gmp-mat-font-body-medium: 400 0.875rem/1.35rem var(--gmp-mat-font-family);
+  --gmp-mat-spacing-small: 0.125rem;
+  --gmp-mat-spacing-medium: 0.375rem;
+}
+
+.ws-address-picker-card {
+  isolation: isolate;
+  width: 100%;
+  max-width: 100%;
+}
+
+.ws-address-autocomplete-host gmp-place-autocomplete:focus-within {
+  --gmp-mat-color-primary: #616161;
+}
+
+.ws-address-picker-card[aria-invalid="true"] .ws-address-autocomplete-host gmp-place-autocomplete {
+  --gmp-mat-color-primary: var(--color-brand-red, #e53935);
+}
+
+/* Shadow DOM input — align with workspace field typography */
+.ws-address-autocomplete-host gmp-place-autocomplete::part(input),
+.ws-address-autocomplete-host gmp-place-autocomplete::part(combobox) {
+  border: none;
+  background: transparent;
+  box-shadow: none;
+  min-height: 2.75rem;
+  width: 100%;
+  padding-top: 0.625rem;
+  padding-bottom: 0.625rem;
+  padding-left: 0.25rem;
+  font-size: 0.875rem;
+  line-height: 1.35;
+  color: #424242;
+}
+
+.ws-address-autocomplete-host gmp-place-autocomplete::part(input):focus,
+.ws-address-autocomplete-host gmp-place-autocomplete::part(combobox):focus {
+  outline: none;
+}
+
+.ws-address-suggestions-panel {
+  pointer-events: auto;
+}
+
+/* Place ID Finder — search overlay on map modal */
+.ws-address-map-autocomplete-host gmp-place-autocomplete {
+  display: block;
+  width: 100%;
+  min-height: 2.5rem;
+  color-scheme: light;
+  border-radius: 0.125rem;
+  box-shadow: 0 4px 14px rgb(0 0 0 / 0.18);
+  --gmp-mat-color-surface: #ffffff;
+  --gmp-mat-color-on-surface: #424242;
+  --gmp-mat-color-on-surface-variant: #757575;
+  --gmp-mat-color-outline-decorative: #e0e0e0;
+  --gmp-mat-color-primary: #616161;
+  --gmp-mat-font-family: var(--font-sans, ui-sans-serif, system-ui, sans-serif);
+  --gmp-mat-font-body-large: 400 0.875rem/1.35rem var(--gmp-mat-font-family);
+  --gmp-mat-font-body-medium: 400 0.875rem/1.35rem var(--gmp-mat-font-family);
+}
+
+/* Google Maps controls — match rounded-sm workspace UI */
+.ws-address-map-modal .gm-style .gm-control-active,
+.ws-address-map-modal .gm-style .gm-fullscreen-control,
+.ws-address-picker-card .gm-style .gm-control-active,
+.ws-address-picker-card .gm-style .gm-fullscreen-control {
+  border-radius: 0.125rem !important;
+  box-shadow: 0 1px 4px rgb(0 0 0 / 0.12) !important;
+}

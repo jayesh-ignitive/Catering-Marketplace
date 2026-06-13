@@ -150,6 +150,8 @@ export type MarketplaceListItem = {
   state: string | null;
   country: string | null;
   streetAddress: string | null;
+  pincode: string | null;
+  formattedAddress: string | null;
   latitude: number | null;
   longitude: number | null;
   primaryCategoryId: string | null;
@@ -259,7 +261,16 @@ export type WorkspaceCompletionStatus = {
 
 export type CatererWorkspaceProfile = {
   cityId: string | null;
+  cityName: string | null;
+  addressLine1: string | null;
+  addressLine2: string | null;
   streetAddress: string | null;
+  pincode: string | null;
+  state: string | null;
+  country: string | null;
+  formattedAddress: string | null;
+  latitude: number | null;
+  longitude: number | null;
   tagline: string | null;
   about: string | null;
   heroImageUrl: string | null;
@@ -465,9 +476,17 @@ function formatWorkspaceProfileSaveError(data: unknown, status: number): string 
 
 /** Align `ABOUT_MIN_LEN` on the workspace wizard with backend `WORKSPACE_ABOUT_MIN_LEN`. */
 export type PatchWorkspaceProfileStep0Body = {
-  cityId: string;
+  cityId?: string;
+  cityName?: string;
+  addressLine1?: string;
+  addressLine2?: string;
   about: string;
   streetAddress?: string;
+  pincode?: string;
+  state?: string;
+  country?: string;
+  latitude?: number;
+  longitude?: number;
   tagline?: string;
   heroImageUrl?: string;
   priceBand?: "budget" | "mid" | "premium" | "custom";
@@ -492,6 +511,38 @@ export type PatchWorkspaceProfileStep2Body = {
   galleryImageUrls: string[];
   heroImageUrl: string;
 };
+
+export type PatchWorkspaceProfileAddressBody = {
+  cityId?: string;
+  cityName?: string;
+  addressLine1?: string;
+  addressLine2?: string;
+  pincode?: string;
+  state?: string;
+  country?: string;
+  latitude: number;
+  longitude: number;
+};
+
+export async function patchWorkspaceCatererProfileAddress(
+  accessToken: string,
+  body: PatchWorkspaceProfileAddressBody
+): Promise<CatererWorkspaceProfile> {
+  const res = await fetch(`${getCateringApiBase()}/api/marketplace/caterer/profile/address`, {
+    method: "PATCH",
+    headers: {
+      "Content-Type": "application/json",
+      Authorization: `Bearer ${accessToken}`,
+    },
+    body: JSON.stringify(body),
+    ...fetchOpts,
+  });
+  const data: unknown = await res.json().catch(() => ({}));
+  if (!res.ok) {
+    throw new Error(formatWorkspaceProfileSaveError(data, res.status));
+  }
+  return data as CatererWorkspaceProfile;
+}
 
 export async function patchWorkspaceCatererProfileStep(
   accessToken: string,
@@ -536,6 +587,12 @@ export async function updateWorkspaceCatererProfile(
   body: {
     cityId: string;
     streetAddress?: string;
+    pincode?: string;
+    state?: string;
+    country?: string;
+    formattedAddress?: string;
+    latitude?: number;
+    longitude?: number;
     tagline?: string;
     about: string;
     heroImageUrl: string;
@@ -578,7 +635,14 @@ function formatPostReviewError(data: unknown, status: number): string {
 
 export async function postCatererReview(
   slug: string,
-  body: { authorName: string; rating: number; title?: string; comment: string }
+  body: {
+    authorName: string;
+    authorEmail: string;
+    authorPhone: string;
+    rating: number;
+    title?: string;
+    comment: string;
+  }
 ): Promise<{ review: CatererReviewView; avgRating: number; reviewCount: number }> {
   const res = await fetch(
     `${getCateringApiBase()}/api/marketplace/caterers/${encodeURIComponent(slug)}/reviews`,

@@ -5,19 +5,24 @@ import { Envelope, FacebookLogo, InstagramLogo, MapPin, Phone } from "@phosphor-
 import { XLogoIcon } from "@/components/common/XLogoIcon";
 import { useQuery } from "@tanstack/react-query";
 import Link from "next/link";
-import { fetchServiceCategories } from "@/lib/catering-api";
+import type { ServiceCategory } from "@/lib/catering-api";
+import { serviceCategoriesQueryOptions } from "@/lib/catalog-queries";
 import { caterersListingPath } from "@/lib/caterers-url";
 import { LanguageSwitcher } from "@/components/common/LanguageSwitcher";
 import { useI18n } from "@/context/LocaleContext";
 import { publicSiteConfig } from "@/lib/site-config";
 
-export function SiteFooter() {
+export function SiteFooter({
+  prefetchedCategories,
+}: {
+  prefetchedCategories?: ServiceCategory[];
+}) {
   const { w, trans, locale } = useI18n();
-  const categoriesQ = useQuery({
-    queryKey: ["catalog", "service-categories", locale],
-    queryFn: () => fetchServiceCategories(locale),
-  });
+  const categoriesQ = useQuery(
+    serviceCategoriesQueryOptions(locale, prefetchedCategories),
+  );
   const categories = categoriesQ.data ?? [];
+  const servicesLoading = categoriesQ.isPending && categories.length === 0;
 
   return (
     <footer className="zig-zag-border bg-[#111] pb-10 pt-20 text-gray-400">
@@ -100,7 +105,7 @@ export function SiteFooter() {
           <div>
             <h4 className="mb-6 font-heading text-lg font-bold text-white">{w.footer.services}</h4>
             <ul className="space-y-3 text-sm">
-              {categoriesQ.isPending ? (
+              {servicesLoading ? (
                 <li className="text-gray-500">{w.common.loading}</li>
               ) : categories.length === 0 ? (
                 <li>
