@@ -165,6 +165,16 @@ export class CatererMarketplaceListing {
   })
   priceFrom!: string | null;
 
+  /** Indicative maximum price per guest (INR); `null` when open-ended (e.g. premium). */
+  @Column({
+    name: 'price_to',
+    type: 'decimal',
+    precision: 12,
+    scale: 2,
+    nullable: true,
+  })
+  priceTo!: string | null;
+
   @Column({ type: 'boolean', default: false })
   published!: boolean;
 

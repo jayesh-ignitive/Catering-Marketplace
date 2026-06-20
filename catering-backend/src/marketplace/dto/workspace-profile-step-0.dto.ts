@@ -106,6 +106,13 @@ export class WorkspaceProfileStep0Dto {
   @Type(() => Number)
   @IsInt()
   @Min(0)
+  @Max(1000000)
+  priceTo?: number | null;
+
+  @IsOptional()
+  @Type(() => Number)
+  @IsInt()
+  @Min(0)
   @Max(120)
   yearsInBusiness?: number;
 

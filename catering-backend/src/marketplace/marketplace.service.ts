@@ -84,6 +84,8 @@ export type MarketplaceListItem = {
   priceBand: string | null;
   /** Indicative minimum price per guest in INR; `null` when unknown or custom-quote-only. */
   priceFrom: number | null;
+  /** Indicative maximum price per guest in INR; `null` when open-ended. */
+  priceTo: number | null;
   tagline: string | null;
   /** Short business description for listing cards (truncated in UI). */
   about: string | null;
@@ -135,6 +137,7 @@ export type CatererWorkspaceProfile = {
   heroImageUrl: string | null;
   priceBand: string | null;
   priceFrom: number | null;
+  priceTo: number | null;
   yearsInBusiness: number | null;
   capacityGuestMin: number | null;
   capacityGuestMax: number | null;
@@ -351,7 +354,8 @@ export class MarketplaceService {
     if (!profile.about) missingFields.push('about');
     if (profile.categoryCodes.length < 1) missingFields.push('category');
     if (profile.serviceOfferingIds.length < 1) missingFields.push('services');
-    if (profile.keywords.length < 1) missingFields.push('keywords');
+    // Keywords UI disabled — not required for profile completion.
+    // if (profile.keywords.length < 1) missingFields.push('keywords');
     if (profile.galleryImageUrls.length < 1) missingFields.push('gallery');
     if (!profile.heroImageUrl?.trim()) missingFields.push('banner');
     return { isComplete: missingFields.length === 0, missingFields };
@@ -418,6 +422,7 @@ export class MarketplaceService {
       heroImageUrl: this.imageUrls.resolveToPublicUrl(profile.heroImageUrl),
       priceBand: profile.priceBand,
       priceFrom: this.decimalToNumberOrNull(profile.priceFrom),
+      priceTo: this.decimalToNumberOrNull(profile.priceTo),
       yearsInBusiness: profile.yearsInBusiness,
       capacityGuestMin: profile.capacityGuestMin,
       capacityGuestMax: profile.capacityGuestMax,
@@ -631,6 +636,7 @@ export class MarketplaceService {
       keywords: this.orderedKeywordRefs(m),
       priceBand: m.priceBand,
       priceFrom: this.decimalToNumberOrNull(m.priceFrom),
+      priceTo: this.decimalToNumberOrNull(m.priceTo),
       tagline: m.tagline,
       about: m.about,
       avgRating: Number(m.avgRating),
@@ -1036,6 +1042,17 @@ export class MarketplaceService {
       profile.priceFrom =
         dto.priceFrom != null ? Number(dto.priceFrom).toFixed(2) : null;
     }
+    if (dto.priceTo !== undefined) {
+      profile.priceTo =
+        dto.priceTo != null ? Number(dto.priceTo).toFixed(2) : null;
+    }
+    if (
+      profile.priceFrom != null &&
+      profile.priceTo != null &&
+      Number(profile.priceFrom) > Number(profile.priceTo)
+    ) {
+      throw new BadRequestException('priceFrom cannot exceed priceTo');
+    }
     if (dto.yearsInBusiness !== undefined) {
       profile.yearsInBusiness = dto.yearsInBusiness ?? null;
     }
@@ -1054,6 +1071,7 @@ export class MarketplaceService {
       heroImageUrl: profile.heroImageUrl,
       priceBand: profile.priceBand,
       priceFrom: profile.priceFrom,
+      priceTo: profile.priceTo,
       yearsInBusiness: profile.yearsInBusiness,
       capacityGuestMin: profile.capacityGuestMin,
       capacityGuestMax: profile.capacityGuestMax,
@@ -1118,10 +1136,20 @@ export class MarketplaceService {
         'capacityGuestMin cannot exceed capacityGuestMax',
       );
     }
+    if (
+      dto.priceFrom != null &&
+      dto.priceTo != null &&
+      dto.priceFrom > dto.priceTo
+    ) {
+      throw new BadRequestException('priceFrom cannot exceed priceTo');
+    }
 
     await this.syncProfileCategories(profile, dto.categoryCodes);
     await this.syncProfileServiceOfferings(profile, dto.serviceOfferingIds);
-    await this.syncProfileKeywords(profile, dto.keywords);
+    // Keywords UI disabled — only sync when explicitly provided.
+    if (dto.keywords !== undefined) {
+      await this.syncProfileKeywords(profile, dto.keywords);
+    }
 
     const scalarPatch: QueryDeepPartialEntity<CatererMarketplaceListing> = {};
     if (dto.priceBand !== undefined) {
@@ -1130,6 +1158,10 @@ export class MarketplaceService {
     if (dto.priceFrom !== undefined) {
       scalarPatch.priceFrom =
         dto.priceFrom != null ? Number(dto.priceFrom).toFixed(2) : null;
+    }
+    if (dto.priceTo !== undefined) {
+      scalarPatch.priceTo =
+        dto.priceTo != null ? Number(dto.priceTo).toFixed(2) : null;
     }
     if (dto.yearsInBusiness !== undefined) {
       scalarPatch.yearsInBusiness = dto.yearsInBusiness ?? null;
@@ -1492,6 +1524,8 @@ export class MarketplaceService {
     profile.priceBand = dto.priceBand ?? null;
     profile.priceFrom =
       dto.priceFrom != null ? Number(dto.priceFrom).toFixed(2) : null;
+    profile.priceTo =
+      dto.priceTo != null ? Number(dto.priceTo).toFixed(2) : null;
     profile.yearsInBusiness = dto.yearsInBusiness ?? null;
     profile.capacityGuestMin = dto.capacityGuestMin ?? null;
     profile.capacityGuestMax = dto.capacityGuestMax ?? null;
@@ -1504,6 +1538,7 @@ export class MarketplaceService {
       heroImageUrl: profile.heroImageUrl,
       priceBand: profile.priceBand,
       priceFrom: profile.priceFrom,
+      priceTo: profile.priceTo,
       yearsInBusiness: profile.yearsInBusiness,
       capacityGuestMin: profile.capacityGuestMin,
       capacityGuestMax: profile.capacityGuestMax,
@@ -1511,7 +1546,10 @@ export class MarketplaceService {
 
     await this.syncProfileCategories(profile, dto.categoryCodes);
     await this.syncProfileServiceOfferings(profile, dto.serviceOfferingIds);
-    await this.syncProfileKeywords(profile, dto.keywords);
+    // Keywords UI disabled — only sync when explicitly provided.
+    if (dto.keywords !== undefined) {
+      await this.syncProfileKeywords(profile, dto.keywords);
+    }
     await this.syncProfileGallery(profile, dto.galleryImageUrls);
 
     await this.refreshPublishedFlag(tenantId);
@@ -1609,6 +1647,7 @@ export class MarketplaceService {
       avgRating: '0.0',
       reviewCount: 0,
       priceFrom: null,
+      priceTo: null,
       published: false,
       approvalStatus: 'draft',
       submittedForReviewAt: null,

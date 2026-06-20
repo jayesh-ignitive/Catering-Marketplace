@@ -97,6 +97,12 @@ export class UpsertCatererWorkspaceProfileDto {
   @IsOptional()
   @IsInt()
   @Min(0)
+  @Max(1000000)
+  priceTo?: number | null;
+
+  @IsOptional()
+  @IsInt()
+  @Min(0)
   @Max(120)
   yearsInBusiness?: number;
 
@@ -124,11 +130,11 @@ export class UpsertCatererWorkspaceProfileDto {
   @IsString({ each: true })
   serviceOfferingIds!: string[];
 
+  @IsOptional()
   @IsArray()
-  @ArrayNotEmpty()
   @ArrayMaxSize(10)
   @IsString({ each: true })
-  keywords!: string[];
+  keywords?: string[];
 
   @IsArray()
   @ArrayNotEmpty()

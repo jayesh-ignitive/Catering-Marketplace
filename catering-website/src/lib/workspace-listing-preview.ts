@@ -41,6 +41,7 @@ export function buildWorkspaceListingPreview(
     keywords: profile.keywords.map((k) => ({ slug: k, label: k })),
     priceBand: profile.priceBand,
     priceFrom: profile.priceFrom,
+    priceTo: profile.priceTo,
     tagline: profile.tagline,
     about: profile.about,
     avgRating: 0,

@@ -1,6 +1,7 @@
 import {
   getCateringApiBase,
   type City,
+  type MarketplaceCityFilter,
   type ServiceCategory,
   type TrustStats,
 } from "@/lib/catering-api";
@@ -48,4 +49,15 @@ export async function fetchTrustStatsCached(): Promise<TrustStats> {
     }
   }
   return catalog;
+}
+
+/** Server Components — marketplace city filters for listing URL resolution. */
+export async function fetchMarketplaceCitiesCached(
+  locale: string = "en",
+): Promise<MarketplaceCityFilter[]> {
+  const res = await fetch(
+    `${getCateringApiBase()}/api/marketplace/caterers/cities?locale=${encodeURIComponent(locale)}`,
+    { next: { revalidate: CATALOG_REVALIDATE, tags: ["marketplace-cities"] } },
+  );
+  return parseJson(res);
 }

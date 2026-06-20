@@ -2,8 +2,11 @@ import {
   Column,
   CreateDateColumn,
   Entity,
+  JoinColumn,
+  ManyToOne,
   PrimaryGeneratedColumn,
 } from 'typeorm';
+import { Tenant } from '../tenant/tenant.entity';
 
 @Entity('contact_submissions')
 export class ContactSubmission {
@@ -24,6 +27,13 @@ export class ContactSubmission {
 
   @Column({ type: 'text' })
   message!: string;
+
+  @Column({ name: 'tenant_id', type: 'char', length: 36, nullable: true })
+  tenantId!: string | null;
+
+  @ManyToOne(() => Tenant, { nullable: true, onDelete: 'SET NULL' })
+  @JoinColumn({ name: 'tenant_id' })
+  tenant!: Tenant | null;
 
   @Column({ type: 'boolean', default: false })
   solved!: boolean;

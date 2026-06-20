@@ -101,3 +101,47 @@ export function buildCatererInquiryMessage(
     `Guests: ${values.guests || "—"}`,
   ].join("\n");
 }
+
+export type ParsedCatererInquiryMessage = {
+  eventDate: string | null;
+  category: string | null;
+  guests: string | null;
+  notes: string | null;
+};
+
+/** Extract structured lines from availability inquiry messages. */
+export function parseCatererInquiryMessage(message: string): ParsedCatererInquiryMessage {
+  const lines = message.split(/\r?\n/);
+  let eventDate: string | null = null;
+  let category: string | null = null;
+  let guests: string | null = null;
+  const noteLines: string[] = [];
+
+  for (const line of lines) {
+    const trimmed = line.trim();
+    if (!trimmed || trimmed.startsWith("Caterer:")) continue;
+    if (trimmed.startsWith("Event date:")) {
+      const v = trimmed.slice("Event date:".length).trim();
+      eventDate = v && v !== "—" ? v : null;
+      continue;
+    }
+    if (trimmed.startsWith("Category:")) {
+      const v = trimmed.slice("Category:".length).trim();
+      category = v && v !== "—" ? v : null;
+      continue;
+    }
+    if (trimmed.startsWith("Guests:")) {
+      const v = trimmed.slice("Guests:".length).trim();
+      guests = v && v !== "—" ? v : null;
+      continue;
+    }
+    noteLines.push(trimmed);
+  }
+
+  return {
+    eventDate,
+    category,
+    guests,
+    notes: noteLines.length ? noteLines.join("\n") : null,
+  };
+}

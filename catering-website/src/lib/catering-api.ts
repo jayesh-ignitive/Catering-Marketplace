@@ -1,7 +1,12 @@
 import { publicSiteConfig } from "@/lib/site-config";
 
 export function getCateringApiBase(): string {
-  return publicSiteConfig.cateringApiUrl.replace(/\/$/, "");
+  const base = publicSiteConfig.cateringApiUrl.replace(/\/$/, "");
+  // Node SSR on Windows can fail connecting to `localhost` (IPv6) while the API listens on IPv4.
+  if (typeof window === "undefined" && base.includes("://localhost")) {
+    return base.replace("://localhost", "://127.0.0.1");
+  }
+  return base;
 }
 
 /** Public CDN origin for R2 keys — matches `S3_PUBLIC_BASE_URL` on the API when using R2. */
@@ -162,6 +167,8 @@ export type MarketplaceListItem = {
   priceBand: string | null;
   /** Indicative minimum price per guest (INR), from DB `price_from`. */
   priceFrom: number | null;
+  /** Indicative maximum price per guest (INR), from DB `price_to`. */
+  priceTo: number | null;
   tagline: string | null;
   about: string | null;
   avgRating: number;
@@ -170,6 +177,31 @@ export type MarketplaceListItem = {
   yearsInBusiness: number | null;
   capacityGuestMin: number | null;
   capacityGuestMax: number | null;
+};
+
+/** Shared INR bounds for onboarding price tiers and marketplace display. */
+export const MARKETPLACE_PRICE_TIER_INR = {
+  /** Typical entry rate below the ₹400 ceiling — not the ceiling itself. */
+  budget: { min: 250, max: 400, from: 250, to: 400 },
+  mid: { min: 400, max: 650, from: 400, to: 650 },
+  /** Starts where mid-range ends; no upper cap in presets. */
+  premium: { min: 650, from: 650 },
+} as const;
+
+/** `{from}` / `{min}` / `{max}` values for i18n templates — always derived from `MARKETPLACE_PRICE_TIER_INR`. */
+export function getMarketplacePriceTierHintVars() {
+  const t = MARKETPLACE_PRICE_TIER_INR;
+  return {
+    budget: { from: t.budget.from, max: t.budget.max },
+    mid: { min: t.mid.min, max: t.mid.max, from: t.mid.from },
+    premium: { min: t.premium.min, from: t.premium.from },
+  } as const;
+}
+
+export type MarketplacePriceChipMessages = {
+  budget: string;
+  mid: string;
+  premium: string;
 };
 
 const inrWhole = new Intl.NumberFormat("en-IN", {
@@ -220,13 +252,44 @@ export function formatMarketplaceCapacityShort(
   return null;
 }
 
-/** Per-plate price chip for listing cards. */
-export function formatMarketplacePriceChip(priceFrom: number | null | undefined): string | null {
+/** Per-plate price chip for listing cards (labels from i18n; amounts from `MARKETPLACE_PRICE_TIER_INR`). */
+export function formatMarketplacePriceChip(
+  priceFrom: number | null | undefined,
+  priceBand?: string | null,
+  options?: {
+    priceTo?: number | null;
+    trans?: (template: string, vars?: import("@/i18n/format").TransVars) => string;
+    messages?: MarketplacePriceChipMessages;
+  },
+): string | null {
   if (priceFrom == null || !Number.isFinite(priceFrom)) {
     return null;
   }
-  const low = inrWhole.format(priceFrom).replace(/\s/g, "");
-  const high = inrWhole.format(Math.round(priceFrom * 2.2)).replace(/\s/g, "");
+  const chip = (n: number) => inrWhole.format(n).replace(/\s/g, "");
+  const tierVars = getMarketplacePriceTierHintVars();
+  const trans = options?.trans ?? ((template: string) => template);
+  const messages = options?.messages;
+  const band = priceBand?.trim();
+  const priceTo = options?.priceTo;
+
+  if (band === "custom" && priceTo != null && Number.isFinite(priceTo)) {
+    return `${chip(priceFrom)} – ${chip(priceTo)}`;
+  }
+  if (band === "mid") {
+    if (messages) return trans(messages.mid, tierVars.mid);
+    return `${chip(tierVars.mid.min)} – ${chip(tierVars.mid.max)}`;
+  }
+  if (band === "budget") {
+    if (messages) return trans(messages.budget, { max: tierVars.budget.max });
+    return `Under ${chip(tierVars.budget.max)}`;
+  }
+  if (band === "premium") {
+    if (messages) return trans(messages.premium, { min: tierVars.premium.min });
+    return `${chip(tierVars.premium.min)}+`;
+  }
+
+  const low = chip(priceFrom);
+  const high = chip(Math.round(priceFrom * 2.2));
   return `${low} – ${high}`;
 }
 
@@ -276,6 +339,7 @@ export type CatererWorkspaceProfile = {
   heroImageUrl: string | null;
   priceBand: "budget" | "mid" | "premium" | "custom" | null;
   priceFrom: number | null;
+  priceTo: number | null;
   yearsInBusiness: number | null;
   capacityGuestMin: number | null;
   capacityGuestMax: number | null;
@@ -491,6 +555,7 @@ export type PatchWorkspaceProfileStep0Body = {
   heroImageUrl?: string;
   priceBand?: "budget" | "mid" | "premium" | "custom";
   priceFrom?: number;
+  priceTo?: number | null;
   yearsInBusiness?: number;
   capacityGuestMin?: number;
   capacityGuestMax?: number;
@@ -502,6 +567,7 @@ export type PatchWorkspaceProfileStep1Body = {
   keywords: string[];
   priceBand?: "budget" | "mid" | "premium" | "custom";
   priceFrom?: number;
+  priceTo?: number | null;
   yearsInBusiness?: number;
   capacityGuestMin?: number;
   capacityGuestMax?: number;
@@ -699,6 +765,7 @@ export async function postContact(body: {
   phone?: string;
   subject: string;
   message: string;
+  tenantId?: string;
 }): Promise<{ id: string }> {
   const res = await fetch(`${getCateringApiBase()}/api/contact`, {
     method: "POST",
@@ -711,4 +778,91 @@ export async function postContact(body: {
     throw new Error(formatContactApiError(data, res.status));
   }
   return data as { id: string };
+}
+
+export type WorkspaceInquirySortField = "createdAt" | "name" | "email" | "subject" | "solved";
+export type WorkspaceInquirySortDir = "asc" | "desc";
+export type WorkspaceInquiryStatusFilter = "all" | "open" | "solved";
+
+export type WorkspaceInquiryListItem = {
+  id: string;
+  name: string;
+  email: string;
+  phone: string | null;
+  subject: string;
+  messagePreview: string;
+  solved: boolean;
+  solvedAt: string | null;
+  createdAt: string;
+};
+
+export type WorkspaceInquiryDetail = WorkspaceInquiryListItem & {
+  message: string;
+};
+
+export type WorkspaceInquiryListResponse = {
+  items: WorkspaceInquiryListItem[];
+  total: number;
+  page: number;
+  limit: number;
+  sortBy: WorkspaceInquirySortField;
+  sortDir: WorkspaceInquirySortDir;
+  openCount: number;
+};
+
+export async function fetchWorkspaceInquiries(
+  accessToken: string,
+  params: {
+    page?: number;
+    limit?: number;
+    q?: string;
+    sortBy?: WorkspaceInquirySortField;
+    sortDir?: WorkspaceInquirySortDir;
+    status?: WorkspaceInquiryStatusFilter;
+  } = {},
+): Promise<WorkspaceInquiryListResponse> {
+  const sp = new URLSearchParams();
+  if (params.page != null) sp.set("page", String(params.page));
+  if (params.limit != null) sp.set("limit", String(params.limit));
+  if (params.q) sp.set("q", params.q);
+  if (params.sortBy) sp.set("sortBy", params.sortBy);
+  if (params.sortDir) sp.set("sortDir", params.sortDir);
+  if (params.status) sp.set("status", params.status);
+  const q = sp.toString();
+  const res = await fetch(
+    `${getCateringApiBase()}/api/marketplace/caterer/inquiries${q ? `?${q}` : ""}`,
+    {
+      headers: { Authorization: `Bearer ${accessToken}` },
+      ...fetchOpts,
+    },
+  );
+  return parseJson<WorkspaceInquiryListResponse>(res);
+}
+
+export async function fetchWorkspaceInquiryDetail(
+  accessToken: string,
+  id: string,
+): Promise<WorkspaceInquiryDetail> {
+  const res = await fetch(`${getCateringApiBase()}/api/marketplace/caterer/inquiries/${id}`, {
+    headers: { Authorization: `Bearer ${accessToken}` },
+    ...fetchOpts,
+  });
+  return parseJson<WorkspaceInquiryDetail>(res);
+}
+
+export async function setWorkspaceInquiryStatus(
+  accessToken: string,
+  id: string,
+  solved: boolean,
+): Promise<WorkspaceInquiryDetail> {
+  const res = await fetch(`${getCateringApiBase()}/api/marketplace/caterer/inquiries/${id}/status`, {
+    method: "PATCH",
+    headers: {
+      Authorization: `Bearer ${accessToken}`,
+      "Content-Type": "application/json",
+    },
+    body: JSON.stringify({ solved }),
+    ...fetchOpts,
+  });
+  return parseJson<WorkspaceInquiryDetail>(res);
 }

@@ -10,8 +10,8 @@ import { useAuth } from "@/context/AuthContext";
 import { getStoredToken, patchAccountProfile, type AuthUser } from "@/lib/auth-api";
 import {
   type CatererWorkspaceProfile,
-  fetchMarketplaceKeywordSuggestions,
-  type MarketplaceKeywordRef,
+  // fetchMarketplaceKeywordSuggestions,
+  // type MarketplaceKeywordRef,
   patchWorkspaceCatererProfileStep,
   patchWorkspaceCatererProfileAddress,
   type PatchWorkspaceProfileAddressBody,
@@ -36,10 +36,10 @@ import {
   Trash,
   Clock,
 } from "@phosphor-icons/react";
-import {
-  SearchableKeywordTags,
-  WORKSPACE_KEYWORD_LIMIT,
-} from "@/components/workspace/SearchableKeywordTags";
+// import {
+//   SearchableKeywordTags,
+//   WORKSPACE_KEYWORD_LIMIT,
+// } from "@/components/workspace/SearchableKeywordTags";
 import { SearchableMultiSelect } from "@/components/workspace/SearchableMultiSelect";
 import { buildWorkspaceAddressPersistBody } from "./address-persist";
 import {
@@ -73,6 +73,9 @@ import {
   inferExperiencePresetFromYears,
   inferGuestPresetFromNumbers,
   inferPricePresetFromProfile,
+  initialPriceFromField,
+  initialPriceToField,
+  resolvePriceFieldsForSave,
   isValidBannerSource,
   isValidGallerySource,
   optionalNonNegativeIntFromField,
@@ -112,7 +115,7 @@ export function WorkspaceBusinessWizard({
   cities,
   categories,
   offerings,
-  keywordBrowseCatalog,
+  // keywordBrowseCatalog,
   accountUser,
   uiVariant = "default",
   layout = "wizard",
@@ -122,8 +125,8 @@ export function WorkspaceBusinessWizard({
   cities: { id: string; name: string }[];
   categories: { id: string; name: string }[];
   offerings: { id: string; name: string }[];
-  /** Published-marketplace keyword labels (`GET .../caterers/keywords`). */
-  keywordBrowseCatalog: MarketplaceKeywordRef[];
+  /** Keywords UI disabled — catalog fetch commented out in workspace pages. */
+  // keywordBrowseCatalog: MarketplaceKeywordRef[];
   accountUser: AuthUser | null;
   uiVariant?: "default" | "onboarding";
   /** `tabs` — workspace editor (business / services / gallery); `wizard` — full onboarding flow */
@@ -136,7 +139,7 @@ export function WorkspaceBusinessWizard({
   const wizardSteps = useMemo(() => getWizardSteps(ws), [ws]);
   const guestCapacityPresets = useMemo(() => getGuestCapacityPresets(ws), [ws]);
   const experiencePresets = useMemo(() => getExperiencePresets(ws), [ws]);
-  const pricePerGuestPresets = useMemo(() => getPricePerGuestPresets(ws), [ws]);
+  const pricePerGuestPresets = useMemo(() => getPricePerGuestPresets(ws, trans), [ws, trans]);
 
   const router = useRouter();
   const searchParams = useSearchParams();
@@ -202,7 +205,12 @@ export function WorkspaceBusinessWizard({
   const [about, setAbout] = useState(profile.about ?? "");
   const [heroImageUrl, setHeroImageUrl] = useState(profile.heroImageUrl ?? "");
   const [priceBand, setPriceBand] = useState(profile.priceBand ?? "");
-  const [priceFrom, setPriceFrom] = useState(profile.priceFrom != null ? String(profile.priceFrom) : "");
+  const [priceFrom, setPriceFrom] = useState(() =>
+    initialPriceFromField(profile.priceBand, profile.priceFrom ?? null, profile.priceTo ?? null, ws)
+  );
+  const [priceTo, setPriceTo] = useState(() =>
+    initialPriceToField(profile.priceBand, profile.priceFrom ?? null, profile.priceTo ?? null, ws)
+  );
   const [yearsInBusiness, setYearsInBusiness] = useState(
     profile.yearsInBusiness != null ? String(profile.yearsInBusiness) : ""
   );
@@ -219,13 +227,18 @@ export function WorkspaceBusinessWizard({
     inferExperiencePresetFromYears(profile.yearsInBusiness ?? null, ws)
   );
   const [pricePresetId, setPricePresetId] = useState(() =>
-    inferPricePresetFromProfile(profile.priceBand, profile.priceFrom ?? null)
+    inferPricePresetFromProfile(
+      profile.priceBand,
+      profile.priceFrom ?? null,
+      profile.priceTo ?? null,
+      ws
+    )
   );
   const [categoryCodes, setCategoryCodes] = useState<string[]>(profile.categoryCodes ?? []);
   const [serviceOfferingIds, setServiceOfferingIds] = useState<string[]>(profile.serviceOfferingIds ?? []);
-  const [keywordList, setKeywordList] = useState<string[]>(() =>
-    (profile.keywords ?? []).map((k) => k.trim()).filter(Boolean)
-  );
+  // const [keywordList, setKeywordList] = useState<string[]>(() =>
+  //   (profile.keywords ?? []).map((k) => k.trim()).filter(Boolean)
+  // );
   const [galleryUrls, setGalleryUrls] = useState<string[]>(() =>
     (profile.galleryImageUrls ?? [])
       .map((u) => u.trim())
@@ -243,15 +256,15 @@ export function WorkspaceBusinessWizard({
   const bannerFileInputRef = useRef<HTMLInputElement>(null);
   const galleryFileInputRef = useRef<HTMLInputElement>(null);
 
-  const keywords = useMemo(
-    () => keywordList.map((x) => x.trim()).filter(Boolean),
-    [keywordList]
-  );
+  // const keywords = useMemo(
+  //   () => keywordList.map((x) => x.trim()).filter(Boolean),
+  //   [keywordList]
+  // );
 
-  const fetchKeywordSuggestions = useCallback(
-    (term: string) => fetchMarketplaceKeywordSuggestions(term),
-    []
-  );
+  // const fetchKeywordSuggestions = useCallback(
+  //   (term: string) => fetchMarketplaceKeywordSuggestions(term),
+  //   []
+  // );
   const galleryImageUrls = useMemo(
     () => galleryUrls.map((x) => x.trim()).filter(Boolean),
     [galleryUrls]
@@ -431,13 +444,40 @@ export function WorkspaceBusinessWizard({
 
           if (!pricePresetId) {
             e.priceTier = wv.priceTier;
-          } else if (pricePresetId === "price-custom" && !priceFrom.trim()) {
-            e.priceTier = wv.priceTierCustom;
+          } else if (pricePresetId === "price-custom") {
+            if (!priceFrom.trim() || !priceTo.trim()) {
+              e.priceTier = wv.priceTierCustom;
+            }
           }
         }
 
         const pfStep1 = priceFrom.trim();
-        if (pfStep1 !== "" && !skipPriceFmtStep1) {
+        const ptStep1 = priceTo.trim();
+        if (pricePresetId === "price-custom") {
+          if (pfStep1 !== "" && !skipPriceFmtStep1) {
+            const n = Number(pfStep1);
+            if (!Number.isFinite(n) || n < 0) {
+              e.priceFrom = wv.priceFrom;
+            }
+          }
+          if (ptStep1 !== "" && !skipPriceFmtStep1) {
+            const n = Number(ptStep1);
+            if (!Number.isFinite(n) || n < 0) {
+              e.priceTo = wv.priceTo;
+            }
+          }
+          const minN = pfStep1 === "" ? NaN : Number(pfStep1);
+          const maxN = ptStep1 === "" ? NaN : Number(ptStep1);
+          if (
+            Number.isFinite(minN) &&
+            Number.isFinite(maxN) &&
+            !e.priceFrom &&
+            !e.priceTo &&
+            minN > maxN
+          ) {
+            e.priceRange = wv.priceRange;
+          }
+        } else if (pfStep1 !== "" && !skipPriceFmtStep1) {
           const n = Number(pfStep1);
           if (!Number.isFinite(n) || n < 0) {
             e.priceFrom = wv.priceFrom;
@@ -460,11 +500,12 @@ export function WorkspaceBusinessWizard({
         if (serviceOfferingIds.length === 0) {
           e.services = wv.services;
         }
-        if (keywords.length === 0) {
-          e.keywords = wv.keywords;
-        } else if (keywords.length > WORKSPACE_KEYWORD_LIMIT) {
-          e.keywords = trans(ws.wizard.errors.keywordsMax, { limit: WORKSPACE_KEYWORD_LIMIT });
-        }
+        // Keywords UI disabled — skip validation.
+        // if (keywords.length === 0) {
+        //   e.keywords = wv.keywords;
+        // } else if (keywords.length > WORKSPACE_KEYWORD_LIMIT) {
+        //   e.keywords = trans(ws.wizard.errors.keywordsMax, { limit: WORKSPACE_KEYWORD_LIMIT });
+        // }
       } else if (s === 2) {
         const heroTrim = heroImageUrl.trim();
         if (!heroTrim) {
@@ -497,11 +538,12 @@ export function WorkspaceBusinessWizard({
       contactFullName,
       galleryImageUrls,
       heroImageUrl,
-      keywords,
+      // keywords,
       pincodeDigits,
       latitude,
       longitude,
       priceFrom,
+      priceTo,
       serviceOfferingIds,
       experiencePresetId,
       guestPresetId,
@@ -573,19 +615,25 @@ export function WorkspaceBusinessWizard({
         const body: PatchWorkspaceProfileStep1Body = {
           categoryCodes,
           serviceOfferingIds,
-          keywords,
+          keywords: [], // Keywords UI disabled
         };
         if (uiVariant === "onboarding" || layout === "tabs") {
           const capMin = optionalPositiveIntFromField(capacityGuestMin);
           const capMax = optionalPositiveIntFromField(capacityGuestMax);
           const years = optionalNonNegativeIntFromField(yearsInBusiness);
-          const pf = optionalPriceFromField(priceFrom);
+          const { priceFrom: pf, priceTo: pt } = resolvePriceFieldsForSave(
+            pricePresetId,
+            priceFrom,
+            priceTo,
+            ws
+          );
           if (capMin != null) body.capacityGuestMin = capMin;
           if (capMax != null) body.capacityGuestMax = capMax;
           if (years != null) body.yearsInBusiness = years;
           const pb = parsePriceBand(priceBand);
           if (pb) body.priceBand = pb;
           if (pf != null) body.priceFrom = pf;
+          if (pt !== undefined) body.priceTo = pt;
         }
         return patchWorkspaceCatererProfileStep(accessToken, 1, body);
       }
@@ -1512,7 +1560,7 @@ export function WorkspaceBusinessWizard({
                   <section
                     className="md:col-span-2 space-y-3 border-b border-[#E5E7EB] pb-8"
                     aria-labelledby="ws-q-price-guest"
-                    {...(fieldErrors.priceTier || fieldErrors.priceFrom ? { "data-invalid-field": "" } : {})}
+                    {...(fieldErrors.priceTier || fieldErrors.priceFrom || fieldErrors.priceTo || fieldErrors.priceRange ? { "data-invalid-field": "" } : {})}
                   >
                     <div>
                       <h3 id="ws-q-price-guest" className={workspaceLabelTextClass}>
@@ -1530,8 +1578,11 @@ export function WorkspaceBusinessWizard({
                             setPricePresetId(p.id);
                             setPriceBand(p.band);
                             setPriceFrom(String(p.priceHint));
+                            setPriceTo(p.priceToHint != null ? String(p.priceToHint) : "");
                             clearFieldError("priceTier");
                             clearFieldError("priceFrom");
+                            clearFieldError("priceTo");
+                            clearFieldError("priceRange");
                           }}
                           title={p.label}
                           subtitle={p.hint}
@@ -1544,6 +1595,8 @@ export function WorkspaceBusinessWizard({
                           setPriceBand("custom");
                           clearFieldError("priceTier");
                           clearFieldError("priceFrom");
+                          clearFieldError("priceTo");
+                          clearFieldError("priceRange");
                         }}
                         title={wp.enterRate}
                         subtitle={wp.enterRateSubtitle}
@@ -1552,7 +1605,9 @@ export function WorkspaceBusinessWizard({
                     {pricePresetId === "price-custom" ? (
                       <div className="grid max-w-2xl grid-cols-1 gap-4 pt-2 sm:grid-cols-2">
                         <div>
-                          <InputLabel htmlFor="ws-price-from-onb">{ws.wizard.fields.averagePricePerGuest}</InputLabel>
+                          <InputLabel htmlFor="ws-price-from-onb">
+                            {ws.wizard.fields.minimumPricePerGuest}
+                          </InputLabel>
                           <input
                             id="ws-price-from-onb"
                             type="number"
@@ -1561,35 +1616,45 @@ export function WorkspaceBusinessWizard({
                             onChange={(e) => {
                               setPriceFrom(e.target.value);
                               setPricePresetId("price-custom");
+                              setPriceBand("custom");
                               clearFieldError("priceTier");
                               clearFieldError("priceFrom");
+                              clearFieldError("priceRange");
                             }}
                             className={fieldClassErrored(
                               fieldInput,
-                              Boolean(fieldErrors.priceFrom || fieldErrors.priceTier)
+                              Boolean(fieldErrors.priceFrom || fieldErrors.priceTier || fieldErrors.priceRange)
                             )}
                             placeholder={ws.wizard.placeholders.priceFromOnb}
                           />
                           <FieldError id="ws-price-from-onb-err" message={fieldErrors.priceFrom} />
                         </div>
                         <div>
-                          <InputLabel htmlFor="ws-price-band-onb">{ws.wizard.fields.priceBand}</InputLabel>
-                          <select
-                            id="ws-price-band-onb"
-                            value={priceBand}
+                          <InputLabel htmlFor="ws-price-to-onb">
+                            {ws.wizard.fields.maximumPricePerGuest}
+                          </InputLabel>
+                          <input
+                            id="ws-price-to-onb"
+                            type="number"
+                            min={0}
+                            value={priceTo}
                             onChange={(e) => {
-                              setPriceBand(e.target.value);
+                              setPriceTo(e.target.value);
                               setPricePresetId("price-custom");
+                              setPriceBand("custom");
                               clearFieldError("priceTier");
+                              clearFieldError("priceTo");
+                              clearFieldError("priceRange");
                             }}
-                            className={fieldInput}
-                          >
-                            <option value="custom">{ws.wizard.priceBand.custom}</option>
-                            <option value="budget">{ws.wizard.priceBand.budget}</option>
-                            <option value="mid">{ws.wizard.priceBand.mid}</option>
-                            <option value="premium">{ws.wizard.priceBand.premium}</option>
-                          </select>
+                            className={fieldClassErrored(
+                              fieldInput,
+                              Boolean(fieldErrors.priceTo || fieldErrors.priceTier || fieldErrors.priceRange)
+                            )}
+                            placeholder={ws.wizard.placeholders.priceToOnb}
+                          />
+                          <FieldError id="ws-price-to-onb-err" message={fieldErrors.priceTo} />
                         </div>
+                        <FieldError id="ws-price-range-err" message={fieldErrors.priceRange} />
                       </div>
                     ) : null}
                     <FieldError id="ws-price-tier-err" message={fieldErrors.priceTier} />
@@ -1658,40 +1723,16 @@ export function WorkspaceBusinessWizard({
                     <FieldError id="ws-services-err" message={fieldErrors.services} />
                   </section>
 
+                  {/* Keywords UI disabled — "What should people type to find you in search?" */}
+                  {/*
                   <section
                     className="md:col-span-2 space-y-3"
                     aria-labelledby="ws-q-keywords"
                     {...(fieldErrors.keywords ? { "data-invalid-field": "" } : {})}
                   >
-                    <div>
-                      <h3 id="ws-q-keywords" className={workspaceLabelTextClass}>
-                        {ws.wizard.questions.keywords}{" "}
-                        <span className="text-brand-red">{ws.common.required}</span>
-                      </h3>
-                      <p id="ws-keywords-hint" className={`mt-1 ${workspaceHintTextClass}`}>
-                        {ws.wizard.hints.keywordsRich}{" "}
-                        {trans(ws.wizard.hints.keywordsRichLimit, { limit: WORKSPACE_KEYWORD_LIMIT })}
-                      </p>
-                    </div>
-                    <SearchableKeywordTags
-                      id="ws-keywords"
-                      value={keywordList}
-                      onChange={(next) => {
-                        setKeywordList(next);
-                        clearFieldError("keywords");
-                      }}
-                      fetchSuggestions={fetchKeywordSuggestions}
-                      browseCatalog={keywordBrowseCatalog}
-                      placeholder={ws.wizard.placeholders.searchKeywords}
-                      searchPlaceholder={ws.wizard.placeholders.searchKeywordsAdd}
-                      aria-invalid={Boolean(fieldErrors.keywords)}
-                      aria-describedby={
-                        fieldErrors.keywords ? "ws-keywords-err ws-keywords-hint" : "ws-keywords-hint"
-                      }
-                      errored={Boolean(fieldErrors.keywords)}
-                    />
-                    <FieldError id="ws-keywords-err" message={fieldErrors.keywords} />
+                    ...
                   </section>
+                  */}
                 </>
               ) : (
                 <>
@@ -1746,34 +1787,12 @@ export function WorkspaceBusinessWizard({
                     <FieldError id="ws-services-err" message={fieldErrors.services} />
                   </div>
 
+                  {/* Keywords UI disabled — "What should people type to find you in search?" */}
+                  {/*
                   <div className="md:col-span-2" {...(fieldErrors.keywords ? { "data-invalid-field": "" } : {})}>
-                    <InputLabel htmlFor="ws-keywords">
-                      {ws.wizard.fields.keywords} <span className="text-brand-red">{ws.common.required}</span>
-                    </InputLabel>
-                    <p id="ws-keywords-hint-default" className={`mb-2 mt-1 ${workspaceHintTextClass}`}>
-                      {trans(ws.wizard.hints.keywordsDefault, { limit: WORKSPACE_KEYWORD_LIMIT })}
-                    </p>
-                    <SearchableKeywordTags
-                      id="ws-keywords-default"
-                      value={keywordList}
-                      onChange={(next) => {
-                        setKeywordList(next);
-                        clearFieldError("keywords");
-                      }}
-                      fetchSuggestions={fetchKeywordSuggestions}
-                      browseCatalog={keywordBrowseCatalog}
-                      placeholder={ws.wizard.placeholders.searchKeywordsAlt}
-                      searchPlaceholder={ws.wizard.placeholders.searchKeywordsMore}
-                      aria-invalid={Boolean(fieldErrors.keywords)}
-                      aria-describedby={
-                        fieldErrors.keywords
-                          ? "ws-keywords-err ws-keywords-hint-default"
-                          : "ws-keywords-hint-default"
-                      }
-                      errored={Boolean(fieldErrors.keywords)}
-                    />
-                    <FieldError id="ws-keywords-err" message={fieldErrors.keywords} />
+                    ...
                   </div>
+                  */}
                 </>
               )}
             </>
@@ -2034,15 +2053,15 @@ export function WorkspaceBusinessWizard({
                       </div>
                     </li>
                     <li className="flex items-start gap-4">
-                      {serviceOfferingIds.length > 0 && keywords.length > 0 ? (
+                      {serviceOfferingIds.length > 0 ? (
                          <CheckCircle className="h-6 w-6 text-emerald-500 shrink-0 mt-0.5" weight="fill" />
                       ) : (
                          <XCircle className="mt-0.5 h-6 w-6 shrink-0 text-gray-300" weight="fill" />
                       )}
                       <div>
-                         <p className={workspaceCardTitleClass}>{ws.wizard.submitReview.servicesKeywords}</p>
+                         <p className={workspaceCardTitleClass}>{ws.wizard.fields.services}</p>
                          <p className={`mt-1 ${workspaceHintTextClass}`}>
-                           {ws.wizard.submitReview.servicesKeywordsHint}
+                           {ws.wizard.submitReview.servicesHint}
                          </p>
                       </div>
                     </li>

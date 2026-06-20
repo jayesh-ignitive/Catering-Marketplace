@@ -3,6 +3,7 @@ import { TypeOrmModule } from '@nestjs/typeorm';
 import { StorageModule } from '../storage/storage.module';
 import { TenantProvisioningModule } from '../tenant-provisioning/tenant-provisioning.module';
 import { User } from '../user/user.entity';
+import { ContactSubmission } from '../contact/contact-submission.entity';
 import { Tenant } from '../tenant/tenant.entity';
 import { CatererMarketplaceListing } from './caterer-marketplace-listing.entity';
 import { CatererProfileCategory } from './caterer-profile-category.entity';
@@ -22,6 +23,7 @@ import { ServiceOffering } from './service-offering.entity';
 import { State } from './state.entity';
 import { MarketplaceController } from './marketplace.controller';
 import { MarketplaceService } from './marketplace.service';
+import { WorkspaceInquiriesService } from './workspace-inquiries.service';
 
 @Module({
   imports: [
@@ -46,10 +48,11 @@ import { MarketplaceService } from './marketplace.service';
       CatererProfileServiceOffering,
       Keyword,
       CatererProfileKeyword,
+      ContactSubmission,
     ]),
   ],
   controllers: [MarketplaceController],
-  providers: [MarketplaceService],
+  providers: [MarketplaceService, WorkspaceInquiriesService],
   exports: [MarketplaceService],
 })
 export class MarketplaceModule {}

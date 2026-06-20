@@ -8,6 +8,11 @@ const DATE_LOCALE: Record<AppLocale, string> = {
   gu: "gu-IN",
 };
 
+/** BCP 47 locale for `Date` formatting (India region). */
+export function dateLocaleFor(locale: AppLocale): string {
+  return DATE_LOCALE[locale];
+}
+
 /** Locale-aware date for blog cards, reviews, etc. (dynamic ISO strings only). */
 export function formatLocaleDate(
   iso: string,

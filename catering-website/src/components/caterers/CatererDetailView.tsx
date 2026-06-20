@@ -307,7 +307,7 @@ function WriteReviewForm({ slug }: { slug: string }) {
   );
 }
 
-function InquiryForm({ businessName }: { businessName: string }) {
+function InquiryForm({ businessName, tenantId }: { businessName: string; tenantId: string }) {
   const { w, trans, locale } = useI18n();
   const msg = w.caterers.detail;
   const [name, setName] = useState("");
@@ -368,6 +368,7 @@ function InquiryForm({ businessName }: { businessName: string }) {
         phone: values.phone,
         subject: `Availability: ${businessName}`.slice(0, 200),
         message: values.message,
+        tenantId,
       }),
     onSuccess: () => {
       toast.success(msg.inquirySent);
@@ -978,7 +979,7 @@ function ProfileBody({ d, slug }: { d: MarketplaceDetail; slug: string }) {
           </div>
 
           <div className="order-1 lg:order-2">
-            <InquiryForm businessName={d.businessName} />
+            <InquiryForm businessName={d.businessName} tenantId={d.tenantId} />
           </div>
         </div>
       </main>

@@ -58,7 +58,15 @@ export function CatererListingCard({
   const badge = getCatererCardBadge(row);
   const capacity = formatMarketplaceCapacityShort(row.capacityGuestMin, row.capacityGuestMax);
   const cuisines = formatCuisinesChip(row.cuisines ?? []);
-  const priceChip = formatMarketplacePriceChip(row.priceFrom);
+  const priceChip = formatMarketplacePriceChip(row.priceFrom, row.priceBand, {
+    priceTo: row.priceTo,
+    trans,
+    messages: {
+      budget: w.caterers.card.priceChipBudget,
+      mid: w.caterers.card.priceChipMid,
+      premium: w.caterers.card.priceChipPremium,
+    },
+  });
   const href = `/caterers/${encodeURIComponent(row.profileSlug)}`;
 
   const shellClass = cardShellClass(isGrid, preview);

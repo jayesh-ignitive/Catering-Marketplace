@@ -8,7 +8,7 @@ import { I18nLoadingFallback } from "@/components/common/I18nLoadingFallback";
 import { WorkspaceBusinessWizard } from "@/components/workspace/caterer-profile/WorkspaceBusinessWizard";
 import {
   fetchMarketplaceCitiesForWorkspace,
-  fetchPublishedKeywordCatalog,
+  // fetchPublishedKeywordCatalog,
   fetchServiceCategories,
   fetchServiceOfferings,
   fetchWorkspaceCatererProfile,
@@ -31,11 +31,12 @@ function CatererProfileEditorContent() {
     queryKey: ["marketplace", "service-offerings"],
     queryFn: fetchServiceOfferings,
   });
-  const keywordCatalogQ = useQuery({
-    queryKey: ["marketplace", "published-keyword-catalog"],
-    queryFn: fetchPublishedKeywordCatalog,
-    staleTime: 5 * 60 * 1000,
-  });
+  // Keywords UI disabled — catalog fetch commented out.
+  // const keywordCatalogQ = useQuery({
+  //   queryKey: ["marketplace", "published-keyword-catalog"],
+  //   queryFn: fetchPublishedKeywordCatalog,
+  //   staleTime: 5 * 60 * 1000,
+  // });
   const profileQ = useQuery({
     queryKey: ["workspace", "profile", token],
     enabled,
@@ -53,7 +54,6 @@ function CatererProfileEditorContent() {
           cities={citiesQ.data}
           categories={categoriesQ.data}
           offerings={offeringsQ.data}
-          keywordBrowseCatalog={keywordCatalogQ.data ?? []}
           accountUser={user}
           layout="tabs"
         />
