@@ -69,7 +69,7 @@ function PremiumPopupCard({
 export function WorkspaceModulePlaceholder({
   title,
   description,
-  icon,
+  icon: Icon,
   variant = "comingSoon",
   preview,
   primaryHref = "/workspace/profile",
@@ -93,13 +93,13 @@ export function WorkspaceModulePlaceholder({
             className="pointer-events-none absolute inset-0 bg-[radial-gradient(ellipse_at_center,transparent_0%,rgb(248_249_250_/_0.35)_55%,rgb(248_249_250_/_0.92)_100%)]"
           />
           <div className="absolute inset-0 flex items-center justify-center bg-white/40 p-4 backdrop-blur-[4px] md:p-8">
-            <PremiumPopupCard title={title} description={description} icon={icon} />
+            <PremiumPopupCard title={title} description={description} icon={Icon} />
           </div>
         </div>
       );
     }
 
-    return <PremiumPopupCard title={title} description={description} icon={icon} />;
+    return <PremiumPopupCard title={title} description={description} icon={Icon} />;
   }
 
   return (
