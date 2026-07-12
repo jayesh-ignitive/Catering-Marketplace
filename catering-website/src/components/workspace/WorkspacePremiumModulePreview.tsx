@@ -232,8 +232,8 @@ function MiniLineChart() {
     <svg viewBox="0 0 320 120" className="h-full w-full" aria-hidden>
       <defs>
         <linearGradient id="ws-premium-chart-fill" x1="0" y1="0" x2="0" y2="1">
-          <stop offset="0%" stopColor="rgb(229 57 53 / 0.25)" />
-          <stop offset="100%" stopColor="rgb(229 57 53 / 0)" />
+          <stop offset="0%" stopColor="rgb(91 62 24 / 0.25)" />
+          <stop offset="100%" stopColor="rgb(91 62 24 / 0)" />
         </linearGradient>
       </defs>
       <path
@@ -243,7 +243,7 @@ function MiniLineChart() {
       <path
         d="M0 90 L40 72 L80 78 L120 55 L160 62 L200 38 L240 44 L280 22 L320 30"
         fill="none"
-        stroke="#e53935"
+        stroke="#5b3e18"
         strokeWidth="3"
         strokeLinecap="round"
         strokeLinejoin="round"

@@ -89,12 +89,12 @@ export const BHARAT_CATERHUB_MAP_STYLES: google.maps.MapTypeStyle[] = [
   },
 ];
 
-/** Brand-red pin — stands out on the grey map. */
+/** Brand-brown pin — stands out on the grey map. */
 export const BRAND_MAP_PIN_ICON = {
   url:
     "data:image/svg+xml," +
     encodeURIComponent(
-      `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 32 44" width="32" height="44"><path fill="#e53935" stroke="#ffffff" stroke-width="2" d="M16 1C8.82 1 3 6.82 3 14c0 10.5 13 29 13 29s13-18.5 13-29C29 6.82 23.18 1 16 1z"/><circle cx="16" cy="14" r="5.5" fill="#ffffff"/></svg>`
+      `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 32 44" width="32" height="44"><path fill="#5b3e18" stroke="#ffffff" stroke-width="2" d="M16 1C8.82 1 3 6.82 3 14c0 10.5 13 29 13 29s13-18.5 13-29C29 6.82 23.18 1 16 1z"/><circle cx="16" cy="14" r="5.5" fill="#ffffff"/></svg>`
     ),
   scaledSize: { width: 32, height: 44 },
   anchor: { x: 16, y: 44 },

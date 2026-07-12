@@ -2,7 +2,7 @@
 
 import { useI18n } from "@/context/LocaleContext";
 import Link from "next/link";
-import { ChefHat } from "@phosphor-icons/react";
+import Image from "next/image";
 
 export type BrandLogoPreset =
   | "siteHeader"
@@ -16,7 +16,7 @@ type BrandLogoLinkProps = {
   preset: BrandLogoPreset;
   href?: string;
   className?: string;
-  /** When false, only the chef hat is shown (collapsed workspace sidebar). */
+  /** When false, only the chef hat/logo mark is shown (collapsed workspace sidebar). */
   showWordmark?: boolean;
   onClick?: () => void;
 };
@@ -33,7 +33,7 @@ export function BrandLogoLink({
     preset === "siteHeader" || preset === "siteFooter"
       ? "flex items-center gap-2"
       : preset === "workspaceSidebar"
-        ? "flex h-full items-center gap-2"
+        ? "flex h-full items-center justify-center w-full"
         : preset === "workspaceHeader"
           ? "flex items-center gap-1.5 shrink-0"
           : preset === "onboardingHero"
@@ -44,81 +44,81 @@ export function BrandLogoLink({
 
   const inner =
     preset === "siteHeader" ||
-    preset === "siteFooter" ||
-    preset === "onboardingHero" ||
-    preset === "onboardingMobile" ? (
-      <div
-        className={
-          preset === "onboardingMobile" ? "relative flex flex-col pl-1.5" : "relative flex flex-col pl-2"
-        }
-      >
-        <ChefHat
-          className={
-            preset === "siteHeader" || preset === "siteFooter"
-              ? "absolute -left-2 -top-4 -rotate-[10deg] text-3xl text-[#d4af37]"
+      preset === "siteFooter" ||
+      preset === "onboardingHero" ||
+      preset === "onboardingMobile" ? (
+      <div className="flex items-center gap-2.5">
+        <Image
+          src="/brand/logo.svg"
+          alt="Bharat Cater Hub"
+          width={
+            preset === "siteHeader"
+              ? 100
               : preset === "onboardingHero"
-                ? "absolute -left-2 -top-4 -rotate-[10deg] text-4xl text-[#d4af37] drop-shadow-sm"
-                : "absolute -left-1 -top-3 -rotate-[10deg] text-2xl text-[#d4af37]"
+                ? 44
+                : preset === "siteFooter"
+                  ? 100
+                  : 32
           }
-          weight="fill"
-          aria-hidden
+          height={
+            preset === "siteHeader"
+              ? 100
+              : preset === "onboardingHero"
+                ? 44
+                : preset === "siteFooter"
+                  ? 100
+                  : 32
+          }
+          className={
+            preset === "siteFooter"
+              ? "object-contain brightness-0 invert"
+              : "object-contain"
+          }
         />
-        <span
-          className={
-            preset === "siteHeader"
-              ? "font-logo translate-y-1 text-4xl leading-none tracking-tight text-brand-dark"
-              : preset === "siteFooter"
-                ? "font-logo translate-y-1 text-3xl leading-none tracking-tight text-white drop-shadow-sm"
-              : preset === "onboardingHero"
-                ? "font-logo translate-y-1 text-4xl leading-none tracking-tight text-white drop-shadow-md"
-                : "font-logo translate-y-0.5 text-xl leading-none tracking-tight text-[#1c1c1c]"
-          }
-        >
-          {w.common.brandPrimary}
-        </span>
-        <span
-          className={
-            preset === "siteHeader"
-              ? "relative z-10 -mt-1 -rotate-2 rounded-sm bg-brand-red px-2 py-0.5 text-[8px] font-bold uppercase tracking-[0.12em] text-white shadow-sm"
-              : preset === "siteFooter"
-                ? "relative z-10 -mt-1 -rotate-2 w-fit rounded-sm bg-brand-red px-2 py-0.5 text-[8px] font-bold uppercase tracking-[0.12em] text-white shadow-sm"
-              : preset === "onboardingHero"
-                ? "relative z-10 -mt-1 -rotate-2 w-fit rounded-sm bg-brand-red px-2 py-0.5 text-[8px] font-bold uppercase tracking-[0.12em] text-white shadow-md"
-                : "relative z-10 -mt-0.5 -rotate-2 w-fit rounded-sm bg-brand-red px-1.5 py-px text-[6px] font-bold uppercase tracking-[0.1em] text-white shadow-sm"
-          }
-        >
-          {w.common.brandSecondary}
-        </span>
+        <div className="flex flex-col">
+          <span
+            className={
+              preset === "siteHeader"
+                ? "font-logo translate-y-0.5 text-4xl leading-none tracking-tight text-brand-dark"
+                : preset === "siteFooter"
+                  ? "font-heading font-extrabold text-xl uppercase tracking-wider text-white"
+                  : preset === "onboardingHero"
+                    ? "font-logo translate-y-0.5 text-4xl leading-none tracking-tight text-white drop-shadow-md"
+                    : "font-logo translate-y-0.5 text-xl leading-none tracking-tight text-[#1c1c1c]"
+            }
+          >
+            {w.common.brandPrimary}
+          </span>
+          <span
+            className={
+              preset === "siteHeader"
+                ? "relative z-10 mt-0.5 -rotate-1 rounded-sm bg-brand-red px-2 py-0.5 text-[8px] font-bold uppercase tracking-[0.12em] text-white shadow-sm w-fit"
+                : preset === "siteFooter"
+                  ? "relative z-10 mt-1 w-fit rounded-sm bg-brand-red px-2 py-0.5 text-[8px] font-extrabold uppercase tracking-[0.15em] text-white shadow-sm"
+                  : preset === "onboardingHero"
+                    ? "relative z-10 mt-0.5 -rotate-1 w-fit rounded-sm bg-brand-red px-2 py-0.5 text-[8px] font-bold uppercase tracking-[0.12em] text-white shadow-md"
+                    : "relative z-10 mt-0.5 -rotate-1 w-fit rounded-sm bg-brand-red px-1.5 py-px text-[6px] font-bold uppercase tracking-[0.1em] text-white shadow-sm"
+            }
+          >
+            {w.common.brandSecondary}
+          </span>
+        </div>
       </div>
     ) : (
       <>
-        <ChefHat
-          className={
-            preset === "workspaceSidebar"
-              ? "shrink-0 text-3xl text-[#d4af37]"
-              : "shrink-0 text-2xl text-[#d4af37]"
-          }
-          weight="fill"
-          aria-hidden
+        <Image
+          src="/brand/logo.svg"
+          alt="Bharat Cater Hub"
+          width={preset === "workspaceSidebar" ? (showWordmark ? 100 : 50) : 28}
+          height={preset === "workspaceSidebar" ? (showWordmark ? 100 : 50) : 28}
+          className="shrink-0 object-contain"
         />
-        {showWordmark ? (
+        {showWordmark && preset !== "workspaceSidebar" ? (
           <div className="flex flex-col">
-            <span
-              className={
-                preset === "workspaceSidebar"
-                  ? "font-logo translate-y-1 text-3xl leading-none tracking-tight text-brand-dark"
-                  : "font-logo translate-y-0.5 text-2xl leading-none tracking-tight text-brand-dark"
-              }
-            >
+            <span className="font-logo translate-y-0.5 text-2xl leading-none tracking-tight text-brand-dark">
               {w.common.brandPrimary}
             </span>
-            <span
-              className={
-                preset === "workspaceSidebar"
-                  ? "relative z-10 -mt-1 w-fit -rotate-2 rounded-sm bg-brand-red px-1.5 py-0.5 text-[7px] font-bold uppercase tracking-[0.12em] text-white shadow-sm"
-                  : "relative z-10 -mt-0.5 w-fit -rotate-2 rounded-sm bg-brand-red px-1.5 py-px text-[6px] font-bold uppercase tracking-[0.1em] text-white shadow-sm"
-              }
-            >
+            <span className="relative z-10 mt-0.5 w-fit -rotate-1 rounded-sm bg-brand-red px-1.5 py-px text-[6px] font-bold uppercase tracking-[0.1em] text-white shadow-sm">
               {w.common.brandSecondary}
             </span>
           </div>

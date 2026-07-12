@@ -3,8 +3,10 @@
 
 :root {
   /* Core orange brand (existing) + extended warm scale */
-  --primary: #c35529;
-  --primary-hover: #a34420;
+  /* --primary: #c35529; */
+  --primary: #5b3e18;
+  /* --primary-hover: #a34420; */
+  --primary-hover: #452e11;
   --primary-soft: color-mix(in srgb, var(--primary) 14%, white);
   --primary-glow: color-mix(in srgb, var(--primary) 28%, transparent);
   --orange-deep: #7a2e12;
@@ -33,7 +35,20 @@
 }
 
 @theme inline {
-  --color-brand-red: #e53935;
+  /* --color-brand-red: #e53935; */
+  --color-brand-red: #5b3e18;
+  --color-brand-red-light: #f7f4f0;
+  --color-red-50: #f7f4f0;
+  --color-red-100: #eee7dd;
+  --color-red-200: #dfd2c0;
+  --color-red-300: #cbb49b;
+  --color-red-400: #b29172;
+  --color-red-500: #5b3e18;
+  --color-red-600: #4e3514;
+  --color-red-700: #452e11;
+  --color-red-800: #3a260d;
+  --color-red-900: #2f1e09;
+  --color-red-950: #1b1004;
   --color-brand-dark: #1c1c1c;
   --color-brand-yellow: #ffc107;
   --color-brand-green: #4caf50;
@@ -178,7 +193,8 @@ h6,
   left: -5%;
   width: 110%;
   height: 50%;
-  background-color: #e53935;
+  /* background-color: #e53935; */
+  background-color: #5b3e18;
   z-index: -1;
   transform: rotate(-2deg);
   border-radius: 4px 10px 4px 8px;
@@ -231,7 +247,8 @@ a[href][aria-disabled="true"],
   width: 18px;
   border-radius: 9999px;
   border: 2px solid #fff;
-  background: #e53935;
+  /* background: #e53935; */
+  background: #5b3e18;
   box-shadow: 0 1px 4px rgb(0 0 0 / 0.2);
   cursor: grab;
 }
@@ -242,7 +259,8 @@ a[href][aria-disabled="true"],
   width: 18px;
   border-radius: 9999px;
   border: 2px solid #fff;
-  background: #e53935;
+  /* background: #e53935; */
+  background: #5b3e18;
   box-shadow: 0 1px 4px rgb(0 0 0 / 0.2);
   cursor: grab;
 }

@@ -25,7 +25,7 @@ function UserAvatarButton({
   const { w } = useI18n();
   const avatarUrl = `https://ui-avatars.com/api/?name=${encodeURIComponent(
     user.fullName
-  )}&background=ff3b30&color=fff&bold=true`;
+  )}&background=5b3e18&color=ffffff&bold=true`;
 
   return (
     <button

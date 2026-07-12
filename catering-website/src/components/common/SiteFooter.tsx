@@ -33,22 +33,19 @@ export function SiteFooter({
             <p className="mb-6 text-sm leading-relaxed">{w.footer.blurb}</p>
             <div className="mt-6 flex gap-4">
               <a
-                href="#"
-                className="flex h-10 w-10 items-center justify-center rounded-full bg-white/10 text-white transition-all duration-300 hover:-translate-y-1 hover:bg-brand-red hover:shadow-[0_4px_15px_rgba(229,57,53,0.4)]"
+                href={publicSiteConfig.facebookUrl}
+                target="_blank"
+                rel="noopener noreferrer"
+                className="flex h-10 w-10 items-center justify-center rounded-full bg-white/10 text-white transition-all duration-300 hover:-translate-y-1 hover:bg-brand-red hover:shadow-[0_4px_15px_rgba(91,62,24,0.4)]"
                 aria-label={w.footer.facebook}
               >
                 <FacebookLogo className="text-lg" weight="regular" />
               </a>
               <a
-                href="#"
-                className="flex h-10 w-10 items-center justify-center rounded-full bg-white/10 text-white transition-all duration-300 hover:-translate-y-1 hover:bg-brand-red hover:shadow-[0_4px_15px_rgba(229,57,53,0.4)]"
-                aria-label={w.footer.x}
-              >
-                <XLogoIcon className="h-[18px] w-[18px]" />
-              </a>
-              <a
-                href="#"
-                className="flex h-10 w-10 items-center justify-center rounded-full bg-white/10 text-white transition-all duration-300 hover:-translate-y-1 hover:bg-brand-red hover:shadow-[0_4px_15px_rgba(229,57,53,0.4)]"
+                href={publicSiteConfig.instagramUrl}
+                target="_blank"
+                rel="noopener noreferrer"
+                className="flex h-10 w-10 items-center justify-center rounded-full bg-white/10 text-white transition-all duration-300 hover:-translate-y-1 hover:bg-brand-red hover:shadow-[0_4px_15px_rgba(91,62,24,0.4)]"
                 aria-label={w.footer.instagram}
               >
                 <InstagramLogo className="text-lg" weight="regular" />
@@ -64,21 +61,21 @@ export function SiteFooter({
                   {w.common.home}
                 </Link>
               </li>
-                <li>
-                  <a href="#about" className="transition hover:text-brand-yellow">
-                    {w.footer.aboutUs}
-                  </a>
-                </li>
-                <li>
-                  <Link href="/blog" className="transition hover:text-brand-yellow">
-                    {w.footer.blog}
-                  </Link>
-                </li>
-                <li>
-                  <Link href="/caterers" className="transition hover:text-brand-yellow">
-                    {w.footer.cateringServices}
-                  </Link>
-                </li>
+              <li>
+                <a href="#about" className="transition hover:text-brand-yellow">
+                  {w.footer.aboutUs}
+                </a>
+              </li>
+              <li>
+                <Link href="/blog" className="transition hover:text-brand-yellow">
+                  {w.footer.blog}
+                </Link>
+              </li>
+              <li>
+                <Link href="/caterers" className="transition hover:text-brand-yellow">
+                  {w.footer.cateringServices}
+                </Link>
+              </li>
               <li>
                 <Link href="/packages" className="transition hover:text-brand-yellow">
                   {w.footer.packages}
@@ -132,7 +129,7 @@ export function SiteFooter({
             <h4 className="mb-6 font-heading text-lg font-bold text-white">{w.footer.getInTouch}</h4>
             <ul className="space-y-4 text-sm">
               <li className="flex items-start gap-3">
-                <MapPin className="mt-0.5 shrink-0 text-xl text-brand-red" aria-hidden />
+                <MapPin className="mt-0.5 shrink-0 text-xl text-brand-yellow" aria-hidden />
                 <span>
                   {publicSiteConfig.contactAddressLine1}
                   <br />
@@ -140,7 +137,7 @@ export function SiteFooter({
                 </span>
               </li>
               <li className="flex items-center gap-3">
-                <Phone className="text-xl text-brand-red" aria-hidden />
+                <Phone className="text-xl text-brand-yellow" aria-hidden />
                 <a
                   href={`tel:${publicSiteConfig.supportPhoneTel}`}
                   className="transition hover:text-brand-yellow"
@@ -149,7 +146,7 @@ export function SiteFooter({
                 </a>
               </li>
               <li className="flex items-center gap-3">
-                <Envelope className="text-xl text-brand-red" aria-hidden />
+                <Envelope className="text-xl text-brand-yellow" aria-hidden />
                 <a
                   href={`mailto:${publicSiteConfig.contactEmail}`}
                   className="transition hover:text-brand-yellow"
