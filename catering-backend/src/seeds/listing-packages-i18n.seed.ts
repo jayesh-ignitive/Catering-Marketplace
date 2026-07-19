@@ -117,7 +117,7 @@ export const PLAN_I18N: Record<
     essential: {
       name: 'डायरेक्टरी एसेंशियल',
       subtitle: 'ब्रॉन्ज़-शैली प्रवेश',
-      periodLabel: '/ वर्ष (संकेतात्मक)',
+      periodLabel: 'शुरू करने के लिए',
       ctaLabel: 'एसेंशियल के लिए पूछताछ',
       features: [
         'मार्केटप्लेस खोज में लाइव लिस्टिंग',
@@ -130,7 +130,7 @@ export const PLAN_I18N: Record<
     growth: {
       name: 'डायरेक्टरी ग्रोथ',
       subtitle: 'सिल्वर-शैली — अधिकांश रसोई यहाँ से शुरू',
-      periodLabel: '/ वर्ष (संकेतात्मक)',
+      periodLabel: 'आपकी लिस्टिंग के साथ',
       ctaLabel: 'ग्रोथ के लिए पूछताछ',
       features: [
         'एसेंशियल में सब कुछ',
@@ -144,8 +144,8 @@ export const PLAN_I18N: Record<
     premier: {
       name: 'डायरेक्टरी प्रीमियर',
       subtitle: 'गोल्ड-शैली अधिकतम दृश्यता',
-      periodLabel: '/ वर्ष (संकेतात्मक)',
-      ctaLabel: 'प्रीमियर के लिए पूछताछ',
+      periodLabel: 'बात करें',
+      ctaLabel: 'सेल्स से संपर्क',
       features: [
         'ग्रोथ में सब कुछ',
         'उच्चतम पूछताछ रूटिंग प्राथमिकता',
@@ -160,7 +160,7 @@ export const PLAN_I18N: Record<
     essential: {
       name: 'ડાયરેક્ટરી એસેન્શિયલ',
       subtitle: 'બ્રોન્ઝ-શૈલી પ્રવેશ',
-      periodLabel: '/ વર્ષ (સંકેતક)',
+      periodLabel: 'શરૂ કરવા માટે',
       ctaLabel: 'એસેન્શિયલ માટે પૂછપરછ',
       features: [
         'માર્કેટપ્લેસ શોધમાં લાઇવ લિસ્ટિંગ',
@@ -173,7 +173,7 @@ export const PLAN_I18N: Record<
     growth: {
       name: 'ડાયરેક્ટરી ગ્રોથ',
       subtitle: 'સિલ્વર-શૈલી — મોટાભાગની રસોઈ અહીંથી શરૂ',
-      periodLabel: '/ વર્ષ (સંકેતક)',
+      periodLabel: 'તમારી લિસ્ટિંગ સાથે',
       ctaLabel: 'ગ્રોથ માટે પૂછપરછ',
       features: [
         'એસેન્શિયલમાં બધું',
@@ -187,8 +187,8 @@ export const PLAN_I18N: Record<
     premier: {
       name: 'ડાયરેક્ટરી પ્રીમિયર',
       subtitle: 'ગોલ્ડ-શૈલી મહત્તમ દૃશ્યતા',
-      periodLabel: '/ વર્ષ (સંકેતક)',
-      ctaLabel: 'પ્રીમિયર માટે પૂછપરછ',
+      periodLabel: 'વાત કરો',
+      ctaLabel: 'સેલ્સનો સંપર્ક',
       features: [
         'ગ્રોથમાં બધું',
         'ઉચ્ચતમ પૂછપરછ રૂટિંગ પ્રાથમિકતા',

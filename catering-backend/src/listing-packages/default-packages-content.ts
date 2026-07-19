@@ -62,7 +62,7 @@ export const DEFAULT_PACKAGES_PAGE_EN = {
 export const DEFAULT_LISTING_PLANS_EN: DefaultPlanSeed[] = [
   {
     code: 'essential',
-    priceDisplay: '₹9,999',
+    priceDisplay: 'Free',
     icon: 'medal',
     isRecommended: false,
     isDarkTheme: false,
@@ -70,7 +70,7 @@ export const DEFAULT_LISTING_PLANS_EN: DefaultPlanSeed[] = [
     contactTopic: 'Directory Essential',
     name: 'Directory Essential',
     subtitle: 'Bronze-style entry',
-    periodLabel: '/ year (indicative)',
+    periodLabel: 'to begin',
     ctaLabel: 'Enquire for Essential',
     features: [
       'Live listing in marketplace search',
@@ -82,7 +82,7 @@ export const DEFAULT_LISTING_PLANS_EN: DefaultPlanSeed[] = [
   },
   {
     code: 'growth',
-    priceDisplay: '₹14,999',
+    priceDisplay: 'Free',
     icon: 'storefront',
     isRecommended: true,
     isDarkTheme: false,
@@ -90,7 +90,7 @@ export const DEFAULT_LISTING_PLANS_EN: DefaultPlanSeed[] = [
     contactTopic: 'Directory Growth',
     name: 'Directory Growth',
     subtitle: 'Silver-style — most kitchens start here',
-    periodLabel: '/ year (indicative)',
+    periodLabel: 'with your listing',
     ctaLabel: 'Enquire for Growth',
     features: [
       'Everything in Essential',
@@ -103,7 +103,7 @@ export const DEFAULT_LISTING_PLANS_EN: DefaultPlanSeed[] = [
   },
   {
     code: 'premier',
-    priceDisplay: '₹24,999',
+    priceDisplay: 'Custom',
     icon: 'crown',
     isRecommended: false,
     isDarkTheme: true,
@@ -111,8 +111,8 @@ export const DEFAULT_LISTING_PLANS_EN: DefaultPlanSeed[] = [
     contactTopic: 'Directory Premier',
     name: 'Directory Premier',
     subtitle: 'Gold-style maximum visibility',
-    periodLabel: '/ year (indicative)',
-    ctaLabel: 'Enquire for Premier',
+    periodLabel: "let's talk",
+    ctaLabel: 'Talk to sales',
     features: [
       'Everything in Growth',
       'Highest enquiry routing priority',
