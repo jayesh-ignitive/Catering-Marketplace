@@ -1,4 +1,4 @@
-import { DEFAULT_LOCALE } from "@/i18n/locale";
+import { DEFAULT_LOCALE, type AppLocale } from "@/i18n/locale";
 import { fetchServiceCategories, type ServiceCategory } from "@/lib/catering-api";
 import {
   fetchListingPackagesPage,
@@ -10,7 +10,7 @@ import {
 export const SERVICE_CATEGORIES_QUERY_KEY = ["catalog", "service-categories"] as const;
 
 export function serviceCategoriesQueryOptions(
-  locale: string,
+  locale: AppLocale,
   prefetched?: ServiceCategory[],
 ) {
   return {
@@ -22,7 +22,7 @@ export function serviceCategoriesQueryOptions(
 }
 
 export function listingPackagesPageQueryOptions(
-  locale: string,
+  locale: AppLocale,
   prefetched?: PublicPackagesPage,
 ) {
   return {
