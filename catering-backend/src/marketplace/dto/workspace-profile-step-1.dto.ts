@@ -15,8 +15,8 @@ import {
 const PRICE_BANDS = ['budget', 'mid', 'premium', 'custom'] as const;
 
 /**
- * Wizard step 1 — categories, offerings, keywords.
- * Optional capacity/pricing match onboarding step 1 (same rules as step 0 DTO).
+ * Wizard step 1 — categories, offerings.
+ * Keywords optional (UI disabled).
  */
 export class WorkspaceProfileStep1Dto {
   @IsArray()
@@ -33,12 +33,12 @@ export class WorkspaceProfileStep1Dto {
   @MaxLength(64, { each: true })
   serviceOfferingIds!: string[];
 
+  @IsOptional()
   @IsArray()
-  @ArrayNotEmpty()
   @ArrayMaxSize(10)
   @IsString({ each: true })
   @MaxLength(120, { each: true })
-  keywords!: string[];
+  keywords?: string[];
 
   @IsOptional()
   @IsIn(PRICE_BANDS)
@@ -50,6 +50,13 @@ export class WorkspaceProfileStep1Dto {
   @Min(0)
   @Max(1000000)
   priceFrom?: number;
+
+  @IsOptional()
+  @Type(() => Number)
+  @IsInt()
+  @Min(0)
+  @Max(1000000)
+  priceTo?: number | null;
 
   @IsOptional()
   @Type(() => Number)

@@ -23,12 +23,21 @@ export const publicSiteConfig = {
   supportPhoneTel: trimOrFallback(process.env.NEXT_PUBLIC_SUPPORT_PHONE_TEL, "+910123456789"),
   contactAddressLine1: trimOrFallback(
     process.env.NEXT_PUBLIC_CONTACT_ADDRESS_LINE1,
-    "123 Catering Hub, Food Street,",
+    "Riverside Park, Opp. Shantabag Society,",
   ),
   contactAddressLine2: trimOrFallback(
     process.env.NEXT_PUBLIC_CONTACT_ADDRESS_LINE2,
-    "Mumbai, Maharashtra 400001",
+    "Opp. Lane of APMC Market, Vasna, Ahmedabad - 382460 (Gujarat)",
   ),
   /** Path or absolute URL for default Open Graph / X (Twitter) card image */
   defaultOgImage: trimOrFallback(process.env.NEXT_PUBLIC_OG_IMAGE_PATH, "/favicon.svg"),
+  /** Social profile URLs — footer icons. Override via `.env` (see `.env.example`). */
+  facebookUrl: trimOrFallback(
+    process.env.NEXT_PUBLIC_FACEBOOK_URL,
+    "https://www.facebook.com/share/1Ayq9KK91G/?mibextid=wwXIfr",
+  ),
+  instagramUrl: trimOrFallback(
+    process.env.NEXT_PUBLIC_INSTAGRAM_URL,
+    "https://www.instagram.com/bharatcaterhub/",
+  ),
 } as const;

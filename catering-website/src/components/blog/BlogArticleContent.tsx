@@ -9,8 +9,7 @@ import { RemoteContentImage } from "@/components/common/RemoteContentImage";
 import { formatLocaleDate } from "@/i18n/format";
 import { BLOG_QUERY_KEY, BLOG_STALE_MS, fetchBlogPost } from "@/lib/blog";
 
-const FALLBACK_IMG =
-  "https://images.unsplash.com/photo-1546069901-ba9599a7e63c?auto=format&fit=crop&w=1600&q=85";
+import { BLOG_IMAGES } from "@/lib/static-assets";
 
 export function BlogArticleContent() {
   const { w, locale } = useI18n();
@@ -71,7 +70,7 @@ export function BlogArticleContent() {
   }
 
   const post = q.data;
-  const heroImg = post.featuredImageUrl ?? FALLBACK_IMG;
+  const heroImg = post.featuredImageUrl ?? BLOG_IMAGES.fallbackLg;
 
   return (
     <article className="min-h-screen bg-white pb-20">

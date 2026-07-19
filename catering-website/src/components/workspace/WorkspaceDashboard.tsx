@@ -11,6 +11,7 @@ import {
   CheckCircle,
   Clock,
   Eye,
+  EnvelopeSimple,
   ForkKnife,
   Images,
   ListDashes,
@@ -185,6 +186,12 @@ export function WorkspaceDashboard({
                 label: ws.dashboard.actionMenu,
                 hint: ws.dashboard.actionMenuHint,
                 icon: ForkKnife,
+              },
+              {
+                href: "/workspace/inquiries",
+                label: ws.dashboard.actionInquiries,
+                hint: ws.dashboard.actionInquiriesHint,
+                icon: EnvelopeSimple,
               },
               {
                 href: "/workspace/orders",

@@ -2,12 +2,10 @@
 
 import { useI18n } from "@/context/LocaleContext";
 import {
-  fetchListingPackagesPage,
-  LISTING_PACKAGES_QUERY_KEY,
-  LISTING_PACKAGES_STALE_MS,
   type PublicListingPlan,
   type PublicPackagesPage,
 } from "@/lib/listing-packages-api";
+import { listingPackagesPageQueryOptions } from "@/lib/catalog-queries";
 import { publicSiteConfig } from "@/lib/site-config";
 import {
   ArrowRight,
@@ -282,14 +280,14 @@ function PackagesLoaded({ data }: { data: PublicPackagesPage }) {
   );
 }
 
-export function PackagesPageContent() {
+export function PackagesPageContent({
+  prefetchedPage,
+}: {
+  prefetchedPage?: PublicPackagesPage;
+}) {
   const { locale } = useI18n();
 
-  const pageQ = useQuery({
-    queryKey: [...LISTING_PACKAGES_QUERY_KEY, locale],
-    queryFn: () => fetchListingPackagesPage(locale),
-    staleTime: LISTING_PACKAGES_STALE_MS,
-  });
+  const pageQ = useQuery(listingPackagesPageQueryOptions(locale, prefetchedPage));
 
   if (pageQ.isLoading) {
     return (

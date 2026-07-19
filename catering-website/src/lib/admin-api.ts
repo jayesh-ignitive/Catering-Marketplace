@@ -241,7 +241,14 @@ export type AdminCatererReviewDetail = {
   completion: { isComplete: boolean; missingFields: string[] };
   business: {
     cityName: string | null;
+    addressLine1: string | null;
+    addressLine2: string | null;
     streetAddress: string | null;
+    pincode: string | null;
+    state: string | null;
+    country: string | null;
+    latitude: number | null;
+    longitude: number | null;
     tagline: string | null;
     about: string | null;
     yearsInBusiness: number | null;

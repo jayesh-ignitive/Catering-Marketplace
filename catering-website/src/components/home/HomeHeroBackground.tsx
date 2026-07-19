@@ -34,6 +34,8 @@ export function HomeHeroBackground({
           className="object-cover"
           sizes="100vw"
           priority
+          fetchPriority="high"
+          quality={65}
         />
       </div>
     );
@@ -53,6 +55,8 @@ export function HomeHeroBackground({
           ].join(" ")}
           sizes="100vw"
           priority={i === 0}
+          fetchPriority={i === 0 ? "high" : undefined}
+          quality={65}
         />
       ))}
       {activeSlides.length > 1 ? (

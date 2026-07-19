@@ -2,6 +2,7 @@ import {
   IsEmail,
   IsOptional,
   IsString,
+  IsUUID,
   MaxLength,
   MinLength,
 } from 'class-validator';
@@ -30,4 +31,9 @@ export class CreateContactDto {
   @MinLength(10)
   @MaxLength(5000)
   message!: string;
+
+  /** When set, inquiry is routed to this caterer tenant (public availability form). */
+  @IsOptional()
+  @IsUUID()
+  tenantId?: string;
 }

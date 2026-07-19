@@ -7,13 +7,16 @@ export function OnboardingStyleStepper({
   step,
   onSelectCompletedStep,
   navigationDisabled,
+  showSubmitStep = true,
 }: {
   step: WizardStepIndex;
   onSelectCompletedStep?: (target: WizardStepIndex) => void;
   navigationDisabled?: boolean;
+  /** When false, only the first three steps are shown (profile already submitted). */
+  showSubmitStep?: boolean;
 }) {
   const { ws, trans } = useI18n();
-  const wizardSteps = getWizardSteps(ws);
+  const wizardSteps = showSubmitStep ? getWizardSteps(ws) : getWizardSteps(ws).slice(0, 3);
   const n = wizardSteps.length;
   const pct = n <= 1 ? 0 : (step / (n - 1)) * 100;
   return (

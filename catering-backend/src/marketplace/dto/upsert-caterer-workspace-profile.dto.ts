@@ -1,4 +1,5 @@
 import { Transform } from 'class-transformer';
+import { Type } from 'class-transformer';
 import {
   ArrayMaxSize,
   ArrayNotEmpty,
@@ -6,8 +7,10 @@ import {
   IsIn,
   IsInt,
   IsNotEmpty,
+  IsNumber,
   IsOptional,
   IsString,
+  Matches,
   Max,
   MaxLength,
   Min,
@@ -29,6 +32,40 @@ export class UpsertCatererWorkspaceProfileDto {
   @IsString()
   @MaxLength(300)
   streetAddress?: string;
+
+  @IsOptional()
+  @IsString()
+  @Matches(/^\d{6}$/, { message: 'pincode must be a 6-digit number' })
+  pincode?: string;
+
+  @IsOptional()
+  @IsString()
+  @MaxLength(120)
+  state?: string;
+
+  @IsOptional()
+  @IsString()
+  @MaxLength(120)
+  country?: string;
+
+  @IsOptional()
+  @IsString()
+  @MaxLength(500)
+  formattedAddress?: string;
+
+  @IsOptional()
+  @Type(() => Number)
+  @IsNumber()
+  @Min(-90)
+  @Max(90)
+  latitude?: number;
+
+  @IsOptional()
+  @Type(() => Number)
+  @IsNumber()
+  @Min(-180)
+  @Max(180)
+  longitude?: number;
 
   @IsOptional()
   @IsString()
@@ -60,6 +97,12 @@ export class UpsertCatererWorkspaceProfileDto {
   @IsOptional()
   @IsInt()
   @Min(0)
+  @Max(1000000)
+  priceTo?: number | null;
+
+  @IsOptional()
+  @IsInt()
+  @Min(0)
   @Max(120)
   yearsInBusiness?: number;
 
@@ -87,11 +130,11 @@ export class UpsertCatererWorkspaceProfileDto {
   @IsString({ each: true })
   serviceOfferingIds!: string[];
 
+  @IsOptional()
   @IsArray()
-  @ArrayNotEmpty()
   @ArrayMaxSize(10)
   @IsString({ each: true })
-  keywords!: string[];
+  keywords?: string[];
 
   @IsArray()
   @ArrayNotEmpty()

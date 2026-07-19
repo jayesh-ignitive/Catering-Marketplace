@@ -6,8 +6,9 @@ import {
   isAdminNavSubmenu,
   isAdminSubmenuActive,
 } from "@/components/admin/admin-nav";
-import { CaretDown, ChefHat } from "@phosphor-icons/react";
+import { CaretDown } from "@phosphor-icons/react";
 import Link from "next/link";
+import Image from "next/image";
 import { usePathname } from "next/navigation";
 import { useCallback, useEffect, useState } from "react";
 
@@ -75,27 +76,23 @@ export function AdminSidebar({
       >
         <div className="flex min-h-0 flex-1 flex-col">
           <div
-            className={`flex h-20 shrink-0 items-center border-b border-gray-50 transition-all duration-300 ${
-              compact ? "justify-center px-2" : "px-6"
+            className={`flex shrink-0 items-center border-b border-gray-50 transition-all duration-300 ${
+              compact ? "h-20 justify-center px-2" : "h-28 px-6"
             }`}
           >
             <Link
               href="/admin"
               onClick={onCloseMobile}
-              className={`flex min-w-0 cursor-pointer items-center gap-2 rounded-xl outline-none ring-brand-red/30 transition hover:bg-brand-red-light focus-visible:ring-2 ${
-                compact ? "justify-center p-2" : ""
-              }`}
+              className="flex w-full cursor-pointer items-center justify-center rounded-xl outline-none ring-brand-red/30 transition hover:bg-brand-red-light focus-visible:ring-2 p-2"
               aria-label="Admin home"
             >
-              <ChefHat className="shrink-0 text-[#d4af37]" size={compact ? 26 : 30} weight="fill" aria-hidden />
-              {!compact ? (
-                <div className="logo-text relative flex min-w-0 flex-col pl-1 leading-none">
-                  <span className="font-logo translate-y-0.5 text-3xl tracking-tight text-brand-dark">Bharat</span>
-                  <span className="-mt-1 w-fit rotate-[-2deg] rounded-sm bg-brand-red px-1 py-0.5 text-[7px] font-bold uppercase tracking-[0.12em] text-white shadow-sm">
-                    Cater Hub
-                  </span>
-                </div>
-              ) : null}
+              <Image
+                src="/brand/logo.svg"
+                alt="Bharat Cater Hub"
+                width={compact ? 50 : 100}
+                height={compact ? 50 : 100}
+                className="shrink-0 object-contain"
+              />
             </Link>
           </div>
 

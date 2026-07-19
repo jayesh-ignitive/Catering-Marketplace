@@ -34,7 +34,7 @@ export function WorkspaceHeader({ user, onToggleSidebar }: WorkspaceHeaderProps)
 
   const avatarUrl = `https://ui-avatars.com/api/?name=${encodeURIComponent(
     user.fullName,
-  )}&background=e53935&color=ffffff&bold=true`;
+  )}&background=5b3e18&color=ffffff&bold=true`;
 
   useEffect(() => {
     if (!menuOpen) return;

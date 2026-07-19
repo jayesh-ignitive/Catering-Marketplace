@@ -10,6 +10,7 @@ export default function WorkspaceMenuPage() {
   return (
     <WorkspaceModulePlaceholder
       variant="premium"
+      preview="menu"
       title={ws.modules.menu.title}
       description={ws.modules.menu.description}
       icon={ForkKnife}

@@ -47,8 +47,8 @@ export function WorkspaceSidebar({
       >
         <div className="flex min-h-0 flex-1 flex-col">
           <div
-            className={`flex h-20 shrink-0 items-center border-b border-gray-50 transition-all duration-300 ${
-              compact ? "justify-center px-2" : "px-6"
+            className={`flex shrink-0 items-center border-b border-gray-50 transition-all duration-300 ${
+              compact ? "h-20 justify-center px-2" : "h-28 px-6"
             }`}
           >
             <BrandLogoLink

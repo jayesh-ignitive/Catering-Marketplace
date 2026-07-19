@@ -5,45 +5,47 @@ import { Envelope, FacebookLogo, InstagramLogo, MapPin, Phone } from "@phosphor-
 import { XLogoIcon } from "@/components/common/XLogoIcon";
 import { useQuery } from "@tanstack/react-query";
 import Link from "next/link";
-import { fetchServiceCategories } from "@/lib/catering-api";
+import type { ServiceCategory } from "@/lib/catering-api";
+import { serviceCategoriesQueryOptions } from "@/lib/catalog-queries";
 import { caterersListingPath } from "@/lib/caterers-url";
 import { LanguageSwitcher } from "@/components/common/LanguageSwitcher";
 import { useI18n } from "@/context/LocaleContext";
 import { publicSiteConfig } from "@/lib/site-config";
 
-export function SiteFooter() {
+export function SiteFooter({
+  prefetchedCategories,
+}: {
+  prefetchedCategories?: ServiceCategory[];
+}) {
   const { w, trans, locale } = useI18n();
-  const categoriesQ = useQuery({
-    queryKey: ["catalog", "service-categories", locale],
-    queryFn: () => fetchServiceCategories(locale),
-  });
+  const categoriesQ = useQuery(
+    serviceCategoriesQueryOptions(locale, prefetchedCategories),
+  );
   const categories = categoriesQ.data ?? [];
+  const servicesLoading = categoriesQ.isPending && categories.length === 0;
 
   return (
-    <footer className="zig-zag-border bg-[#111] pb-10 pt-20 text-gray-400">
+    <footer className="zig-zag-border bg-[#111] pb-10 pt-14 text-gray-400 sm:pt-20">
       <div className="mx-auto max-w-7xl px-6">
-        <div className="mb-16 grid grid-cols-1 gap-12 md:grid-cols-2 lg:grid-cols-4">
-          <div>
+        <div className="mb-10 grid grid-cols-2 gap-x-6 gap-y-10 sm:mb-16 md:grid-cols-2 md:gap-12 lg:grid-cols-4">
+          <div className="col-span-2 md:col-span-1">
             <BrandLogoLink preset="siteFooter" className="mb-6" />
             <p className="mb-6 text-sm leading-relaxed">{w.footer.blurb}</p>
             <div className="mt-6 flex gap-4">
               <a
-                href="#"
-                className="flex h-10 w-10 items-center justify-center rounded-full bg-white/10 text-white transition-all duration-300 hover:-translate-y-1 hover:bg-brand-red hover:shadow-[0_4px_15px_rgba(229,57,53,0.4)]"
+                href={publicSiteConfig.facebookUrl}
+                target="_blank"
+                rel="noopener noreferrer"
+                className="flex h-10 w-10 items-center justify-center rounded-full bg-white/10 text-white transition-all duration-300 hover:-translate-y-1 hover:bg-brand-red hover:shadow-[0_4px_15px_rgba(91,62,24,0.4)]"
                 aria-label={w.footer.facebook}
               >
                 <FacebookLogo className="text-lg" weight="regular" />
               </a>
               <a
-                href="#"
-                className="flex h-10 w-10 items-center justify-center rounded-full bg-white/10 text-white transition-all duration-300 hover:-translate-y-1 hover:bg-brand-red hover:shadow-[0_4px_15px_rgba(229,57,53,0.4)]"
-                aria-label={w.footer.x}
-              >
-                <XLogoIcon className="h-[18px] w-[18px]" />
-              </a>
-              <a
-                href="#"
-                className="flex h-10 w-10 items-center justify-center rounded-full bg-white/10 text-white transition-all duration-300 hover:-translate-y-1 hover:bg-brand-red hover:shadow-[0_4px_15px_rgba(229,57,53,0.4)]"
+                href={publicSiteConfig.instagramUrl}
+                target="_blank"
+                rel="noopener noreferrer"
+                className="flex h-10 w-10 items-center justify-center rounded-full bg-white/10 text-white transition-all duration-300 hover:-translate-y-1 hover:bg-brand-red hover:shadow-[0_4px_15px_rgba(91,62,24,0.4)]"
                 aria-label={w.footer.instagram}
               >
                 <InstagramLogo className="text-lg" weight="regular" />
@@ -52,28 +54,28 @@ export function SiteFooter() {
           </div>
 
           <div>
-            <h4 className="mb-6 font-heading text-lg font-bold text-white">{w.footer.quickLinks}</h4>
+            <h4 className="mb-4 font-heading text-lg font-bold text-white sm:mb-6">{w.footer.quickLinks}</h4>
             <ul className="space-y-3 text-sm">
               <li>
                 <Link href="/" className="transition hover:text-brand-yellow">
                   {w.common.home}
                 </Link>
               </li>
-                <li>
-                  <a href="#about" className="transition hover:text-brand-yellow">
-                    {w.footer.aboutUs}
-                  </a>
-                </li>
-                <li>
-                  <Link href="/blog" className="transition hover:text-brand-yellow">
-                    {w.footer.blog}
-                  </Link>
-                </li>
-                <li>
-                  <Link href="/caterers" className="transition hover:text-brand-yellow">
-                    {w.footer.cateringServices}
-                  </Link>
-                </li>
+              <li>
+                <a href="#about" className="transition hover:text-brand-yellow">
+                  {w.footer.aboutUs}
+                </a>
+              </li>
+              <li>
+                <Link href="/blog" className="transition hover:text-brand-yellow">
+                  {w.footer.blog}
+                </Link>
+              </li>
+              <li>
+                <Link href="/caterers" className="transition hover:text-brand-yellow">
+                  {w.footer.cateringServices}
+                </Link>
+              </li>
               <li>
                 <Link href="/packages" className="transition hover:text-brand-yellow">
                   {w.footer.packages}
@@ -98,9 +100,9 @@ export function SiteFooter() {
           </div>
 
           <div>
-            <h4 className="mb-6 font-heading text-lg font-bold text-white">{w.footer.services}</h4>
+            <h4 className="mb-4 font-heading text-lg font-bold text-white sm:mb-6">{w.footer.services}</h4>
             <ul className="space-y-3 text-sm">
-              {categoriesQ.isPending ? (
+              {servicesLoading ? (
                 <li className="text-gray-500">{w.common.loading}</li>
               ) : categories.length === 0 ? (
                 <li>
@@ -123,11 +125,11 @@ export function SiteFooter() {
             </ul>
           </div>
 
-          <div id="footer-contact">
-            <h4 className="mb-6 font-heading text-lg font-bold text-white">{w.footer.getInTouch}</h4>
+          <div id="footer-contact" className="col-span-2 md:col-span-1">
+            <h4 className="mb-4 font-heading text-lg font-bold text-white sm:mb-6">{w.footer.getInTouch}</h4>
             <ul className="space-y-4 text-sm">
               <li className="flex items-start gap-3">
-                <MapPin className="mt-0.5 shrink-0 text-xl text-brand-red" aria-hidden />
+                <MapPin className="mt-0.5 shrink-0 text-xl text-brand-yellow" aria-hidden />
                 <span>
                   {publicSiteConfig.contactAddressLine1}
                   <br />
@@ -135,7 +137,7 @@ export function SiteFooter() {
                 </span>
               </li>
               <li className="flex items-center gap-3">
-                <Phone className="text-xl text-brand-red" aria-hidden />
+                <Phone className="text-xl text-brand-yellow" aria-hidden />
                 <a
                   href={`tel:${publicSiteConfig.supportPhoneTel}`}
                   className="transition hover:text-brand-yellow"
@@ -144,7 +146,7 @@ export function SiteFooter() {
                 </a>
               </li>
               <li className="flex items-center gap-3">
-                <Envelope className="text-xl text-brand-red" aria-hidden />
+                <Envelope className="text-xl text-brand-yellow" aria-hidden />
                 <a
                   href={`mailto:${publicSiteConfig.contactEmail}`}
                   className="transition hover:text-brand-yellow"
@@ -157,7 +159,7 @@ export function SiteFooter() {
         </div>
 
         <div className="flex flex-col items-center justify-between gap-6 border-t border-white/10 pt-8 text-sm text-gray-500 md:flex-row">
-          <p>
+          <p className="text-center md:text-left">
             {trans(w.footer.copyright, {
               year: new Date().getFullYear(),
               siteName: publicSiteConfig.siteName,

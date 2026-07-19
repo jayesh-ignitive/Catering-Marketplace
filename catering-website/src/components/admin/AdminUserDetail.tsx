@@ -144,7 +144,7 @@ function UserDetailContent({ u }: { u: AdminUserDetail }) {
     u.tenant && u.ownedTenant && u.tenant.id === u.ownedTenant.id;
   const avatarUrl = `https://ui-avatars.com/api/?name=${encodeURIComponent(
     u.fullName,
-  )}&background=e53935&color=ffffff&bold=true`;
+  )}&background=5b3e18&color=ffffff&bold=true`;
 
   return (
     <section className="mx-auto max-w-5xl">

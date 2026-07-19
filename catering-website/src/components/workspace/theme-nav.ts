@@ -1,6 +1,7 @@
 import type { Icon } from "@phosphor-icons/react";
 import {
   ChartLineUp,
+  EnvelopeSimple,
   ForkKnife,
   ShoppingCart,
   SquaresFour,
@@ -36,6 +37,7 @@ export function getWorkspaceNavSections(ws: WorkspaceMessages): WorkspaceNavSect
     {
       label: ws.nav.sections.operations,
       items: [
+        { href: "/workspace/inquiries", label: ws.nav.items.inquiries, icon: EnvelopeSimple },
         { href: "/workspace/orders", label: ws.nav.items.orders, icon: ShoppingCart },
         { href: "/workspace/analytics", label: ws.nav.items.analytics, icon: ChartLineUp },
       ],
@@ -64,6 +66,9 @@ export function workspaceHeaderTitle(pathname: string, ws: WorkspaceMessages): s
   if (pathname.startsWith("/workspace/menu")) {
     return ws.header.titles.menu;
   }
+  if (pathname.startsWith("/workspace/inquiries")) {
+    return ws.header.titles.inquiries;
+  }
   if (pathname.startsWith("/workspace/orders")) {
     return ws.header.titles.orders;
   }
@@ -85,6 +90,9 @@ export function workspaceHeaderSubtitle(pathname: string, ws: WorkspaceMessages)
   }
   if (pathname.startsWith("/workspace/menu")) {
     return ws.header.subtitles.menu;
+  }
+  if (pathname.startsWith("/workspace/inquiries")) {
+    return ws.header.subtitles.inquiries;
   }
   if (pathname.startsWith("/workspace/orders")) {
     return ws.header.subtitles.orders;

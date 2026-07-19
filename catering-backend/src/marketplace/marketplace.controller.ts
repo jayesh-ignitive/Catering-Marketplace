@@ -19,14 +19,21 @@ import { KeywordSuggestQueryDto } from './dto/keyword-suggest-query.dto';
 import { ListCatererReviewsQueryDto } from './dto/list-caterer-reviews-query.dto';
 import { ListMarketplaceQueryDto } from './dto/list-marketplace-query.dto';
 import { UpsertCatererWorkspaceProfileDto } from './dto/upsert-caterer-workspace-profile.dto';
+import { ListWorkspaceInquiriesQueryDto } from './dto/list-workspace-inquiries-query.dto';
+import { UpdateContactInquiryStatusDto } from '../admin/dto/update-contact-inquiry-status.dto';
 import { WorkspaceProfileStep0Dto } from './dto/workspace-profile-step-0.dto';
+import { WorkspaceProfileAddressDto } from './dto/workspace-profile-address.dto';
 import { WorkspaceProfileStep1Dto } from './dto/workspace-profile-step-1.dto';
 import { WorkspaceProfileStep2Dto } from './dto/workspace-profile-step-2.dto';
 import { MarketplaceService } from './marketplace.service';
+import { WorkspaceInquiriesService } from './workspace-inquiries.service';
 
 @Controller('marketplace')
 export class MarketplaceController {
-  constructor(private readonly marketplace: MarketplaceService) {}
+  constructor(
+    private readonly marketplace: MarketplaceService,
+    private readonly workspaceInquiries: WorkspaceInquiriesService,
+  ) {}
 
   /** Distinct cities for filter dropdowns (published listings only). */
   @Get('caterers/cities')
@@ -93,6 +100,50 @@ export class MarketplaceController {
     return this.marketplace.getWorkspaceProfileForUser(req.user.id);
   }
 
+  /** Caterer workspace — inquiries sent from this caterer's public listing. */
+  @Get('caterer/inquiries')
+  @UseGuards(JwtAuthGuard)
+  listWorkspaceInquiries(
+    @Req() req: Request & { user: User },
+    @Query() query: ListWorkspaceInquiriesQueryDto,
+  ) {
+    if (req.user.role !== UserRole.CATERER) {
+      throw new ForbiddenException(
+        'Workspace inquiries are only available for caterer accounts',
+      );
+    }
+    return this.workspaceInquiries.listForUser(req.user.id, query);
+  }
+
+  @Get('caterer/inquiries/:id')
+  @UseGuards(JwtAuthGuard)
+  workspaceInquiryDetail(
+    @Req() req: Request & { user: User },
+    @Param('id') id: string,
+  ) {
+    if (req.user.role !== UserRole.CATERER) {
+      throw new ForbiddenException(
+        'Workspace inquiries are only available for caterer accounts',
+      );
+    }
+    return this.workspaceInquiries.findOneForUser(req.user.id, id);
+  }
+
+  @Patch('caterer/inquiries/:id/status')
+  @UseGuards(JwtAuthGuard)
+  setWorkspaceInquiryStatus(
+    @Req() req: Request & { user: User },
+    @Param('id') id: string,
+    @Body() body: UpdateContactInquiryStatusDto,
+  ) {
+    if (req.user.role !== UserRole.CATERER) {
+      throw new ForbiddenException(
+        'Workspace inquiries are only available for caterer accounts',
+      );
+    }
+    return this.workspaceInquiries.setStatusForUser(req.user.id, id, body);
+  }
+
   /** Wizard step 0 — business basics (city, about, pricing fields, optional banner URL). */
   @Patch('caterer/profile/step/0')
   @UseGuards(JwtAuthGuard)
@@ -106,6 +157,24 @@ export class MarketplaceController {
       );
     }
     return this.marketplace.patchWorkspaceProfileStep0ForUser(
+      req.user.id,
+      body,
+    );
+  }
+
+  /** Map pin + parsed address — saved when user selects or moves location on the map. */
+  @Patch('caterer/profile/address')
+  @UseGuards(JwtAuthGuard)
+  patchWorkspaceProfileAddress(
+    @Req() req: Request & { user: User },
+    @Body() body: WorkspaceProfileAddressDto,
+  ) {
+    if (req.user.role !== UserRole.CATERER) {
+      throw new ForbiddenException(
+        'Workspace profile is only available for caterer accounts',
+      );
+    }
+    return this.marketplace.patchWorkspaceProfileAddressForUser(
       req.user.id,
       body,
     );

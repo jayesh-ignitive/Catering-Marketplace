@@ -25,6 +25,7 @@ import {
 import { Tenant } from '../tenant/tenant.entity';
 import { User } from '../user/user.entity';
 import { UserRole } from '../user/user-role.enum';
+import { CitiesService } from './cities.service';
 import { City } from './city.entity';
 import type { CatererProfileApprovalStatus } from './caterer-profile-approval-status';
 import { CatererMarketplaceListing } from './caterer-marketplace-listing.entity';
@@ -41,6 +42,7 @@ import type { ListCatererReviewsQueryDto } from './dto/list-caterer-reviews-quer
 import type { ListMarketplaceQueryDto } from './dto/list-marketplace-query.dto';
 import type { UpsertCatererWorkspaceProfileDto } from './dto/upsert-caterer-workspace-profile.dto';
 import type { WorkspaceProfileStep0Dto } from './dto/workspace-profile-step-0.dto';
+import type { WorkspaceProfileAddressDto } from './dto/workspace-profile-address.dto';
 import type { WorkspaceProfileStep1Dto } from './dto/workspace-profile-step-1.dto';
 import type { WorkspaceProfileStep2Dto } from './dto/workspace-profile-step-2.dto';
 import {
@@ -67,6 +69,8 @@ export type MarketplaceListItem = {
   state: string | null;
   country: string | null;
   streetAddress: string | null;
+  pincode: string | null;
+  formattedAddress: string | null;
   latitude: number | null;
   longitude: number | null;
   /** First category by `sort_order` on the junction (legacy list cards). */
@@ -80,6 +84,8 @@ export type MarketplaceListItem = {
   priceBand: string | null;
   /** Indicative minimum price per guest in INR; `null` when unknown or custom-quote-only. */
   priceFrom: number | null;
+  /** Indicative maximum price per guest in INR; `null` when open-ended. */
+  priceTo: number | null;
   tagline: string | null;
   /** Short business description for listing cards (truncated in UI). */
   about: string | null;
@@ -116,12 +122,22 @@ export type WorkspaceCompletionStatus = {
 
 export type CatererWorkspaceProfile = {
   cityId: string | null;
+  cityName: string | null;
+  addressLine1: string | null;
+  addressLine2: string | null;
   streetAddress: string | null;
+  pincode: string | null;
+  state: string | null;
+  country: string | null;
+  formattedAddress: string | null;
+  latitude: number | null;
+  longitude: number | null;
   tagline: string | null;
   about: string | null;
   heroImageUrl: string | null;
   priceBand: string | null;
   priceFrom: number | null;
+  priceTo: number | null;
   yearsInBusiness: number | null;
   capacityGuestMin: number | null;
   capacityGuestMax: number | null;
@@ -168,7 +184,31 @@ export class MarketplaceService {
     private readonly galleryImages: Repository<CatererProfileGalleryImage>,
     private readonly provisioning: TenantProvisioningService,
     private readonly imageUrls: ImagePublicUrlService,
+    private readonly citiesService: CitiesService,
   ) {}
+
+  /** Resolve catalog city id — create a cities row when Google Places returns a new locality. */
+  private async resolveWorkspaceCityRef(dto: {
+    cityId?: string;
+    cityName?: string;
+    state?: string;
+    country?: string;
+  }): Promise<City | null> {
+    const cityId = dto.cityId?.trim();
+    if (cityId) {
+      const cityRef = await this.cities.findOne({ where: { id: cityId } });
+      if (cityRef) return cityRef;
+    }
+
+    const cityName = dto.cityName?.trim();
+    if (!cityName) return null;
+
+    return this.citiesService.findOrCreateCityFromAddress({
+      cityName,
+      stateName: dto.state?.trim() || undefined,
+      countryName: dto.country?.trim() || undefined,
+    });
+  }
 
   private persistHeroRef(raw: string | null | undefined): string | null {
     const n = this.normalizeString(raw);
@@ -200,6 +240,98 @@ export class MarketplaceService {
     return t.length ? t : null;
   }
 
+  private normalizePincode(v: string | null | undefined): string | null {
+    if (v == null) return null;
+    const digits = v.replace(/\D/g, '').slice(0, 6);
+    return digits.length === 6 ? digits : null;
+  }
+
+  private combineAddressLines(
+    line1: string | null | undefined,
+    line2: string | null | undefined,
+  ): string | null {
+    const parts = [line1, line2]
+      .map((x) => (x == null ? '' : x.trim()))
+      .filter(Boolean);
+    return parts.length ? parts.join(', ') : null;
+  }
+
+  private syncLegacyStreetAddress(profile: CatererMarketplaceListing): void {
+    profile.streetAddress = this.combineAddressLines(
+      profile.addressLine1,
+      profile.addressLine2,
+    );
+  }
+
+  private applyWorkspaceAddressFields(
+    profile: CatererMarketplaceListing,
+    dto: {
+      addressLine1?: string | null;
+      addressLine2?: string | null;
+      cityName?: string | null;
+      streetAddress?: string | null;
+      pincode?: string | null;
+      state?: string | null;
+      country?: string | null;
+      formattedAddress?: string | null;
+      latitude?: number | null;
+      longitude?: number | null;
+    },
+  ): void {
+    if (dto.addressLine1 !== undefined) {
+      profile.addressLine1 = this.normalizeString(dto.addressLine1);
+    }
+    if (dto.addressLine2 !== undefined) {
+      profile.addressLine2 = this.normalizeString(dto.addressLine2);
+    }
+    if (dto.cityName !== undefined) {
+      profile.cityName = this.normalizeString(dto.cityName);
+    }
+    if (dto.streetAddress !== undefined) {
+      profile.streetAddress = this.normalizeString(dto.streetAddress);
+    }
+    if (dto.pincode !== undefined) {
+      profile.pincode = this.normalizePincode(dto.pincode);
+    }
+    if (dto.state !== undefined) {
+      profile.state = this.normalizeString(dto.state);
+    }
+    if (dto.country !== undefined) {
+      profile.country = this.normalizeString(dto.country);
+    }
+    if (dto.formattedAddress !== undefined) {
+      profile.formattedAddress = this.normalizeString(dto.formattedAddress);
+    }
+    if (dto.latitude !== undefined) {
+      profile.latitude =
+        dto.latitude != null ? Number(dto.latitude).toFixed(7) : null;
+    }
+    if (dto.longitude !== undefined) {
+      profile.longitude =
+        dto.longitude != null ? Number(dto.longitude).toFixed(7) : null;
+    }
+    if (dto.addressLine1 !== undefined || dto.addressLine2 !== undefined) {
+      this.syncLegacyStreetAddress(profile);
+    }
+  }
+
+  private workspaceAddressScalars(
+    profile: CatererMarketplaceListing,
+  ): QueryDeepPartialEntity<CatererMarketplaceListing> {
+    return {
+      streetAddress: profile.streetAddress,
+      addressLine1: profile.addressLine1,
+      addressLine2: profile.addressLine2,
+      cityName: profile.cityName,
+      pincode: profile.pincode,
+      state: profile.state,
+      country: profile.country,
+      formattedAddress: profile.formattedAddress,
+      latitude: profile.latitude,
+      longitude: profile.longitude,
+    };
+  }
+
   private normalizeKeywordSlug(v: string): string {
     return v
       .trim()
@@ -217,11 +349,13 @@ export class MarketplaceService {
     profile: CatererWorkspaceProfile,
   ): WorkspaceCompletionStatus {
     const missingFields: string[] = [];
-    if (!profile.cityId) missingFields.push('city');
+    if (!profile.cityName?.trim() && !profile.cityId) missingFields.push('city');
+    if (!profile.addressLine1?.trim()) missingFields.push('address');
     if (!profile.about) missingFields.push('about');
     if (profile.categoryCodes.length < 1) missingFields.push('category');
     if (profile.serviceOfferingIds.length < 1) missingFields.push('services');
-    if (profile.keywords.length < 1) missingFields.push('keywords');
+    // Keywords UI disabled — not required for profile completion.
+    // if (profile.keywords.length < 1) missingFields.push('keywords');
     if (profile.galleryImageUrls.length < 1) missingFields.push('gallery');
     if (!profile.heroImageUrl?.trim()) missingFields.push('banner');
     return { isComplete: missingFields.length === 0, missingFields };
@@ -267,12 +401,28 @@ export class MarketplaceService {
   ): CatererWorkspaceProfile {
     const dto: CatererWorkspaceProfile = {
       cityId: profile.cityRef?.id ?? null,
+      cityName: profile.cityName,
+      addressLine1: profile.addressLine1,
+      addressLine2: profile.addressLine2,
       streetAddress: profile.streetAddress,
+      pincode: profile.pincode,
+      state: profile.state,
+      country: profile.country,
+      formattedAddress: profile.formattedAddress,
+      latitude:
+        profile.latitude != null && profile.latitude !== ''
+          ? Number(profile.latitude)
+          : null,
+      longitude:
+        profile.longitude != null && profile.longitude !== ''
+          ? Number(profile.longitude)
+          : null,
       tagline: profile.tagline,
       about: profile.about,
       heroImageUrl: this.imageUrls.resolveToPublicUrl(profile.heroImageUrl),
       priceBand: profile.priceBand,
       priceFrom: this.decimalToNumberOrNull(profile.priceFrom),
+      priceTo: this.decimalToNumberOrNull(profile.priceTo),
       yearsInBusiness: profile.yearsInBusiness,
       capacityGuestMin: profile.capacityGuestMin,
       capacityGuestMax: profile.capacityGuestMax,
@@ -469,10 +619,12 @@ export class MarketplaceService {
       profileSlug,
       tenantId: t.id,
       businessName: t.name,
-      city: m.cityRef?.name ?? null,
-      state: m.cityRef?.state?.name ?? null,
-      country: m.cityRef?.state?.country?.name ?? null,
+      city: m.cityName ?? m.cityRef?.name ?? null,
+      state: m.state ?? m.cityRef?.state?.name ?? null,
+      country: m.country ?? m.cityRef?.state?.country?.name ?? null,
       streetAddress: m.streetAddress,
+      pincode: m.pincode,
+      formattedAddress: m.formattedAddress,
       latitude:
         m.latitude != null && m.latitude !== '' ? Number(m.latitude) : null,
       longitude:
@@ -484,6 +636,7 @@ export class MarketplaceService {
       keywords: this.orderedKeywordRefs(m),
       priceBand: m.priceBand,
       priceFrom: this.decimalToNumberOrNull(m.priceFrom),
+      priceTo: this.decimalToNumberOrNull(m.priceTo),
       tagline: m.tagline,
       about: m.about,
       avgRating: Number(m.avgRating),
@@ -849,17 +1002,33 @@ export class MarketplaceService {
       );
     }
 
-    const cityRef = await this.cities.findOne({
-      where: { id: dto.cityId.trim() },
-    });
-    if (!cityRef) throw new BadRequestException('Invalid cityId');
+    const scalarPatch: QueryDeepPartialEntity<CatererMarketplaceListing> = {};
 
-    profile.cityRef = cityRef;
+    const cityRef = await this.resolveWorkspaceCityRef({
+      cityId: dto.cityId,
+      cityName: dto.cityName,
+      state: dto.state,
+      country: dto.country,
+    });
+    if (cityRef) {
+      profile.cityRef = cityRef;
+      scalarPatch.cityRef = cityRef;
+    }
+
     profile.about = this.normalizeString(dto.about);
 
-    if (dto.streetAddress !== undefined) {
-      profile.streetAddress = this.normalizeString(dto.streetAddress);
-    }
+    this.applyWorkspaceAddressFields(profile, {
+      addressLine1: dto.addressLine1,
+      addressLine2: dto.addressLine2,
+      cityName: dto.cityName,
+      streetAddress: dto.streetAddress,
+      pincode: dto.pincode,
+      state: dto.state,
+      country: dto.country,
+      latitude: dto.latitude,
+      longitude: dto.longitude,
+    });
+
     if (dto.tagline !== undefined) {
       profile.tagline = this.normalizeString(dto.tagline);
     }
@@ -873,6 +1042,17 @@ export class MarketplaceService {
       profile.priceFrom =
         dto.priceFrom != null ? Number(dto.priceFrom).toFixed(2) : null;
     }
+    if (dto.priceTo !== undefined) {
+      profile.priceTo =
+        dto.priceTo != null ? Number(dto.priceTo).toFixed(2) : null;
+    }
+    if (
+      profile.priceFrom != null &&
+      profile.priceTo != null &&
+      Number(profile.priceFrom) > Number(profile.priceTo)
+    ) {
+      throw new BadRequestException('priceFrom cannot exceed priceTo');
+    }
     if (dto.yearsInBusiness !== undefined) {
       profile.yearsInBusiness = dto.yearsInBusiness ?? null;
     }
@@ -884,16 +1064,57 @@ export class MarketplaceService {
     }
 
     await this.persistWorkspaceListingScalars(profile.id, {
-      cityRef,
-      streetAddress: profile.streetAddress,
+      ...scalarPatch,
+      ...this.workspaceAddressScalars(profile),
       tagline: profile.tagline,
       about: profile.about,
       heroImageUrl: profile.heroImageUrl,
       priceBand: profile.priceBand,
       priceFrom: profile.priceFrom,
+      priceTo: profile.priceTo,
       yearsInBusiness: profile.yearsInBusiness,
       capacityGuestMin: profile.capacityGuestMin,
       capacityGuestMax: profile.capacityGuestMax,
+    });
+    await this.refreshPublishedFlag(tenantId);
+    return this.getWorkspaceProfile(tenantId);
+  }
+
+  /** Save map pin + parsed address as soon as the caterer picks a location. */
+  async patchWorkspaceProfileAddressForUser(
+    userId: string,
+    dto: WorkspaceProfileAddressDto,
+  ): Promise<CatererWorkspaceProfile> {
+    const tenantId = await this.resolveTenantIdForWorkspaceUser(userId);
+    const profile = await this.loadWorkspaceListingForPatch(tenantId);
+
+    const scalarPatch: QueryDeepPartialEntity<CatererMarketplaceListing> = {};
+
+    const cityRef = await this.resolveWorkspaceCityRef({
+      cityId: dto.cityId,
+      cityName: dto.cityName,
+      state: dto.state,
+      country: dto.country,
+    });
+    if (cityRef) {
+      profile.cityRef = cityRef;
+      scalarPatch.cityRef = cityRef;
+    }
+
+    this.applyWorkspaceAddressFields(profile, {
+      addressLine1: dto.addressLine1,
+      addressLine2: dto.addressLine2,
+      cityName: dto.cityName,
+      pincode: dto.pincode,
+      state: dto.state,
+      country: dto.country,
+      latitude: dto.latitude,
+      longitude: dto.longitude,
+    });
+
+    await this.persistWorkspaceListingScalars(profile.id, {
+      ...scalarPatch,
+      ...this.workspaceAddressScalars(profile),
     });
     await this.refreshPublishedFlag(tenantId);
     return this.getWorkspaceProfile(tenantId);
@@ -915,10 +1136,20 @@ export class MarketplaceService {
         'capacityGuestMin cannot exceed capacityGuestMax',
       );
     }
+    if (
+      dto.priceFrom != null &&
+      dto.priceTo != null &&
+      dto.priceFrom > dto.priceTo
+    ) {
+      throw new BadRequestException('priceFrom cannot exceed priceTo');
+    }
 
     await this.syncProfileCategories(profile, dto.categoryCodes);
     await this.syncProfileServiceOfferings(profile, dto.serviceOfferingIds);
-    await this.syncProfileKeywords(profile, dto.keywords);
+    // Keywords UI disabled — only sync when explicitly provided.
+    if (dto.keywords !== undefined) {
+      await this.syncProfileKeywords(profile, dto.keywords);
+    }
 
     const scalarPatch: QueryDeepPartialEntity<CatererMarketplaceListing> = {};
     if (dto.priceBand !== undefined) {
@@ -927,6 +1158,10 @@ export class MarketplaceService {
     if (dto.priceFrom !== undefined) {
       scalarPatch.priceFrom =
         dto.priceFrom != null ? Number(dto.priceFrom).toFixed(2) : null;
+    }
+    if (dto.priceTo !== undefined) {
+      scalarPatch.priceTo =
+        dto.priceTo != null ? Number(dto.priceTo).toFixed(2) : null;
     }
     if (dto.yearsInBusiness !== undefined) {
       scalarPatch.yearsInBusiness = dto.yearsInBusiness ?? null;
@@ -1274,25 +1509,36 @@ export class MarketplaceService {
     if (!cityRef) throw new BadRequestException('Invalid cityId');
 
     profile.cityRef = cityRef;
-    profile.streetAddress = this.normalizeString(dto.streetAddress);
+    this.applyWorkspaceAddressFields(profile, {
+      streetAddress: dto.streetAddress,
+      pincode: dto.pincode,
+      state: dto.state,
+      country: dto.country,
+      formattedAddress: dto.formattedAddress,
+      latitude: dto.latitude,
+      longitude: dto.longitude,
+    });
     profile.tagline = this.normalizeString(dto.tagline);
     profile.about = this.normalizeString(dto.about);
     profile.heroImageUrl = this.persistHeroRef(dto.heroImageUrl);
     profile.priceBand = dto.priceBand ?? null;
     profile.priceFrom =
       dto.priceFrom != null ? Number(dto.priceFrom).toFixed(2) : null;
+    profile.priceTo =
+      dto.priceTo != null ? Number(dto.priceTo).toFixed(2) : null;
     profile.yearsInBusiness = dto.yearsInBusiness ?? null;
     profile.capacityGuestMin = dto.capacityGuestMin ?? null;
     profile.capacityGuestMax = dto.capacityGuestMax ?? null;
 
     await this.persistWorkspaceListingScalars(profile.id, {
       cityRef,
-      streetAddress: profile.streetAddress,
+      ...this.workspaceAddressScalars(profile),
       tagline: profile.tagline,
       about: profile.about,
       heroImageUrl: profile.heroImageUrl,
       priceBand: profile.priceBand,
       priceFrom: profile.priceFrom,
+      priceTo: profile.priceTo,
       yearsInBusiness: profile.yearsInBusiness,
       capacityGuestMin: profile.capacityGuestMin,
       capacityGuestMax: profile.capacityGuestMax,
@@ -1300,7 +1546,10 @@ export class MarketplaceService {
 
     await this.syncProfileCategories(profile, dto.categoryCodes);
     await this.syncProfileServiceOfferings(profile, dto.serviceOfferingIds);
-    await this.syncProfileKeywords(profile, dto.keywords);
+    // Keywords UI disabled — only sync when explicitly provided.
+    if (dto.keywords !== undefined) {
+      await this.syncProfileKeywords(profile, dto.keywords);
+    }
     await this.syncProfileGallery(profile, dto.galleryImageUrls);
 
     await this.refreshPublishedFlag(tenantId);
@@ -1351,6 +1600,8 @@ export class MarketplaceService {
       id: randomUUID(),
       tenantId: tenant.id,
       authorName: dto.authorName.trim(),
+      authorEmail: dto.authorEmail.trim().toLowerCase(),
+      authorPhone: dto.authorPhone.trim(),
       rating: dto.rating,
       title: dto.title?.trim() ? dto.title.trim().slice(0, 200) : null,
       comment: dto.comment.trim().slice(0, 2000),
@@ -1396,6 +1647,7 @@ export class MarketplaceService {
       avgRating: '0.0',
       reviewCount: 0,
       priceFrom: null,
+      priceTo: null,
       published: false,
       approvalStatus: 'draft',
       submittedForReviewAt: null,

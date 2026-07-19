@@ -1,5 +1,6 @@
 import { Type } from 'class-transformer';
 import {
+  IsEmail,
   IsInt,
   IsOptional,
   IsString,
@@ -14,6 +15,15 @@ export class CreateCatererReviewDto {
   @MinLength(2)
   @MaxLength(120)
   authorName!: string;
+
+  @IsEmail()
+  @MaxLength(255)
+  authorEmail!: string;
+
+  @IsString()
+  @MinLength(6)
+  @MaxLength(32)
+  authorPhone!: string;
 
   @Type(() => Number)
   @IsInt()

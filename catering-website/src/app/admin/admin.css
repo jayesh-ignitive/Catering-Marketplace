@@ -4,7 +4,8 @@
  */
 
 @theme inline {
-  --color-brand-red-light: #ffebee;
+  /* --color-brand-red-light: #ffebee; */
+  --color-brand-red-light: #f7f4f0;
   --color-brand-page: #f8f9fa;
   --color-brand-text-muted: #8a92a6;
   --color-brand-text-dark: #232d42;

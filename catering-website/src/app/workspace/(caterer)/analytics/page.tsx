@@ -10,6 +10,7 @@ export default function WorkspaceAnalyticsPage() {
   return (
     <WorkspaceModulePlaceholder
       variant="premium"
+      preview="analytics"
       title={ws.modules.analytics.title}
       description={ws.modules.analytics.description}
       icon={ChartLineUp}
