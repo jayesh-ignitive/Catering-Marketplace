@@ -91,6 +91,7 @@ export default function AdminListingPackagesPage() {
   const [planPeriod, setPlanPeriod] = useState("");
   const [planCta, setPlanCta] = useState("");
   const [planFeatures, setPlanFeatures] = useState("");
+  const [priceDrafts, setPriceDrafts] = useState<Record<string, string>>({});
   const [rowLabel, setRowLabel] = useState("");
   const [rowEssential, setRowEssential] = useState("");
   const [rowGrowth, setRowGrowth] = useState("");
@@ -323,38 +324,63 @@ export default function AdminListingPackagesPage() {
       <section className="rounded-2xl border border-gray-200 bg-white p-6 shadow-sm">
         <h2 className="font-heading text-lg font-extrabold text-brand-dark">Plans</h2>
         <p className="mt-1 text-sm text-gray-500">
-          Price and layout are shared; use Translate for names and features per language.
+          Price is shared across languages (e.g. <code>Free</code> or <code>Custom</code>). Use Translate for
+          names, period label, CTA, and features per language.
         </p>
         <ul className="mt-4 divide-y divide-gray-100">
-          {(bundle?.plans ?? []).map((plan) => (
-            <li key={plan.id} className="flex flex-wrap items-center justify-between gap-4 py-4">
-              <div>
-                <p className="font-bold text-brand-dark">
-                  {plan.code} — {plan.translations.find((t) => t.languageCode === "en")?.name ?? plan.code}
-                </p>
-                <p className="text-sm text-gray-500">{plan.priceDisplay}</p>
-              </div>
-              <div className="flex flex-wrap items-center gap-2">
-                <label className="flex items-center gap-2 text-sm">
-                  <input
-                    type="checkbox"
-                    checked={plan.isRecommended}
-                    onChange={(e) => patchPlan(plan, { isRecommended: e.target.checked })}
-                    className="cursor-pointer"
-                  />
-                  Recommended
-                </label>
-                <button
-                  type="button"
-                  onClick={() => openPlanTranslate(plan)}
-                  className="inline-flex cursor-pointer items-center gap-1 rounded-lg border border-gray-200 px-3 py-1.5 text-sm font-bold text-brand-dark hover:border-brand-red/30"
-                >
-                  <Translate aria-hidden />
-                  Translate
-                </button>
-              </div>
-            </li>
-          ))}
+          {(bundle?.plans ?? []).map((plan) => {
+            const priceDraft = priceDrafts[plan.id] ?? plan.priceDisplay;
+            const priceDirty = priceDraft.trim() !== plan.priceDisplay;
+            return (
+              <li key={plan.id} className="flex flex-wrap items-center justify-between gap-4 py-4">
+                <div className="min-w-[180px]">
+                  <p className="font-bold text-brand-dark">
+                    {plan.code} — {plan.translations.find((t) => t.languageCode === "en")?.name ?? plan.code}
+                  </p>
+                </div>
+                <div className="flex flex-wrap items-center gap-2">
+                  <div className="flex items-center gap-2">
+                    <label className="text-xs font-bold uppercase tracking-wider text-gray-500" htmlFor={`price-${plan.id}`}>
+                      Price
+                    </label>
+                    <input
+                      id={`price-${plan.id}`}
+                      className="admin-input w-28"
+                      value={priceDraft}
+                      onChange={(e) =>
+                        setPriceDrafts((d) => ({ ...d, [plan.id]: e.target.value }))
+                      }
+                    />
+                    <button
+                      type="button"
+                      disabled={!priceDirty || priceDraft.trim().length === 0}
+                      onClick={() => patchPlan(plan, { priceDisplay: priceDraft.trim() })}
+                      className="cursor-pointer rounded-lg bg-brand-red px-3 py-1.5 text-sm font-bold text-white hover:bg-red-700 disabled:cursor-not-allowed disabled:opacity-50"
+                    >
+                      Save
+                    </button>
+                  </div>
+                  <label className="flex items-center gap-2 text-sm">
+                    <input
+                      type="checkbox"
+                      checked={plan.isRecommended}
+                      onChange={(e) => patchPlan(plan, { isRecommended: e.target.checked })}
+                      className="cursor-pointer"
+                    />
+                    Recommended
+                  </label>
+                  <button
+                    type="button"
+                    onClick={() => openPlanTranslate(plan)}
+                    className="inline-flex cursor-pointer items-center gap-1 rounded-lg border border-gray-200 px-3 py-1.5 text-sm font-bold text-brand-dark hover:border-brand-red/30"
+                  >
+                    <Translate aria-hidden />
+                    Translate
+                  </button>
+                </div>
+              </li>
+            );
+          })}
         </ul>
       </section>
 
@@ -399,6 +425,22 @@ export default function AdminListingPackagesPage() {
             onChange={(e) => setPlanSubtitle(e.target.value)}
           />
         </AdminModalField>
+        <div className="mt-3 grid gap-3 sm:grid-cols-2">
+          <AdminModalField label="Period label (e.g. “to begin”, “let’s talk”)">
+            <input
+              className="admin-input w-full"
+              value={planPeriod}
+              onChange={(e) => setPlanPeriod(e.target.value)}
+            />
+          </AdminModalField>
+          <AdminModalField label="CTA label (e.g. “Talk to sales”)">
+            <input
+              className="admin-input w-full"
+              value={planCta}
+              onChange={(e) => setPlanCta(e.target.value)}
+            />
+          </AdminModalField>
+        </div>
         <AdminModalField label="Features (one per line)">
           <textarea
             className="admin-input min-h-[160px] w-full font-mono text-sm"
