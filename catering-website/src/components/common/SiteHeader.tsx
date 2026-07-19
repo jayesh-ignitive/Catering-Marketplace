@@ -1,12 +1,12 @@
 "use client";
 
-import { CaretDown, List, MagnifyingGlass, SignIn, SignOut, UserCircle, X } from "@phosphor-icons/react";
+import { CaretDown, List, MagnifyingGlass, X } from "@phosphor-icons/react";
 import { useQuery } from "@tanstack/react-query";
 import Link from "next/link";
 import { useAuth } from "@/context/AuthContext";
 import { BrandLogoLink } from "@/components/common/BrandLogoLink";
 import { LanguageSwitcher } from "@/components/common/LanguageSwitcher";
-import { profileHref, UserAccountMenu } from "@/components/common/UserAccountMenu";
+import { GuestAccountMenu, UserAccountMenu } from "@/components/common/UserAccountMenu";
 import type { ServiceCategory } from "@/lib/catering-api";
 import { serviceCategoriesQueryOptions } from "@/lib/catalog-queries";
 import { caterersListingPath } from "@/lib/caterers-url";
@@ -18,13 +18,6 @@ import {
 } from "@/lib/service-category-icons";
 import { useI18n } from "@/context/LocaleContext";
 import { useState } from "react";
-
-function initialsFromName(name: string) {
-  const parts = name.trim().split(/\s+/).filter(Boolean);
-  if (parts.length === 0) return "?";
-  if (parts.length === 1) return parts[0]!.slice(0, 2).toUpperCase();
-  return `${parts[0]![0] ?? ""}${parts[parts.length - 1]![0] ?? ""}`.toUpperCase() || "?";
-}
 
 /** Circular icon actions (search, log in) — matches hover/focus affordance */
 const headerIconActionClass =
@@ -77,19 +70,19 @@ export function SiteHeader({
 
   return (
     <>
-      <div className="flex items-center justify-between bg-black px-6 py-2 text-[11px] font-medium tracking-wide text-gray-300">
-        <div>
+      <div className="flex items-center justify-between gap-3 bg-black px-4 py-2 text-[11px] font-medium tracking-wide text-gray-300 sm:px-6">
+        <div className="min-w-0 truncate">
           {trans(w.header.salesSupportLine, { phone: publicSiteConfig.supportPhoneDisplay })}
         </div>
-        <div className="hidden sm:block">{w.header.tagline}</div>
+        <div className="hidden shrink-0 sm:block">{w.header.tagline}</div>
       </div>
 
       <header className="sticky top-0 z-50 bg-white shadow-sm">
-        <div className="mx-auto flex max-w-7xl items-center justify-between px-6 py-1.5">
+        <div className="mx-auto flex max-w-7xl items-center justify-between gap-2 px-4 py-1.5 sm:px-6">
           <BrandLogoLink preset="siteHeader" onClick={() => setOpen(false)} />
 
-          <nav className="hidden items-center md:flex">
-            <div className="group relative flex cursor-pointer flex-col border-l border-gray-200 px-6">
+          <nav className="hidden items-center lg:flex">
+            <div className="group relative flex cursor-pointer flex-col border-l border-gray-200 px-4 xl:px-6">
               <span className="mb-0.5 text-[9px] font-bold uppercase tracking-widest text-brand-red">
                 {w.header.cateringServices}
               </span>
@@ -120,7 +113,7 @@ export function SiteHeader({
 
             <Link
               href="/packages"
-              className="group flex cursor-pointer flex-col border-l border-gray-200 px-6"
+              className="group flex cursor-pointer flex-col border-l border-gray-200 px-4 xl:px-6"
             >
               <span className="mb-0.5 text-[9px] font-bold uppercase tracking-widest text-brand-red">
                 {w.header.forCaterers}
@@ -132,7 +125,7 @@ export function SiteHeader({
 
             <Link
               href="/blog"
-              className="group flex cursor-pointer flex-col border-l border-gray-200 px-6"
+              className="group flex cursor-pointer flex-col border-l border-gray-200 px-4 xl:px-6"
             >
               <span className="mb-0.5 text-[9px] font-bold uppercase tracking-widest text-brand-red">
                 {w.header.read}
@@ -144,7 +137,7 @@ export function SiteHeader({
 
             <Link
               href="/contact"
-              className="group flex cursor-pointer flex-col border-l border-gray-200 pl-6 pr-12"
+              className="group flex cursor-pointer flex-col border-l border-gray-200 pl-4 pr-6 xl:pl-6 xl:pr-12"
             >
               <span className="mb-0.5 text-[9px] font-bold uppercase tracking-widest text-brand-red">
                 {w.header.getInTouch}
@@ -158,39 +151,25 @@ export function SiteHeader({
           <div className="flex items-center gap-2 sm:gap-3">
             <Link
               href="/caterers"
-              className={`hidden md:flex ${headerIconActionClass}`}
+              className={`flex ${headerIconActionClass}`}
               aria-label={w.header.searchCaterers}
             >
               <MagnifyingGlass className="text-lg" aria-hidden />
             </Link>
-            {ready && user ? (
-              <div className="hidden md:block">
+
+            {ready ? (
+              user ? (
                 <UserAccountMenu user={user} onLogout={logout} />
-              </div>
-            ) : ready ? (
-              <>
-                <Link
-                  href="/login"
-                  className={`hidden md:flex ${headerIconActionClass}`}
-                  aria-label={w.header.logIn}
-                  title={w.header.logIn}
-                >
-                  <SignIn className="text-lg" weight="bold" aria-hidden />
-                </Link>
-                <Link
-                  href="/register"
-                  className="cursor-pointer rounded-md bg-brand-red px-4 py-2.5 text-sm font-semibold text-white shadow-lg shadow-red-500/30 transition-all duration-300 hover:-translate-y-1 hover:bg-red-700 hover:shadow-xl sm:px-5"
-                >
-                  {w.header.createAccount}
-                </Link>
-              </>
+              ) : (
+                <GuestAccountMenu />
+              )
             ) : null}
 
-            {ready ? <LanguageSwitcher variant="header" className="shrink-0" /> : null}
+            {ready ? <LanguageSwitcher variant="header" className="hidden shrink-0 sm:block" /> : null}
 
             <button
               type="button"
-              className="flex h-10 w-10 cursor-pointer items-center justify-center rounded-full border border-gray-200 text-brand-dark shadow-sm transition-all duration-300 hover:scale-105 hover:border-brand-red hover:bg-brand-red hover:text-white focus-visible:outline focus-visible:ring-2 focus-visible:ring-brand-red/35 focus-visible:ring-offset-2 md:hidden"
+              className="flex h-10 w-10 cursor-pointer items-center justify-center rounded-full border border-gray-200 text-brand-dark shadow-sm transition-all duration-300 hover:scale-105 hover:border-brand-red hover:bg-brand-red hover:text-white focus-visible:outline focus-visible:ring-2 focus-visible:ring-brand-red/35 focus-visible:ring-offset-2 lg:hidden"
               aria-expanded={open}
               aria-label={open ? w.header.closeMenu : w.header.openMenu}
               onClick={() => setOpen((v) => !v)}
@@ -201,7 +180,7 @@ export function SiteHeader({
         </div>
 
         {open && (
-          <div className="border-t border-gray-100 bg-white px-4 pb-5 pt-2 md:hidden">
+          <div className="max-h-[calc(100vh-8rem)] overflow-y-auto border-t border-gray-100 bg-white px-4 pb-5 pt-2 lg:hidden">
             <nav className="flex flex-col gap-1">
               <Link
                 href="/caterers"
@@ -252,57 +231,10 @@ export function SiteHeader({
               >
                 {w.header.contact}
               </Link>
-              {ready && user ? (
-                <div className="mt-3 border-t border-gray-100 pt-3">
-                  <div className="flex items-center gap-3 rounded-lg px-4 py-2">
-                    <span
-                      className="flex h-11 w-11 shrink-0 items-center justify-center rounded-full bg-gradient-to-br from-brand-red to-red-800 text-sm font-bold text-white"
-                      aria-hidden
-                    >
-                      {initialsFromName(user.fullName).slice(0, 2)}
-                    </span>
-                    <div className="min-w-0 flex-1">
-                      <p className="truncate text-sm font-bold text-brand-dark">{user.fullName}</p>
-                      <p className="truncate text-xs text-gray-500">{user.email}</p>
-                    </div>
-                  </div>
-                  <Link
-                    href={profileHref(user)}
-                    className="mt-2 flex items-center gap-3 rounded-lg px-4 py-3 text-sm font-semibold text-brand-dark hover:bg-gray-50"
-                    onClick={() => setOpen(false)}
-                  >
-                    <UserCircle className="text-brand-red" size={22} weight="duotone" aria-hidden />
-                    {w.header.profile}
-                  </Link>
-                  <button
-                    type="button"
-                    className="mt-1 flex w-full items-center gap-3 rounded-lg px-4 py-3 text-left text-sm font-semibold text-brand-dark hover:bg-gray-50"
-                    onClick={() => {
-                      logout();
-                      setOpen(false);
-                    }}
-                  >
-                    <SignOut className="text-gray-500" size={22} aria-hidden />
-                    {w.header.logOut}
-                  </button>
+              {ready ? (
+                <div className="mt-3 border-t border-gray-100 px-4 pt-4 sm:hidden">
+                  <LanguageSwitcher variant="inline" onSelect={() => setOpen(false)} />
                 </div>
-              ) : ready ? (
-                <>
-                  <Link
-                    href="/login"
-                    className="rounded-lg px-4 py-3 text-sm font-semibold text-brand-dark hover:bg-gray-50"
-                    onClick={() => setOpen(false)}
-                  >
-                    {w.header.logIn}
-                  </Link>
-                  <Link
-                    href="/register"
-                    className="rounded-lg bg-brand-red px-4 py-3 text-center text-sm font-bold text-white"
-                    onClick={() => setOpen(false)}
-                  >
-                    {w.header.createAccount}
-                  </Link>
-                </>
               ) : null}
             </nav>
           </div>

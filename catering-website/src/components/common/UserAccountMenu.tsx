@@ -2,13 +2,92 @@
 
 import { useI18n } from "@/context/LocaleContext";
 import type { AuthUser } from "@/lib/auth-api";
-import { SignOut, UserCircle } from "@phosphor-icons/react";
+import { SignIn, SignOut, UserCircle, UserPlus } from "@phosphor-icons/react";
 import Link from "next/link";
 import { useEffect, useRef, useState } from "react";
 
 export function profileHref(user: AuthUser) {
   if (user.role === "admin") return "/admin";
   return "/workspace/profile";
+}
+
+/**
+ * Profile icon dropdown shown to signed-out visitors: opens Login / Register.
+ */
+export function GuestAccountMenu() {
+  const { w } = useI18n();
+  const [open, setOpen] = useState(false);
+  const wrapRef = useRef<HTMLDivElement>(null);
+
+  useEffect(() => {
+    if (!open) return;
+    function onDocMouseDown(e: MouseEvent) {
+      const el = wrapRef.current;
+      if (el && !el.contains(e.target as Node)) setOpen(false);
+    }
+    function onKey(e: KeyboardEvent) {
+      if (e.key === "Escape") setOpen(false);
+    }
+    document.addEventListener("mousedown", onDocMouseDown);
+    document.addEventListener("keydown", onKey);
+    return () => {
+      document.removeEventListener("mousedown", onDocMouseDown);
+      document.removeEventListener("keydown", onKey);
+    };
+  }, [open]);
+
+  return (
+    <div ref={wrapRef} className="relative">
+      <button
+        type="button"
+        onClick={() => setOpen((v) => !v)}
+        aria-expanded={open}
+        aria-haspopup="menu"
+        aria-label={w.common.accountMenu}
+        title={w.common.accountMenu}
+        className={`flex h-10 w-10 shrink-0 cursor-pointer items-center justify-center rounded-full border border-gray-200 text-brand-dark shadow-sm transition-all duration-300 hover:scale-110 hover:border-brand-red hover:bg-brand-red hover:text-white focus-visible:outline focus-visible:ring-2 focus-visible:ring-brand-red/35 focus-visible:ring-offset-2 ${
+          open ? "border-brand-red bg-brand-red text-white ring-2 ring-brand-red/25" : ""
+        }`}
+      >
+        <UserCircle className="text-xl" weight="fill" aria-hidden />
+      </button>
+      {open ? (
+        <div
+          role="menu"
+          className="absolute right-0 top-full z-[60] mt-3 w-48 rounded-none border border-stone-200 bg-white py-1 shadow-lg shadow-stone-200/50 sm:right-2"
+        >
+          <Link
+            href="/login"
+            role="menuitem"
+            className="group/item flex cursor-pointer items-center gap-3 px-4 py-2.5 text-sm font-semibold text-stone-700 transition hover:bg-stone-50 hover:text-brand-red"
+            onClick={() => setOpen(false)}
+          >
+            <SignIn
+              className="text-stone-400 transition-colors group-hover/item:text-brand-red"
+              size={18}
+              weight="bold"
+              aria-hidden
+            />
+            {w.header.logIn}
+          </Link>
+          <Link
+            href="/register"
+            role="menuitem"
+            className="group/item flex cursor-pointer items-center gap-3 border-t border-stone-50 px-4 py-2.5 text-sm font-semibold text-stone-700 transition hover:bg-stone-50 hover:text-brand-red"
+            onClick={() => setOpen(false)}
+          >
+            <UserPlus
+              className="text-stone-400 transition-colors group-hover/item:text-brand-red"
+              size={18}
+              weight="bold"
+              aria-hidden
+            />
+            {w.header.createAccount}
+          </Link>
+        </div>
+      ) : null}
+    </div>
+  );
 }
 
 function UserAvatarButton({

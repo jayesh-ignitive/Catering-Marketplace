@@ -25,10 +25,10 @@ export function SiteFooter({
   const servicesLoading = categoriesQ.isPending && categories.length === 0;
 
   return (
-    <footer className="zig-zag-border bg-[#111] pb-10 pt-20 text-gray-400">
+    <footer className="zig-zag-border bg-[#111] pb-10 pt-14 text-gray-400 sm:pt-20">
       <div className="mx-auto max-w-7xl px-6">
-        <div className="mb-16 grid grid-cols-1 gap-12 md:grid-cols-2 lg:grid-cols-4">
-          <div>
+        <div className="mb-10 grid grid-cols-2 gap-x-6 gap-y-10 sm:mb-16 md:grid-cols-2 md:gap-12 lg:grid-cols-4">
+          <div className="col-span-2 md:col-span-1">
             <BrandLogoLink preset="siteFooter" className="mb-6" />
             <p className="mb-6 text-sm leading-relaxed">{w.footer.blurb}</p>
             <div className="mt-6 flex gap-4">
@@ -54,7 +54,7 @@ export function SiteFooter({
           </div>
 
           <div>
-            <h4 className="mb-6 font-heading text-lg font-bold text-white">{w.footer.quickLinks}</h4>
+            <h4 className="mb-4 font-heading text-lg font-bold text-white sm:mb-6">{w.footer.quickLinks}</h4>
             <ul className="space-y-3 text-sm">
               <li>
                 <Link href="/" className="transition hover:text-brand-yellow">
@@ -100,7 +100,7 @@ export function SiteFooter({
           </div>
 
           <div>
-            <h4 className="mb-6 font-heading text-lg font-bold text-white">{w.footer.services}</h4>
+            <h4 className="mb-4 font-heading text-lg font-bold text-white sm:mb-6">{w.footer.services}</h4>
             <ul className="space-y-3 text-sm">
               {servicesLoading ? (
                 <li className="text-gray-500">{w.common.loading}</li>
@@ -125,8 +125,8 @@ export function SiteFooter({
             </ul>
           </div>
 
-          <div id="footer-contact">
-            <h4 className="mb-6 font-heading text-lg font-bold text-white">{w.footer.getInTouch}</h4>
+          <div id="footer-contact" className="col-span-2 md:col-span-1">
+            <h4 className="mb-4 font-heading text-lg font-bold text-white sm:mb-6">{w.footer.getInTouch}</h4>
             <ul className="space-y-4 text-sm">
               <li className="flex items-start gap-3">
                 <MapPin className="mt-0.5 shrink-0 text-xl text-brand-yellow" aria-hidden />
@@ -159,7 +159,7 @@ export function SiteFooter({
         </div>
 
         <div className="flex flex-col items-center justify-between gap-6 border-t border-white/10 pt-8 text-sm text-gray-500 md:flex-row">
-          <p>
+          <p className="text-center md:text-left">
             {trans(w.footer.copyright, {
               year: new Date().getFullYear(),
               siteName: publicSiteConfig.siteName,

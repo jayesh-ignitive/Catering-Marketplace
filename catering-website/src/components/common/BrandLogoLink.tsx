@@ -70,16 +70,18 @@ export function BrandLogoLink({
                   : 32
           }
           className={
-            preset === "siteFooter"
+            preset === "siteFooter" || preset === "onboardingHero"
               ? "object-contain brightness-0 invert"
-              : "object-contain"
+              : preset === "siteHeader"
+                ? "h-14 w-14 object-contain sm:h-[100px] sm:w-[100px]"
+                : "object-contain"
           }
         />
         <div className="flex flex-col">
           <span
             className={
               preset === "siteHeader"
-                ? "font-logo translate-y-0.5 text-4xl leading-none tracking-tight text-brand-dark"
+                ? "font-logo translate-y-0.5 text-3xl leading-none tracking-tight text-brand-dark sm:text-4xl"
                 : preset === "siteFooter"
                   ? "font-heading font-extrabold text-xl uppercase tracking-wider text-white"
                   : preset === "onboardingHero"

@@ -75,15 +75,10 @@ export function BusinessOnboardingShell({ children }: Props) {
         </div>
       </aside>
 
-      {/* Right: wizard — mobile logo only (no top header bar) */}
+      {/* Right: wizard */}
       <div className="relative flex min-h-0 flex-1 flex-col bg-white lg:w-[58%] xl:w-1/2">
-        <BrandLogoLink
-          preset="onboardingMobile"
-          className="absolute left-6 top-5 z-10 sm:left-10 lg:hidden"
-        />
-
         <main className="min-h-0 flex-1 overflow-y-auto overscroll-contain">
-          <div className="mx-auto w-full max-w-2xl px-6 pt-14 pb-8 sm:px-10 sm:pt-14 sm:pb-10 lg:px-11 lg:pt-10 lg:pb-12 xl:px-16 xl:pt-12 xl:pb-14">
+          <div className="mx-auto w-full max-w-2xl px-6 pt-8 pb-8 sm:px-10 sm:pt-10 sm:pb-10 lg:px-11 lg:pt-10 lg:pb-12 xl:px-16 xl:pt-12 xl:pb-14">
             {children}
           </div>
         </main>

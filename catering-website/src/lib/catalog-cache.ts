@@ -5,6 +5,7 @@ import {
   type ServiceCategory,
   type TrustStats,
 } from "@/lib/catering-api";
+import type { PublicPackagesPage } from "@/lib/listing-packages-api";
 
 const CATALOG_REVALIDATE = 300;
 
@@ -49,6 +50,17 @@ export async function fetchTrustStatsCached(): Promise<TrustStats> {
     }
   }
   return catalog;
+}
+
+/** Server Components — listing packages page (plans + comparison), cached like home data. */
+export async function fetchListingPackagesPageCached(
+  locale: string = "en",
+): Promise<PublicPackagesPage> {
+  const res = await fetch(
+    `${getCateringApiBase()}/api/catalog/listing-packages?locale=${encodeURIComponent(locale)}`,
+    { next: { revalidate: CATALOG_REVALIDATE, tags: ["catalog-listing-packages"] } },
+  );
+  return parseJson<PublicPackagesPage>(res);
 }
 
 /** Server Components — marketplace city filters for listing URL resolution. */

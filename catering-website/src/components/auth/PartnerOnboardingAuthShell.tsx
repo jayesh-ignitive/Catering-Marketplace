@@ -88,10 +88,6 @@ export function PartnerOnboardingAuthShell({ title, subtitle, children }: Partne
       </div>
 
       <div className="flex w-full min-w-0 flex-1 flex-col bg-white lg:w-7/12 xl:w-1/2">
-        <div className="flex items-center border-b border-gray-100 p-6 lg:hidden">
-          <BrandLogoLink preset="workspaceHeader" />
-        </div>
-
         <div className="mx-auto flex w-full max-w-2xl flex-col px-6 py-8 sm:p-10 lg:p-12 xl:p-16">
           <div className="mb-8">
             <h2 className="mb-2 font-heading text-3xl font-bold tracking-tight text-[#374151]">{title}</h2>
