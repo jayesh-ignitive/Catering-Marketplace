@@ -3,6 +3,7 @@ import {
   Controller,
   ForbiddenException,
   Get,
+  Header,
   Param,
   Patch,
   Post,
@@ -37,38 +38,45 @@ export class MarketplaceController {
 
   /** Distinct cities for filter dropdowns (published listings only). */
   @Get('caterers/cities')
+  @Header('Cache-Control', 'public, max-age=300, stale-while-revalidate=60')
   listCities(@Query('locale') locale?: string) {
     return this.marketplace.listCities(locale);
   }
 
   @Get('cities')
+  @Header('Cache-Control', 'public, max-age=300, stale-while-revalidate=60')
   listWorkspaceCities(@Query('locale') locale?: string) {
     return this.marketplace.listAllCitiesForWorkspace(locale);
   }
 
   /** Autocomplete: keyword labels/slugs used by published caterers (prefix / contains on small set). */
   @Get('caterers/keywords/suggest')
+  @Header('Cache-Control', 'public, max-age=300, stale-while-revalidate=60')
   suggestKeywords(@Query() query: KeywordSuggestQueryDto) {
     return this.marketplace.suggestPublishedKeywords(query.q ?? '');
   }
 
   /** Distinct search keywords used by published caterers (optional bulk list). */
   @Get('caterers/keywords')
+  @Header('Cache-Control', 'public, max-age=300, stale-while-revalidate=60')
   listKeywordFilters() {
     return this.marketplace.listPublishedKeywordFilters();
   }
 
   @Get('caterers')
+  @Header('Cache-Control', 'public, max-age=300, stale-while-revalidate=60')
   listCaterers(@Query() query: ListMarketplaceQueryDto) {
     return this.marketplace.listPublished(query);
   }
 
   @Get('service-offerings')
+  @Header('Cache-Control', 'public, max-age=300, stale-while-revalidate=60')
   listServiceOfferings() {
     return this.marketplace.listServiceOfferings();
   }
 
   @Get('caterers/:slug/reviews')
+  @Header('Cache-Control', 'public, max-age=300, stale-while-revalidate=60')
   listCatererReviews(
     @Param('slug') slug: string,
     @Query() query: ListCatererReviewsQueryDto,
@@ -85,6 +93,7 @@ export class MarketplaceController {
   }
 
   @Get('caterers/:slug')
+  @Header('Cache-Control', 'public, max-age=300, stale-while-revalidate=60')
   catererDetail(@Param('slug') slug: string) {
     return this.marketplace.getByProfileSlug(slug);
   }
@@ -244,6 +253,7 @@ export class MarketplaceController {
   }
 
   @Get('stats')
+  @Header('Cache-Control', 'public, max-age=300, stale-while-revalidate=60')
   async stats() {
     const caterersListed = await this.marketplace.publishedCount();
     return { caterersListed };

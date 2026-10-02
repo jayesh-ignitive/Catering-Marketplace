@@ -4,16 +4,34 @@ import { NestFactory } from '@nestjs/core';
 import { NestExpressApplication } from '@nestjs/platform-express';
 import { existsSync, mkdirSync } from 'fs';
 import { join } from 'path';
+import compression from 'compression';
+import helmet from 'helmet';
 import { AppModule } from './app.module';
 
 async function bootstrap() {
   const app = await NestFactory.create<NestExpressApplication>(AppModule);
 
+  // Security headers. CSP is disabled here (this is a JSON API; the
+  // browser-facing CSP lives on the Next.js frontend). `cross-origin` resource
+  // policy lets the site embed images served from `/uploads`.
+  app.use(
+    helmet({
+      contentSecurityPolicy: false,
+      crossOriginResourcePolicy: { policy: 'cross-origin' },
+    }),
+  );
+  app.use(compression());
+
   const uploadPublicRoot = join(process.cwd(), 'storage', 'public');
   if (!existsSync(uploadPublicRoot)) {
     mkdirSync(uploadPublicRoot, { recursive: true });
   }
-  app.useStaticAssets(uploadPublicRoot, { prefix: '/uploads/', index: false });
+  app.useStaticAssets(uploadPublicRoot, {
+    prefix: '/uploads/',
+    index: false,
+    maxAge: '30d',
+    immutable: true,
+  });
   app.setGlobalPrefix('api');
   app.useGlobalPipes(
     new ValidationPipe({

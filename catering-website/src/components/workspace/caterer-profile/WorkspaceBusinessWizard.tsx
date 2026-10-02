@@ -1065,11 +1065,14 @@ export function WorkspaceBusinessWizard({
                   resolvedCity={cityName}
                   resolvedState={addressState}
                   resolvedCountry={addressCountry}
-                  requestDeviceLocation={uiVariant === "onboarding" && latitude == null && longitude == null}
+                  requestDeviceLocation={uiVariant === "onboarding"}
                   required={uiVariant === "onboarding" || layout === "tabs"}
                   labels={{
                     addressLine1: ws.wizard.fields.addressLine1,
-                    addressLine1Hint: ws.wizard.fields.addressLine1Hint,
+                    addressLine1Hint:
+                      uiVariant === "onboarding"
+                        ? ws.wizard.fields.addressLine1HintOnboarding
+                        : ws.wizard.fields.addressLine1Hint,
                     searchPlaceholder: ws.wizard.placeholders.addressLine1Search,
                     openMap: ws.wizard.fields.openMap,
                     closeMap: ws.wizard.fields.closeMap,
@@ -1078,10 +1081,12 @@ export function WorkspaceBusinessWizard({
                     mapModalTitle: ws.wizard.fields.mapModalTitle,
                     mapModalHint: ws.wizard.fields.mapModalHint,
                     mapInteractHint: ws.wizard.fields.mapInteractHint,
+                    useCurrentLocation: ws.wizard.fields.useCurrentLocation,
                     shareLocationTitle: ws.wizard.fields.shareLocationTitle,
                     shareLocationHint: ws.wizard.fields.shareLocationHint,
                     shareLocationButton: ws.wizard.fields.shareLocationButton,
                     shareLocationRequesting: ws.wizard.fields.shareLocationRequesting,
+                    shareLocationRetry: ws.wizard.fields.shareLocationRetry,
                     shareLocationDenied: ws.wizard.fields.shareLocationDenied,
                     shareLocationUnavailable: ws.wizard.fields.shareLocationUnavailable,
                     shareLocationDismiss: ws.wizard.fields.shareLocationDismiss,
