@@ -5,10 +5,8 @@ import {
   fetchTrustStatsCached,
 } from "@/lib/catalog-cache";
 import { fetchBlogPostsCached } from "@/lib/blog";
-import { HOME_FALLBACK_HERO_SRC } from "@/lib/home-assets";
 import { fetchHomeHeroSlidesCached } from "@/lib/home-banners";
 import { DEFAULT_LOCALE } from "@/i18n/locale";
-import { preload } from "react-dom";
 
 async function loadHomeInitialData(): Promise<HomeInitialData> {
   const locale = DEFAULT_LOCALE;
@@ -34,8 +32,10 @@ async function loadHomeInitialData(): Promise<HomeInitialData> {
 
 export default async function HomePage() {
   const initialData = await loadHomeInitialData();
-  const lcpImageSrc = initialData.heroSlides[0]?.imageUrl ?? HOME_FALLBACK_HERO_SRC;
-  preload(lcpImageSrc, { as: "image", fetchPriority: "high" });
 
+  // The hero LCP image is preloaded by `next/image` itself (priority +
+  // fetchPriority="high" in HomeHeroBackground), which emits an accurate
+  // preload for the optimized `/_next/image` URL. A manual preload of the raw
+  // CDN URL would just double-download an unoptimized copy.
   return <Home initialData={initialData} />;
 }

@@ -1,5 +1,23 @@
 export type DeviceGeolocationErrorCode = "unsupported" | "denied" | "unavailable" | "timeout";
 
+export type GeolocationPermissionState = "granted" | "prompt" | "denied" | "unknown";
+
+/** `denied` is a permanent block. `prompt` means the browser can still ask on the next click. */
+export async function queryGeolocationPermission(): Promise<GeolocationPermissionState> {
+  if (typeof navigator === "undefined" || !navigator.permissions?.query) {
+    return "unknown";
+  }
+  try {
+    const status = await navigator.permissions.query({ name: "geolocation" });
+    if (status.state === "granted" || status.state === "prompt" || status.state === "denied") {
+      return status.state;
+    }
+  } catch {
+    return "unknown";
+  }
+  return "unknown";
+}
+
 export type DeviceGeolocationResult =
   | { ok: true; latitude: number; longitude: number }
   | { ok: false; code: DeviceGeolocationErrorCode };

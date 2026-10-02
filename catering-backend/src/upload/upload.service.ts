@@ -12,6 +12,7 @@ import {
   type ImageStoragePort,
   type ImageUploadKind,
 } from '../storage/image-storage.port';
+import { optimizeUploadedImage } from './optimize-uploaded-image';
 
 const ALLOWED_MIMES = new Set([
   'image/jpeg',
@@ -49,10 +50,21 @@ export class UploadService {
       );
     }
 
+    let optimized: { buffer: Buffer; mimeType: string };
+    try {
+      optimized = await optimizeUploadedImage(file.buffer, mime, kind);
+    } catch (e) {
+      const msg = e instanceof Error ? e.message : String(e);
+      if (msg === 'invalid_image') {
+        throw new BadRequestException('Could not read that image file');
+      }
+      throw e;
+    }
+
     try {
       const saved = await this.imageStorage.saveImage({
-        buffer: file.buffer,
-        mimeType: mime,
+        buffer: optimized.buffer,
+        mimeType: optimized.mimeType,
         originalFilename: file.originalname,
         kind,
       });

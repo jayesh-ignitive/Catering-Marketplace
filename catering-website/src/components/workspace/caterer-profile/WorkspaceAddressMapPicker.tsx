@@ -3,7 +3,11 @@
 import { useCallback, useEffect, useId, useRef, useState } from "react";
 import { createPortal } from "react-dom";
 import { Crosshair, MagnifyingGlass, MapTrifold, X } from "@phosphor-icons/react";
-import { readDeviceGeolocation, isDeviceGeolocationSupported } from "@/lib/device-geolocation";
+import {
+  queryGeolocationPermission,
+  readDeviceGeolocation,
+  isDeviceGeolocationSupported,
+} from "@/lib/device-geolocation";
 import { INDIA_MAP_CENTER, isGoogleMapsConfigured, loadGoogleMaps } from "@/lib/google-maps-loader";
 import {
   mapsErrorUserMessage,
@@ -65,10 +69,12 @@ type Props = {
     mapModalTitle: string;
     mapModalHint: string;
     mapInteractHint: string;
+    useCurrentLocation: string;
     shareLocationTitle: string;
     shareLocationHint: string;
     shareLocationButton: string;
     shareLocationRequesting: string;
+    shareLocationRetry: string;
     shareLocationDenied: string;
     shareLocationUnavailable: string;
     shareLocationDismiss: string;
@@ -335,22 +341,32 @@ export function WorkspaceAddressMapPicker({
 
   const reverseGeocode = useCallback(
     (lat: number, lng: number, closeModal = false) => {
-      const geocoder = geocoderRef.current;
-      if (!geocoder) {
-        applyCoords(lat, lng, undefined, closeModal);
-        return;
-      }
-      geocoder.geocode({ location: { lat, lng } }, (results, status) => {
-        if (status !== "OK" || !results?.[0]) {
-          applyCoords(lat, lng, undefined, closeModal);
-          return;
+      void (async () => {
+        let geocoder = geocoderRef.current;
+        if (!geocoder) {
+          try {
+            const g = await loadGoogleMaps();
+            geocoder = new g.maps.Geocoder();
+            geocoderRef.current = geocoder;
+          } catch (err: unknown) {
+            setPlacesState("error");
+            setErrorDetail(err instanceof Error ? err.message : null);
+            applyCoords(lat, lng, undefined, closeModal);
+            return;
+          }
         }
-        const parsed = parseGoogleAddressComponents(
-          results[0].address_components ?? [],
-          results[0].formatted_address ?? ""
-        );
-        applyCoords(lat, lng, parsed, closeModal);
-      });
+        geocoder.geocode({ location: { lat, lng } }, (results, status) => {
+          if (status !== "OK" || !results?.[0]) {
+            applyCoords(lat, lng, undefined, closeModal);
+            return;
+          }
+          const parsed = parseGoogleAddressComponents(
+            results[0].address_components ?? [],
+            results[0].formatted_address ?? ""
+          );
+          applyCoords(lat, lng, parsed, closeModal);
+        });
+      })();
     },
     [applyCoords]
   );
@@ -470,6 +486,8 @@ export function WorkspaceAddressMapPicker({
     return () => document.removeEventListener("mousedown", onPointerDown);
   }, [closeSuggestions, listboxId, suggestionsOpen]);
 
+  const autoGeoStartedRef = useRef(false);
+
   const handleShareDeviceLocation = useCallback(async () => {
     if (!isDeviceGeolocationSupported()) {
       setGeoError(labels.shareLocationUnavailable);
@@ -480,15 +498,27 @@ export function WorkspaceAddressMapPicker({
     const result = await readDeviceGeolocation();
     setGeoRequesting(false);
     if (result.ok) {
+      setGeoPromptOpen(false);
       reverseGeocodeRef.current(result.latitude, result.longitude, false);
       return;
     }
     if (result.code === "denied") {
-      setGeoError(labels.shareLocationDenied);
+      const permission = await queryGeolocationPermission();
+      setGeoError(
+        permission === "denied" ? labels.shareLocationDenied : labels.shareLocationRetry,
+      );
       return;
     }
     setGeoError(labels.shareLocationUnavailable);
-  }, [labels.shareLocationDenied, labels.shareLocationUnavailable]);
+  }, [labels.shareLocationDenied, labels.shareLocationRetry, labels.shareLocationUnavailable]);
+
+  useEffect(() => {
+    if (!requestDeviceLocation || latitude != null || longitude != null) return;
+    if (autoGeoStartedRef.current) return;
+    autoGeoStartedRef.current = true;
+    setGeoPromptOpen(false);
+    void handleShareDeviceLocation();
+  }, [requestDeviceLocation, latitude, longitude, handleShareDeviceLocation]);
 
   const showGeoPrompt =
     requestDeviceLocation && mapModalOpen && mapState === "ready" && !hasPin && geoPromptOpen;
@@ -838,6 +868,22 @@ export function WorkspaceAddressMapPicker({
                       ref={mapAutocompleteHostRef}
                       className="ws-address-map-autocomplete-host pointer-events-auto absolute top-3 left-3 right-3 z-20 sm:top-4 sm:left-4 sm:right-4"
                     />
+                    {requestDeviceLocation ? (
+                      <button
+                        type="button"
+                        onClick={() => void handleShareDeviceLocation()}
+                        disabled={geoRequesting}
+                        aria-label={labels.useCurrentLocation}
+                        title={labels.useCurrentLocation}
+                        className="absolute right-3 bottom-14 z-20 inline-flex size-10 cursor-pointer items-center justify-center rounded-sm border border-[#E5E7EB] bg-white text-[#374151] shadow-md transition-colors hover:text-brand-red disabled:cursor-not-allowed disabled:opacity-60"
+                      >
+                        <Crosshair
+                          className={`size-5 ${geoRequesting ? "animate-pulse" : ""}`}
+                          weight="bold"
+                          aria-hidden
+                        />
+                      </button>
+                    ) : null}
                     <div className="pointer-events-none absolute inset-x-0 bottom-0 z-10 bg-gradient-to-t from-[#424242]/55 via-[#757575]/20 to-transparent px-4 pb-4 pt-12">
                       <p className="text-center text-xs font-medium text-white drop-shadow-sm">
                         {labels.mapInteractHint}
@@ -966,6 +1012,22 @@ export function WorkspaceAddressMapPicker({
                 <X className="size-4" weight="bold" aria-hidden />
               </button>
             ) : null}
+            {requestDeviceLocation ? (
+              <button
+                type="button"
+                onClick={() => void handleShareDeviceLocation()}
+                disabled={geoRequesting}
+                aria-label={labels.useCurrentLocation}
+                title={labels.useCurrentLocation}
+                className="inline-flex shrink-0 cursor-pointer items-center justify-center self-stretch border-l border-[#E5E7EB] px-3 text-[#374151] transition-colors hover:bg-[#F9FAFB] hover:text-brand-red disabled:cursor-not-allowed disabled:opacity-60"
+              >
+                <Crosshair
+                  className={`size-5 ${geoRequesting ? "animate-pulse" : ""}`}
+                  weight="bold"
+                  aria-hidden
+                />
+              </button>
+            ) : null}
             <button
               type="button"
               onClick={openMapModal}
@@ -981,6 +1043,14 @@ export function WorkspaceAddressMapPicker({
         <p id="ws-address-line1-hint" className={`mt-1 ${workspaceHintTextClass}`}>
           {labels.addressLine1Hint}
         </p>
+        {geoRequesting ? (
+          <p className="mt-1 text-xs font-medium text-[#616161]">{labels.shareLocationRequesting}</p>
+        ) : null}
+        {geoError && !showGeoPrompt ? (
+          <p className="mt-1 text-xs font-medium text-brand-red" role="alert">
+            {geoError}
+          </p>
+        ) : null}
 
         {placesState === "error" || mapState === "error" ? (
           <div

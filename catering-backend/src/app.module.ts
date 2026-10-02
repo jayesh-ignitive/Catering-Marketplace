@@ -1,5 +1,7 @@
 import { Module } from '@nestjs/common';
 import { ConfigModule, ConfigService } from '@nestjs/config';
+import { APP_GUARD } from '@nestjs/core';
+import { ThrottlerGuard, ThrottlerModule } from '@nestjs/throttler';
 import { TypeOrmModule } from '@nestjs/typeorm';
 import { AppController } from './app.controller';
 import { AdminModule } from './admin/admin.module';
@@ -13,6 +15,9 @@ import { LegalModule } from './legal/legal.module';
 @Module({
   imports: [
     ConfigModule.forRoot({ isGlobal: true }),
+    // Generous global default so public catalog/marketplace traffic is unaffected;
+    // sensitive endpoints (auth, contact) tighten this with @Throttle.
+    ThrottlerModule.forRoot([{ ttl: 60000, limit: 120 }]),
     TypeOrmModule.forRootAsync({
       imports: [ConfigModule],
       useFactory: (config: ConfigService) => ({
@@ -37,6 +42,6 @@ import { LegalModule } from './legal/legal.module';
     AdminModule,
   ],
   controllers: [AppController],
-  providers: [],
+  providers: [{ provide: APP_GUARD, useClass: ThrottlerGuard }],
 })
 export class AppModule {}

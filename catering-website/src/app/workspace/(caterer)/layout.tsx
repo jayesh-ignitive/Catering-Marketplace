@@ -1,6 +1,7 @@
 "use client";
 
 import { I18nLoadingFallback } from "@/components/common/I18nLoadingFallback";
+import { hasSubmittedWorkspaceProfile } from "@/components/workspace/caterer-profile/utils";
 import { WorkspaceThemeLayout } from "@/components/workspace/WorkspaceThemeLayout";
 import { useAuth } from "@/context/AuthContext";
 import { fetchWorkspaceCatererProfile } from "@/lib/catering-api";
@@ -32,7 +33,12 @@ export default function CatererWorkspaceShellLayout({ children }: { children: Re
 
   useEffect(() => {
     if (!profileQ.isSuccess || !profileQ.data) return;
-    if (!profileQ.data.completion.isComplete) {
+    // Submitted profiles stay in the workspace even if a later field check fails.
+    // Sending them back to onboarding loops, because onboarding returns submitted users here.
+    if (
+      !profileQ.data.completion.isComplete &&
+      !hasSubmittedWorkspaceProfile(profileQ.data)
+    ) {
       router.replace("/workspace/onboarding");
     }
   }, [profileQ.isSuccess, profileQ.data, router]);
@@ -69,7 +75,11 @@ export default function CatererWorkspaceShellLayout({ children }: { children: Re
     );
   }
 
-  if (profileQ.data && !profileQ.data.completion.isComplete) {
+  if (
+    profileQ.data &&
+    !profileQ.data.completion.isComplete &&
+    !hasSubmittedWorkspaceProfile(profileQ.data)
+  ) {
     return (
       <div className="flex min-h-screen items-center justify-center bg-[var(--background)]">
         <I18nLoadingFallback variant="openingSetup" />

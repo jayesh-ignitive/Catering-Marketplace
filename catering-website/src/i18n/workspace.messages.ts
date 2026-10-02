@@ -230,6 +230,8 @@ export const workspaceMessages = {
       streetArea: "Street / area",
       addressLine1: "Address line 1",
       addressLine1Hint: "Search your street address here, or open Map to search or drop a pin",
+      addressLine1HintOnboarding:
+        "Allow location to fill this automatically, or search your street and open Map to adjust the pin",
       addressLine2: "Address line 2",
       addressLine2Hint: "Building, unit, floor, or landmarks (near/opposite…) — edit anytime",
       openMap: "Set on map",
@@ -246,10 +248,13 @@ export const workspaceMessages = {
       shareLocationTitle: "Use your current location?",
       shareLocationHint:
         "We’ll place the pin near you and fill street, pincode, and city. You can fine-tune on the map afterward.",
+      useCurrentLocation: "Use current location",
       shareLocationButton: "Share my location",
       shareLocationRequesting: "Finding your location…",
+      shareLocationRetry:
+        "Location wasn’t allowed yet. Click the location icon and choose Allow.",
       shareLocationDenied:
-        "Location access was blocked. Allow it in your browser settings, or search for your address manually.",
+        "Location is blocked for this site. Click the lock icon in the address bar, set Location to Allow, then click the location icon again.",
       shareLocationUnavailable:
         "Could not detect your location. Search for your address or tap the map to set the pin.",
       shareLocationDismiss: "Enter address manually",
